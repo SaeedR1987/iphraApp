@@ -10,7 +10,7 @@ iphra_load_translations <- function() {
 
   # Try to load from installed package location first, then development location
   i18n_paths <- c(
-    system.file("app/www/i18n", package = "iphRa"),
+    system.file("app/www/i18n", package = "iphraApp"),
     file.path(getwd(), "inst/app/www/i18n")
   )
 

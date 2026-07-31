@@ -158,9 +158,27 @@ mod_goals_ui <- function(id) {
 #' goals Server Functions
 #'
 #' @noRd
-mod_goals_server <- function(id, reference_objectives){
+mod_goals_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+
+    # Temporary placeholder until reference_objectives is reintroduced
+    reference_objectives <- data.frame(
+      pillar = c("FSL", "WASH"),
+      short_objective = c("placeholder_fsl", "placeholder_wash"),
+      text_objective = c(
+        "Placeholder FSL objective",
+        "Placeholder WASH objective"
+      ),
+      core = c("Core", NA),
+      extended = c("Extended", NA),
+      outcomes = c("Outcome", NA),
+      fsl = c("FSL", NA),
+      wash = c("WASH", "WASH"),
+      health = c(NA, NA),
+      sub_pillar = c("FoodSecurity", "WaterSecurity"),
+      stringsAsFactors = FALSE
+    )
 
     output$dynamic_select_ui <- renderUI({
 
@@ -287,7 +305,7 @@ mod_goals_server <- function(id, reference_objectives){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -344,7 +362,7 @@ mod_goals_server <- function(id, reference_objectives){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -405,7 +423,7 @@ mod_goals_server <- function(id, reference_objectives){
     observeEvent(input$preset_core, {
       iphra_try({
 
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -617,7 +635,7 @@ mod_goals_server <- function(id, reference_objectives){
     observeEvent(input$preset_sdr_core, {
       iphra_try({
 
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -1173,7 +1191,7 @@ mod_goals_server <- function(id, reference_objectives){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -1273,7 +1291,7 @@ mod_goals_server <- function(id, reference_objectives){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────

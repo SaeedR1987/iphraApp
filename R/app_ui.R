@@ -818,9 +818,7 @@ app_ui <- function(request) {
                  mod_planning_sample_size_ui("planning_sample_size")
         )
       )
-    ),
-
-    mod_repair_maps_ui("repair_maps")
+    )
   )
 }
 

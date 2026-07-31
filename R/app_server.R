@@ -167,8 +167,6 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Schema Manager Module Server
-  mod_schema_manager_server("schema_manager", schema_trigger)
 
   # ────────────────────────────────────────────────────────────────────────────
   # CUSTOMIZE LIVELIHOODS MODULE
@@ -190,9 +188,6 @@ app_server <- function(input, output, session) {
     origin = "Customize Livelihoods Trigger"
     )
   })
-
-  # Customize Livelihoods Module Server
-  mod_customize_livelihoods_server("customize_livelihoods", customize_livelihoods_trigger)
 
   # ────────────────────────────────────────────────────────────────────────────
   # REPAIR VARIABLE AND VALUE MAPS MODULE
@@ -218,9 +213,6 @@ app_server <- function(input, output, session) {
     origin = "Repair Maps Trigger"
     )
   })
-
-  # Repair Maps Module Server
-  mod_repair_maps_server("repair_maps", repair_maps_trigger)
 
   # ────────────────────────────────────────────────────────────────────────────
   # PLACEHOLDER OBSERVERS FOR NEW NAVBAR ITEMS
@@ -522,7 +514,7 @@ app_server <- function(input, output, session) {
 
   # GOALS AND OBJECTIVES ####
 
-  mod_goals_server("goals", reference_objectives)
+  mod_goals_server("goals")
 
   # TOOLS ####
 

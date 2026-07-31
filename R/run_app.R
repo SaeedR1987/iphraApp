@@ -6,7 +6,7 @@ library(phr)
 
 options(shiny.maxRequestSize = 200 * 1024^2)  # 200 MB
 
-reference_objectives <- readxl::read_xlsx("resources/reference.xlsx", sheet = "objectives")
+# reference_objectives <- readxl::read_xlsx("resources/reference.xlsx", sheet = "objectives")
 
 
 

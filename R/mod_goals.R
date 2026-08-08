@@ -162,18 +162,14 @@ mod_goals_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    reference_objectives <- tibble::tribble(
-      ~pillar, ~short_objective, ~text_objective, ~sub_pillar, ~core, ~extended, ~outcomes, ~fsl, ~wash, ~health,
+    # Access the protocol object stored in session$userData
+    protocol <- session$userData$modules[["protocol"]]
 
-      "FSL", "Food Security",  "Improve food security",  "FoodSecurity",
-      "Core", "Extended", "Outcome", "FSL", NA, NA,
+    # Get the nested ANAFramework object (R6 reference)
+    framework <- protocol$access_nested("framework")
 
-      "WASH", "Water Security", "Improve water security", "WaterSecurity",
-      "Core", "Extended", "Outcome", NA, "WASH", NA,
-
-      "HEALTH", "Health Status", "Improve health status", "HealthStatus",
-      "Core", "Extended", "Outcome", NA, NA, "HEALTH"
-    )
+    # Master objectives schema (static full list of possible objectives)
+    reference_objectives <- framework$get_master_schema()
 
     output$dynamic_select_ui <- renderUI({
 
@@ -229,6 +225,17 @@ mod_goals_server <- function(id){
     # ---- Reactive state ----
     selected <- shiny::reactiveVal(character(0))
     selected_sdr <- shiny::reactiveVal(character(0))
+
+    # ---- Update modified objectives schema in protocol when selections change ----
+    observe({
+      sel <- selected()
+      sel_sdr <- selected_sdr()
+
+      selected_objectives <- reference_objectives %>%
+        dplyr::filter(short_objective %in% c(sel, sel_sdr))
+
+      framework$modify_adjusted_schema(selected_objectives)
+    })
 
     # ---- UI for available list ----
 

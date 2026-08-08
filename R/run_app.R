@@ -1,15 +1,3 @@
-
-library(readxl)
-library(dplyr)
-library(ggplot2)
-library(phr)
-
-options(shiny.maxRequestSize = 200 * 1024^2)  # 200 MB
-
-reference_objectives <- readxl::read_xlsx("resources/reference.xlsx", sheet = "objectives")
-
-
-
 #' Run the Shiny Application
 #'
 #' @param ... arguments to pass to golem_opts.
@@ -20,21 +8,21 @@ reference_objectives <- readxl::read_xlsx("resources/reference.xlsx", sheet = "o
 #' @importFrom shiny shinyApp
 #' @importFrom golem with_golem_options
 run_app <- function(
-  onStart = NULL,
-  options = list(),
-  enableBookmarking = NULL,
-  uiPattern = "/",
-  ...
+	onStart = NULL,
+	options = list(),
+	enableBookmarking = NULL,
+	uiPattern = "/",
+	...
 ) {
-  with_golem_options(
-    app = shinyApp(
-      ui = app_ui,
-      server = app_server,
-      onStart = onStart,
-      options = options,
-      enableBookmarking = enableBookmarking,
-      uiPattern = uiPattern
-    ),
-    golem_opts = list(...)
-  )
+	with_golem_options(
+		app = shinyApp(
+			ui = app_ui,
+			server = app_server,
+			onStart = onStart,
+			options = options,
+			enableBookmarking = enableBookmarking,
+			uiPattern = uiPattern
+		),
+		golem_opts = list(...)
+	)
 }

@@ -1,5 +1,3 @@
-
-
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -23,49 +21,49 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(input$household_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "household_data_imported",
-                                 isTRUE(input$household_data_imported_checkbox), session)
+                                isTRUE(input$household_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$roster_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "roster_data_imported",
-                                 isTRUE(input$roster_data_imported_checkbox), session)
+                                isTRUE(input$roster_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$mortality_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "mortality_data_imported",
-                                 isTRUE(input$mortality_data_imported_checkbox), session)
+                                isTRUE(input$mortality_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$nutrition_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "nutrition_data_imported",
-                                 isTRUE(input$nutrition_data_imported_checkbox), session)
+                                isTRUE(input$nutrition_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$woman_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "woman_data_imported",
-                                 isTRUE(input$woman_data_imported_checkbox), session)
+                                isTRUE(input$woman_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$health_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "health_data_imported",
-                                 isTRUE(input$health_data_imported_checkbox), session)
+                                isTRUE(input$health_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$water_data_imported_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("data", "water_data_imported",
-                                 isTRUE(input$water_data_imported_checkbox), session)
+                                isTRUE(input$water_data_imported_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
@@ -73,7 +71,7 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(input$main_cleaning_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("cleaning", "main_cleaning_complete",
-                                 isTRUE(input$main_cleaning_complete_checkbox), session)
+                                isTRUE(input$main_cleaning_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
@@ -82,145 +80,58 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(input$general_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "general_quality_complete",
-                                 isTRUE(input$general_quality_complete_checkbox), session)
+                                isTRUE(input$general_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$nutrition_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "nutrition_quality_complete",
-                                 isTRUE(input$nutrition_quality_complete_checkbox), session)
+                                isTRUE(input$nutrition_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$muac_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "muac_quality_complete",
-                                 isTRUE(input$muac_quality_complete_checkbox), session)
+                                isTRUE(input$muac_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$mortality_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "mortality_quality_complete",
-                                 isTRUE(input$mortality_quality_complete_checkbox), session)
+                                isTRUE(input$mortality_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$health_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "health_quality_complete",
-                                 isTRUE(input$health_quality_complete_checkbox), session)
+                                isTRUE(input$health_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$fsl_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "fsl_quality_complete",
-                                 isTRUE(input$fsl_quality_complete_checkbox), session)
+                                isTRUE(input$fsl_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$wash_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "wash_quality_complete",
-                                 isTRUE(input$wash_quality_complete_checkbox), session)
+                                isTRUE(input$wash_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   shiny::observeEvent(input$other_quality_complete_checkbox, {
     iphra_try({
       iphra_set_checkbox_status("quality", "other_quality_complete",
-                                 isTRUE(input$other_quality_complete_checkbox), session)
+                                isTRUE(input$other_quality_complete_checkbox), session)
     }, on_error = "warn", origin = "app_server", hint = "checkbox_status_update")
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-
-
-  # ────────────────────────────────────────────────────────────────────────────
-  # SCHEMA MANAGER MODULE
-  # ────────────────────────────────────────────────────────────────────────────
-
-  # Initialize schema storage
-  iphra_init_schemas(session)
-
-  # Create reactive trigger for schema manager
-  schema_trigger <- reactiveVal(NULL)
-
-  # Observer for schema trigger from navbar menu
-  observeEvent(input$schema_trigger, {
-    iphra_try({
-      req(input$schema_trigger)
-      trigger_data <- input$schema_trigger
-      schema_trigger(list(
-        type = trigger_data$type,
-        sector = trigger_data$sector
-      ))
-      iphra_message(
-        paste("Schema trigger received:", trigger_data$type,
-              if (!is.null(trigger_data$sector)) paste("-", trigger_data$sector) else ""),
-        origin = "Schema Manager Trigger"
-      )
-    },
-    on_error = "warn",
-    origin = "Schema Manager Trigger"
-    )
-  })
-
-  # Schema Manager Module Server
-  mod_schema_manager_server("schema_manager", schema_trigger)
-
-  # ────────────────────────────────────────────────────────────────────────────
-  # CUSTOMIZE LIVELIHOODS MODULE
-  # ────────────────────────────────────────────────────────────────────────────
-
-  # Create reactive trigger for customize livelihoods
-  customize_livelihoods_trigger <- reactiveVal(NULL)
-
-  # Observer for customize livelihoods trigger from navbar menu
-  observeEvent(input$customize_livelihoods_btn, {
-    iphra_try({
-      customize_livelihoods_trigger(Sys.time())
-      iphra_message(
-        "Customize Livelihoods menu item clicked",
-        origin = "Customize Livelihoods Trigger"
-      )
-    },
-    on_error = "warn",
-    origin = "Customize Livelihoods Trigger"
-    )
-  })
-
-  # Customize Livelihoods Module Server
-  mod_customize_livelihoods_server("customize_livelihoods", customize_livelihoods_trigger)
-
-  # ────────────────────────────────────────────────────────────────────────────
-  # REPAIR VARIABLE AND VALUE MAPS MODULE
-  # ────────────────────────────────────────────────────────────────────────────
-
-  # Create reactive trigger for repair maps
-  repair_maps_trigger <- reactiveVal(NULL)
-
-  # Observer for repair maps trigger from navbar menu
-  observeEvent(input$repair_maps_trigger, {
-    iphra_try({
-      req(input$repair_maps_trigger)
-      trigger_data <- input$repair_maps_trigger
-      repair_maps_trigger(list(
-        dataset = trigger_data$dataset
-      ))
-      iphra_message(
-        paste("Repair maps trigger received for dataset:", trigger_data$dataset),
-        origin = "Repair Maps Trigger"
-      )
-    },
-    on_error = "warn",
-    origin = "Repair Maps Trigger"
-    )
-  })
-
-  # Repair Maps Module Server
-  mod_repair_maps_server("repair_maps", repair_maps_trigger)
 
   # ────────────────────────────────────────────────────────────────────────────
   # PLACEHOLDER OBSERVERS FOR NEW NAVBAR ITEMS
@@ -522,7 +433,7 @@ app_server <- function(input, output, session) {
 
   # GOALS AND OBJECTIVES ####
 
-  mod_goals_server("goals", reference_objectives)
+  mod_goals_server("goals")
 
   # TOOLS ####
 
@@ -638,4 +549,6 @@ app_server <- function(input, output, session) {
   #   iphra_get_logs()()
   # })
 
-  }
+
+
+}

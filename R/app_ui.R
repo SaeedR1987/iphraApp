@@ -1,13 +1,3 @@
-
-library(shiny)
-library(htmltools)
-library(DT)
-library(reactable)
-library(ggplot2)
-library(rhandsontable)
-library(shinyjs)
-
-
 #' The application User-Interface
 #'
 #' @param request Internal parameter for `{shiny}`.
@@ -793,11 +783,8 @@ app_ui <- function(request) {
         collapsible = TRUE,
         fluid = TRUE,
 
-        # ── 1. Data Import ────────────────────────────────────────────────────
-        tabPanel(iphra_txt("Goals and Objectives"),
-                 tabPanel(iphra_txt("Goals and Objectives"),
-                          mod_goals_ui("goals")),
-        ),
+        # ── 1. Goals ────────────────────────────────────────────────────
+        tabPanel(iphra_txt("Goals and Objectives"), mod_goals_ui("goals")),
 
         # ── 2. Tools ────────────────────────────────────────────────
         tabPanel(iphra_txt("Tool Design"),
@@ -813,14 +800,13 @@ app_ui <- function(request) {
                  )
         ),
 
-        # ── 3. Sampling ──────────────────────────────────────────────────
-        tabPanel(iphra_txt("Planning and Sampling"),
-                 mod_planning_sample_size_ui("planning_sample_size")
+        # ── 3. Sample Size and Planning ─────────────────────────────────────────────────
+        # Planning ####
+        tabPanel(iphra_txt("Planning and Sampling"), mod_planning_sample_size_ui("planning_sample_size")
         )
-      )
-    ),
 
-    mod_repair_maps_ui("repair_maps")
+      )
+    )
   )
 }
 
@@ -833,19 +819,18 @@ app_ui <- function(request) {
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
 #' @noRd
 golem_add_external_resources <- function() {
-  add_resource_path(
-    "www",
-    app_sys("app/www")
-  )
+	add_resource_path(
+		"www",
+		app_sys("app/www")
+	)
 
-  tags$head(
-    favicon(),
-    bundle_resources(
-      path = app_sys("app/www"),
-      app_title = "iphRa"
-    ),
-    tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
-    # Add here other external resources
-    # for example, you can add shinyalert::useShinyalert()
-  )
+	tags$head(
+		favicon(),
+		bundle_resources(
+			path = app_sys("app/www"),
+			app_title = "iphraApp"
+		)
+		# Add here other external resources
+		# for example, you can add shinyalert::useShinyalert()
+	)
 }

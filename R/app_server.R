@@ -383,6 +383,12 @@ app_server <- function(input, output, session) {
   # ---- Initialize Session State ----
   iphra_session <- iphra_init_session(session)
 
+  iphra_set_module(module_name = "protocol",
+                   module_object = phr::IPHRAProtocol$new(assessment_title = "IPHRA",
+                                                          country_name = "TBD",
+                                                          month_year = "2026-01-01"
+                                                          ))
+
   # iphra_get_log_store(session)
 
   # ---- Global Language Selection ---

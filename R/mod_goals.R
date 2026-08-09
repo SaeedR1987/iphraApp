@@ -882,6 +882,7 @@ mod_goals_server <- function(id){
                       jsonlite::toJSON(both_block_ids, auto_unbox = TRUE),
                       paste0(
                         sapply(all_block_ids, function(bid) {
+                          svg_id <- paste0("OC", bid)
                           sprintf("
             var g = svg.getElementById('%s');
             if(g){
@@ -895,7 +896,7 @@ mod_goals_server <- function(id){
               } else {
                 r.setAttribute('fill','white');
               }
-            }", bid, bid, bid, bid)
+            }", svg_id, bid, bid, bid)
                         }),
                         collapse = '\n'
                       )

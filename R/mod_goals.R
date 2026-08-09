@@ -101,19 +101,7 @@ mod_goals_ui <- function(id) {
           uiOutput(ns("framework_svg"))
         )
       )
-    ),
-
-    # Custom JS handler for SVG highlighting
-    tags$script(HTML("
-      Shiny.addCustomMessageHandler('updateFramework', function(message){
-        console.log('framework incoming:', message.code);
-        try {
-          eval(message.code);
-        } catch(e) {
-          console.error('framework eval error:', e, message.code);
-        }
-      });
-    "))
+    )
   )
 }
 
@@ -237,14 +225,14 @@ mod_goals_server <- function(id){
         text = iphra_txt("Available Objectives"),
         labels = labels,
         input_id = "available",
-        options = sortable::sortable_options(group = ns("all_objectives"))
+        options = sortable::sortable_options(group = "all_objectives")
       )
 
 
 
     })
 
-    # ---- UI for selected list ----
+    # ---- UI for selected list
     output$selected_ui <- shiny::renderUI({
       labels <- unname(code_to_short[as.character(selected())])
       labels <- labels[!is.na(labels)]
@@ -264,11 +252,11 @@ mod_goals_server <- function(id){
         text = iphra_txt("Available Objectives"),
         labels = labels_sdr,
         input_id = "available_sdr",
-        options = sortable::sortable_options(group = ns("all_objectives"))
+        options = sortable::sortable_options(group = "all_objectives")
       )
     })
 
-    # ---- UI for selected list ----
+    # ---- UI for selected list
     output$selected_sdr_ui <- shiny::renderUI({
       labels_sdr <- unname(code_to_short[as.character(selected_sdr())])
       labels_sdr <- labels_sdr[!is.na(labels_sdr)]
@@ -276,7 +264,7 @@ mod_goals_server <- function(id){
         text = iphra_txt("Selected Objectives"),
         labels = labels_sdr,
         input_id = "selected_sdr",
-        options = sortable::sortable_options(group = ns("all_objectives"))
+        options = sortable::sortable_options(group = "all_objectives")
       )
     })
 
@@ -336,30 +324,9 @@ mod_goals_server <- function(id){
     observeEvent(input$selected, {
       iphra_try({
 
-        # ────────────────────────────────────────────────
-
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Selection Update")
-        )
-        # (Optional future: validate input$selected not NULL or empty)
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_goals_server/observeEvent_selected/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        codes <- unname(short_to_code[input$selected])
+        codes <- unname(short_to_code[as.character(input$selected)])
         selected(codes[!is.na(codes)])
+
         iphra_message(
           paste0(
             iphra_txt("Selected item(s) updated to: "),
@@ -367,24 +334,7 @@ mod_goals_server <- function(id){
           ),
           origin = iphra_txt("Selection Update")
         )
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_goals_server/observeEvent_selected/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Selection update processed successfully."),
-          origin = iphra_txt("Selection Update")
-        )
-        }, step = "mod_goals_server/observeEvent_selected/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+        },
       on_error = "warn",
       origin = iphra_txt("Selection Update"),
       hint = iphra_txt("Check input binding or reactive assignment if this fails.")
@@ -394,29 +344,6 @@ mod_goals_server <- function(id){
     observeEvent(input$selected_sdr, {
       iphra_try({
 
-        # ────────────────────────────────────────────────
-
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("SDR Selection Update")
-        )
-        # (Optional future: validate input$selected_sdr not NULL or empty)
-
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_goals_server/observeEvent_selected_sdr/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
         sdr_codes <- unname(short_to_code[input$selected_sdr])
         selected_sdr(sdr_codes[!is.na(sdr_codes)])
         iphra_message(
@@ -426,25 +353,7 @@ mod_goals_server <- function(id){
           ),
           origin = iphra_txt("SDR selection Update")
         )
-
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_goals_server/observeEvent_selected_sdr/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("SDR selection update processed successfully."),
-          origin = iphra_txt("SDR Selection Update")
-        )
-        }, step = "mod_goals_server/observeEvent_selected_sdr/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+      },
       on_error = "warn",
       origin = iphra_txt("SDR Selection Update"),
       hint = iphra_txt("Check input binding or reactive assignment if this fails.")
@@ -456,45 +365,12 @@ mod_goals_server <- function(id){
       iphra_try({
 
 
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_core/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
           selected(
           reference_objectives %>%
             dplyr::filter(core %in% c("Core")) %>%
             dplyr::pull(objective_code)
         )
-        iphra_message(
-          iphra_txt("Core objectives preset applied."),
-          origin = iphra_txt("Preset: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_core/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Core preset selection processed successfully."),
-          origin = iphra_txt("Preset: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_core/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+        },
       on_error = "warn",
       origin = iphra_txt("Preset: Core Objectives"),
       hint = iphra_txt("Check objective data structure or input binding if this fails.")
@@ -506,45 +382,12 @@ mod_goals_server <- function(id){
       iphra_try({
 
 
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_sdr_core/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
           selected_sdr(
           reference_objectives %>%
             dplyr::filter(core %in% c("Core")) %>%
             dplyr::pull(objective_code)
         )
-        iphra_message(
-          iphra_txt("SDR Core objectives preset applied."),
-          origin = iphra_txt("Preset SDR: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_sdr_core/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("SDR Core preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: Core Objectives")
-        )
-        }, step = "mod_goals_server/observeEvent_preset_sdr_core/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+        },
       on_error = "warn",
       origin = iphra_txt("Preset SDR: Core Objectives"),
       hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
@@ -552,30 +395,24 @@ mod_goals_server <- function(id){
     })
 
     # Highlight SVG blocks
-    observe({
+    observeEvent(list(selected(), selected_sdr()),{
       iphra_try({
 
-        # ────────────────────────────────────────────────
-
-        # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          # ────────────────────────────────────────────────
+
         iphra_message(
           iphra_txt("Reactive update triggered for framework visualization."),
           origin = iphra_txt("Framework SVG Highlighter")
         )
         # (Optional future: validate selected() and selected_sdr() not NULL)
 
-
-        # ────────────────────────────────────────────────
         }, step = "mod_goals_server/observe/Validation")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
         # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
 
           cat("\n====================\n")
@@ -584,8 +421,6 @@ mod_goals_server <- function(id){
           print(selected())
           print(selected_sdr())
 
-
-          # ────────────────────────────────────────────────
         sel <- selected()
         sel_sdr <- selected_sdr()
 
@@ -604,15 +439,15 @@ mod_goals_server <- function(id){
         cat("svg_to_display updated\n")
 
 
-        # ────────────────────────────────────────────────
+
         }, step = "mod_goals_server/observe/Core Logic")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
+
         # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          # ────────────────────────────────────────────────
+
 
 
 

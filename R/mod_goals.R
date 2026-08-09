@@ -160,6 +160,8 @@ mod_goals_server <- function(id){
       )
     })
 
+    svg_to_display <- reactiveVal(framework$master_svg)
+
     output$dynamic_select_sdr_ui <- renderUI({
 
       # choices <- filtered_available_objectives()
@@ -821,7 +823,10 @@ mod_goals_server <- function(id){
     base_svg <- framework$master_svg
 
     # --- Render the initial SVG ---
-    output$framework_svg <- renderUI({ HTML(base_svg) })
+    output$framework_svg <- renderUI({
+      cat("Rendering SVG\n")
+      HTML(svg_to_display())
+      })
 
 
     # -------------------------
@@ -852,14 +857,36 @@ mod_goals_server <- function(id){
         # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
+
+          cat("\n====================\n")
+          cat("SVG observer fired\n")
+
+          print(selected())
+          print(selected_sdr())
+
+
           # ────────────────────────────────────────────────
         sel <- selected()
         sel_sdr <- selected_sdr()
+
+
+
+
+
 
         framework$set_primary_objectives(objective_codes = sel)
         framework$set_secondary_objectives(objective_codes = sel_sdr)
         framework$modify_adjusted_svg(primary_objective_codes = sel, secondary_objective_codes = sel_sdr)
 
+        cat(
+          "Assigning SVG length:",
+          nchar(framework$adjusted_svg),
+          "\n"
+        )
+
+        svg_to_display(framework$adjusted_svg)
+
+        cat("svg_to_display updated\n")
 
 
         # ────────────────────────────────────────────────
@@ -872,7 +899,7 @@ mod_goals_server <- function(id){
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
 
-        output$framework_svg <- renderUI({ HTML(framework$adjusted_svg) })
+
 
         iphra_message(
           iphra_txt("Framework visualization updated successfully."),

@@ -856,15 +856,15 @@ mod_goals_server <- function(id){
         sel <- selected()
         sel_sdr <- selected_sdr()
 
-        all_block_ids <- reference_objectives$sub_pillar
+        all_block_ids <- reference_objectives$objective_code
 
         block_ids <- reference_objectives %>%
           dplyr::filter(short_objective %in% sel) %>%
-          dplyr::pull(sub_pillar)
+          dplyr::pull(objective_code)
 
         block_ids_sdr <- reference_objectives %>%
           dplyr::filter(short_objective %in% sel_sdr) %>%
-          dplyr::pull(sub_pillar)
+          dplyr::pull(objective_code)
 
         both_block_ids <- intersect(block_ids, block_ids_sdr)
 

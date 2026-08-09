@@ -856,53 +856,11 @@ mod_goals_server <- function(id){
         sel <- selected()
         sel_sdr <- selected_sdr()
 
-        all_block_ids <- reference_objectives$objective_code
+        framework$set_primary_objectives(objective_codes = sel)
+        framewor$set_secondary_objectives(objective_codes = sel_sdr)
+        framework$modify_adjusted_svg(primary_objective_codes = sel, secondary_objective_codes = sel_sdr)
 
-        block_ids <- reference_objectives %>%
-          dplyr::filter(short_objective %in% sel) %>%
-          dplyr::pull(objective_code)
 
-        block_ids_sdr <- reference_objectives %>%
-          dplyr::filter(short_objective %in% sel_sdr) %>%
-          dplyr::pull(objective_code)
-
-        both_block_ids <- intersect(block_ids, block_ids_sdr)
-
-        js <- sprintf("
-      var svg = document.querySelector('#%s svg');
-      if(svg){
-        var greenIds = %s;
-        var blueIds = %s;
-        var purpleIds = %s;
-        %s
-      }",
-                      ns('framework_container'),
-                      jsonlite::toJSON(block_ids, auto_unbox = TRUE),
-                      jsonlite::toJSON(block_ids_sdr, auto_unbox = TRUE),
-                      jsonlite::toJSON(both_block_ids, auto_unbox = TRUE),
-                      paste0(
-                        sapply(all_block_ids, function(bid) {
-                          svg_id <- paste0("OC", bid)
-                          sprintf("
-            var g = svg.getElementById('%s');
-            if(g){
-              var r = g.querySelector('rect');
-              if(purpleIds.includes('%s')){
-                r.setAttribute('fill','#D8BFD8');
-              } else if(greenIds.includes('%s')){
-                r.setAttribute('fill','lightgreen');
-              } else if(blueIds.includes('%s')){
-                r.setAttribute('fill','lightblue');
-              } else {
-                r.setAttribute('fill','white');
-              }
-            }", svg_id, bid, bid, bid)
-                        }),
-                        collapse = '\n'
-                      )
-        )
-
-        session$sendCustomMessage("updateFramework", list(code = js))
 
         # ────────────────────────────────────────────────
         }, step = "mod_goals_server/observe/Core Logic")
@@ -913,9 +871,13 @@ mod_goals_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
+
+        framework$adjusted_svg
+
         iphra_message(
           iphra_txt("Framework visualization updated successfully (dummy mode)."),
           origin = iphra_txt("Framework SVG Highlighter")
+
         )
         }, step = "mod_goals_server/observe/Result Handling")
         if (iphra_failed(result)) return(result)

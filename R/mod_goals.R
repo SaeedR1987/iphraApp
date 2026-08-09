@@ -820,7 +820,7 @@ mod_goals_server <- function(id){
     # --- SVG with individual block IDs ---
     base_svg <- framework$master_svg
 
-    # --- Render the SVG ---
+    # --- Render the initial SVG ---
     output$framework_svg <- renderUI({ HTML(base_svg) })
 
 
@@ -857,7 +857,7 @@ mod_goals_server <- function(id){
         sel_sdr <- selected_sdr()
 
         framework$set_primary_objectives(objective_codes = sel)
-        framewor$set_secondary_objectives(objective_codes = sel_sdr)
+        framework$set_secondary_objectives(objective_codes = sel_sdr)
         framework$modify_adjusted_svg(primary_objective_codes = sel, secondary_objective_codes = sel_sdr)
 
 
@@ -872,10 +872,10 @@ mod_goals_server <- function(id){
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
 
-        framework$adjusted_svg
+        output$framework_svg <- renderUI({ HTML(framework$adjusted_svg) })
 
         iphra_message(
-          iphra_txt("Framework visualization updated successfully (dummy mode)."),
+          iphra_txt("Framework visualization updated successfully."),
           origin = iphra_txt("Framework SVG Highlighter")
 
         )

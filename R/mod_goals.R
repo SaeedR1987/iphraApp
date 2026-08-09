@@ -24,11 +24,6 @@ mod_goals_ui <- function(id) {
               title = iphra_txt("Objectives Presets"),
               width = 12,
               shiny::actionButton(ns("preset_core"), iphra_txt("Core")),
-              shiny::actionButton(ns("preset_full"), iphra_txt("Extended")),
-              shiny::actionButton(ns("preset_outcomes"), iphra_txt("Outcome Focused")),
-              shiny::actionButton(ns("preset_fsl"), iphra_txt("FSL Focused")),
-              shiny::actionButton(ns("preset_wash"), iphra_txt("WASH Focused")),
-              shiny::actionButton(ns("preset_health"), iphra_txt("Health Focused")),
               shiny::actionButton(
                 ns("clear_objectives"),
                 iphra_txt("Clear Objectives"),
@@ -50,11 +45,6 @@ mod_goals_ui <- function(id) {
               title = iphra_txt("Objectives Presets"),
               width = 12,
               shiny::actionButton(ns("preset_sdr_core"), iphra_txt("Core")),
-              shiny::actionButton(ns("preset_sdr_full"), iphra_txt("Extended")),
-              shiny::actionButton(ns("preset_sdr_outcomes"), iphra_txt("Outcome Focused")),
-              shiny::actionButton(ns("preset_sdr_fsl"), iphra_txt("FSL Focused")),
-              shiny::actionButton(ns("preset_sdr_wash"), iphra_txt("WASH Focused")),
-              shiny::actionButton(ns("preset_sdr_health"), iphra_txt("Health Focused")),
               shiny::actionButton(
                 ns("clear_sdr_objectives"),
                 iphra_txt("Clear Objectives"),
@@ -136,37 +126,73 @@ mod_goals_server <- function(id){
 
     library(dplyr)
 
-    # Access the protocol object stored in session$userData
+    # Setup Reference Objectives and Lookups ####
     protocol <- session$userData$modules[["protocol"]]
-
-    # Get the nested ANAFramework object (R6 reference)
     framework <- protocol$access_nested("framework")
-
-    # Master objectives schema (static full list of possible objectives)
     reference_objectives <- framework$master_objectives_schema
+
+    # ---- Lookup maps between objective_code and short_objective ----
+    unique_objectives <- reference_objectives[
+      !duplicated(reference_objectives$objective_code),
+    ]
+
+    code_to_short <- setNames(
+      unique_objectives$short_objective,
+      unique_objectives$objective_code
+    )
+
+    short_to_code <- setNames(
+      unique_objectives$objective_code,
+      unique_objectives$short_objective
+    )
+
+    # --- SVG with individual block IDs ---
+    base_svg <- framework$adjusted_svg
+
+    # Initializing Reactive Values ####
+    svg_to_display <- reactiveVal(framework$adjusted_svg)
+    selected <- shiny::reactiveVal(character(0))
+    selected_sdr <- shiny::reactiveVal(character(0))
+
+    # Primary Objective Selection
+
+    all_objectives <- unique(reference_objectives$objective_code)
+
+    filtered_available_objectives <- reactive({
+      req(input$dynamic_select)  # Ensure input is available
+
+      filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select, ]
+      unique(filtered$objective_code)  # Return character vector of objective codes
+
+    })
+
+    filtered_available_sdr_objectives <- reactive({
+      req(input$dynamic_select_sdr)  # Ensure input is available
+
+      filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select_sdr, ]
+      unique(filtered$objective_code)  # Return character vector of objective codes
+
+    })
+
+
+    # Outputs ####
 
     output$dynamic_select_ui <- renderUI({
 
-      # choices <- filtered_available_objectives()
-
-      default_selection <- c("FSL", "WASH")
+      default_selection <- c("Demographics", "HealthStatus")
 
       selectInput(
         ns("dynamic_select"),
-        label = iphra_txt("Select Dimensions"),
+        label = iphra_txt("Select Pillars"),
         choices = unique(reference_objectives$pillar),  # Replace with your reactive or static vector
         selected = default_selection,
         multiple = TRUE
       )
     })
 
-    svg_to_display <- reactiveVal(framework$master_svg)
-
     output$dynamic_select_sdr_ui <- renderUI({
 
-      # choices <- filtered_available_objectives()
-
-      default_selection <- c("FSL", "WASH")
+      default_selection <- c("Demographics", "HealthStatus")
 
       selectInput(
         ns("dynamic_select_sdr"),
@@ -177,60 +203,96 @@ mod_goals_server <- function(id){
       )
     })
 
-    # ---- Indicators definition (lives inside module) ----
-    all_objectives <- reference_objectives$objective_code
+    # output$available_ui <- renderUI({
+    #
+    #   tags$div(
+    #     style = "border:1px solid red;",
+    #     paste(labels, collapse = ", ")
+    #   )
+    #
+    # })
 
-    filtered_available_objectives <- reactive({
-      req(input$dynamic_select)  # Ensure input is available
+    output$available_ui <- shiny::renderUI({
 
-      filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select, ]
-      filtered$objective_code  # Return character vector of objective codes
+      cat("Rendering available_ui\n")
+
+      available_codes <- setdiff(filtered_available_objectives(), selected())
+
+      print(available_codes)
+
+      print(available_codes[1])
+
+      print(code_to_short["101"])
+
+      print(code_to_short[101])
+
+      labels <- unname(code_to_short[as.character(available_codes)])
+      labels <- labels[!is.na(labels)]
+
+      cat("available codes:", length(available_codes), "\n")
+      cat("labels:", length(labels), "\n")
+
+
+      sortable::rank_list(
+        text = iphra_txt("Available Objectives"),
+        labels = labels,
+        input_id = "available",
+        options = sortable::sortable_options(group = ns("all_objectives"))
+      )
+
+
 
     })
 
-    filtered_available_sdr_objectives <- reactive({
-      req(input$dynamic_select_sdr)  # Ensure input is available
-
-      filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select_sdr, ]
-      filtered$objective_code  # Return character vector of objective codes
-
+    # ---- UI for selected list ----
+    output$selected_ui <- shiny::renderUI({
+      labels <- unname(code_to_short[as.character(selected())])
+      labels <- labels[!is.na(labels)]
+      sortable::rank_list(
+        text = iphra_txt("Selected Objectives"),
+        labels = labels,
+        input_id = "selected",
+        options = sortable::sortable_options(group = "all_objectives")
+      )
     })
 
-
-
-    # ---- Lookup maps between objective_code and short_objective ----
-    code_to_short <- setNames(reference_objectives$short_objective, reference_objectives$objective_code)
-    short_to_code <- setNames(reference_objectives$objective_code, reference_objectives$short_objective)
-
-    # ---- Reactive state ----
-    selected <- shiny::reactiveVal(character(0))
-    selected_sdr <- shiny::reactiveVal(character(0))
-
-    # ---- Update modified objectives schema in protocol when selections change ----
-    observe({
-      sel <- selected()
-      sel_sdr <- selected_sdr()
-
-      selected_objectives <- reference_objectives %>%
-        dplyr::filter(objective_code %in% c(sel, sel_sdr))
-
-      framework$modify_adjusted_schema(selected_objectives)
+    output$available_sdr_ui <- shiny::renderUI({
+      available_sdr_codes <- setdiff(filtered_available_sdr_objectives(), selected_sdr())
+      labels_sdr <- unname(code_to_short[as.character(available_sdr_codes)])
+      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
+      sortable::rank_list(
+        text = iphra_txt("Available Objectives"),
+        labels = labels_sdr,
+        input_id = "available_sdr",
+        options = sortable::sortable_options(group = ns("all_objectives"))
+      )
     })
 
-    # ---- UI for available list ----
+    # ---- UI for selected list ----
+    output$selected_sdr_ui <- shiny::renderUI({
+      labels_sdr <- unname(code_to_short[as.character(selected_sdr())])
+      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
+      sortable::rank_list(
+        text = iphra_txt("Selected Objectives"),
+        labels = labels_sdr,
+        input_id = "selected_sdr",
+        options = sortable::sortable_options(group = ns("all_objectives"))
+      )
+    })
 
+    # for full text objectives preview
     output$full_objectives_ui <- renderUI({
 
       sel <- selected()  # `selected()` should return a character vector of objectives
       sel_sdr <- selected_sdr()  # `selected()` should return a character vector of objectives
 
       prim_obj <- reference_objectives %>%
-                 filter(objective_code %in% sel) %>%
-                 dplyr::pull(text_objective)
+        filter(objective_code %in% sel) %>%
+        dplyr::pull(text_objective) %>% unique()
 
       sdr_obj <- reference_objectives %>%
-                     filter(objective_code %in% sel_sdr) %>%
-                     dplyr::pull(text_objective) %>% unique()
+        filter(objective_code %in% sel_sdr) %>%
+        dplyr::pull(text_objective) %>% unique()
 
       objs <- c(prim_obj, sdr_obj)
 
@@ -244,55 +306,33 @@ mod_goals_server <- function(id){
       }
     })
 
-    output$available_ui <- shiny::renderUI({
-      available_codes <- setdiff(filtered_available_objectives(), selected())
-      labels <- unname(code_to_short[available_codes])
-      labels <- labels[!is.na(labels)]
-      sortable::rank_list(
-        text = iphra_txt("Available Objectives"),
-        labels = labels,
-        input_id = ns("available"),
-        options = sortable::sortable_options(group = ns("all_objectives"))
-      )
+    # --- Render the initial SVG ---
+    output$framework_svg <- renderUI({
+      cat("Rendering SVG\n")
+      HTML(svg_to_display())
     })
 
-    # ---- UI for selected list ----
-    output$selected_ui <- shiny::renderUI({
-      labels <- unname(code_to_short[selected()])
-      labels <- labels[!is.na(labels)]
-      sortable::rank_list(
-        text = iphra_txt("Selected Objectives"),
-        labels = labels,
-        input_id = ns("selected"),
-        options = sortable::sortable_options(group = ns("all_objectives"))
-      )
+    # Observes ####
+
+    observe({
+      cat("dynamic_select:\n")
+      print(input$dynamic_select)
     })
 
-    output$available_sdr_ui <- shiny::renderUI({
-      available_sdr_codes <- setdiff(filtered_available_sdr_objectives(), selected_sdr())
-      labels_sdr <- unname(code_to_short[available_sdr_codes])
-      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
-      sortable::rank_list(
-        text = iphra_txt("Available Objectives"),
-        labels = labels_sdr,
-        input_id = ns("available_sdr"),
-        options = sortable::sortable_options(group = ns("all_objectives"))
-      )
+    # ---- Update modified objectives schema in protocol when selections change
+    observe({
+      sel <- selected()
+      sel_sdr <- selected_sdr()
+
+      selected_objectives <- reference_objectives %>%
+        dplyr::filter(objective_code %in% c(sel, sel_sdr)) %>%
+        dplyr::pull(objective_code) %>%
+        unique()
+
+      framework$modify_adjusted_schema(selected_objectives)
     })
 
-    # ---- UI for selected list ----
-    output$selected_sdr_ui <- shiny::renderUI({
-      labels_sdr <- unname(code_to_short[selected_sdr()])
-      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
-      sortable::rank_list(
-        text = iphra_txt("Selected Objectives"),
-        labels = labels_sdr,
-        input_id = ns("selected_sdr"),
-        options = sortable::sortable_options(group = ns("all_objectives"))
-      )
-    })
-
-    # ---- Keep selected() in sync with drag-and-drop ----
+    # ---- Keep selected() in sync with drag-and-drop
     observeEvent(input$selected, {
       iphra_try({
 
@@ -411,8 +451,6 @@ mod_goals_server <- function(id){
       )
     })
 
-    # ---- Presets ----
-
     # Core preset
     observeEvent(input$preset_core, {
       iphra_try({
@@ -462,168 +500,6 @@ mod_goals_server <- function(id){
       hint = iphra_txt("Check objective data structure or input binding if this fails.")
       )
     })
-
-
-    # Full preset
-    observeEvent(input$preset_full, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: Full Objectives")
-        )
-
-        selected(
-          reference_objectives %>%
-            dplyr::filter(extended %in% c("Extended")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("Full objectives preset applied."),
-          origin = iphra_txt("Preset: Full Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("Full preset selection processed successfully."),
-          origin = iphra_txt("Preset: Full Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset: Full Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
-      )
-    })
-
-
-    # Outcomes preset
-    observeEvent(input$preset_outcomes, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: Outcomes Objectives")
-        )
-
-        selected(
-          reference_objectives %>%
-            dplyr::filter(outcomes %in% c("Outcome")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("Outcome objectives preset applied."),
-          origin = iphra_txt("Preset: Outcomes Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("Outcome preset selection processed successfully."),
-          origin = iphra_txt("Preset: Outcomes Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset: Outcomes Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
-      )
-    })
-
-
-    # FSL preset
-    observeEvent(input$preset_fsl, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: FSL Objectives")
-        )
-
-        selected(
-          reference_objectives %>%
-            dplyr::filter(fsl %in% c("FSL")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("FSL objectives preset applied."),
-          origin = iphra_txt("Preset: FSL Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("FSL preset selection processed successfully."),
-          origin = iphra_txt("Preset: FSL Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset: FSL Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
-      )
-    })
-
-
-    # WASH preset
-    observeEvent(input$preset_wash, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: WASH Objectives")
-        )
-
-        selected(
-          reference_objectives %>%
-            dplyr::filter(wash %in% c("WASH")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("WASH objectives preset applied."),
-          origin = iphra_txt("Preset: WASH Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("WASH preset selection processed successfully."),
-          origin = iphra_txt("Preset: WASH Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset: WASH Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
-      )
-    })
-
-
-    # Health preset
-    observeEvent(input$preset_health, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset: Health Objectives")
-        )
-
-        selected(
-          reference_objectives %>%
-            dplyr::filter(health %in% c("HEALTH")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("Health objectives preset applied."),
-          origin = iphra_txt("Preset: Health Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("Health preset selection processed successfully."),
-          origin = iphra_txt("Preset: Health Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset: Health Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
-      )
-    })
-
-    # ---- Presets SDR ----
 
     # SDR Core preset
     observeEvent(input$preset_sdr_core, {
@@ -675,179 +551,7 @@ mod_goals_server <- function(id){
       )
     })
 
-
-    # SDR Full preset
-    observeEvent(input$preset_sdr_full, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: Full Objectives")
-        )
-
-        selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(extended %in% c("Extended")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("SDR Full objectives preset applied."),
-          origin = iphra_txt("Preset SDR: Full Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("SDR Full preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: Full Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset SDR: Full Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-
-    # SDR Outcomes preset
-    observeEvent(input$preset_sdr_outcomes, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: Outcomes Objectives")
-        )
-
-        selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(outcomes %in% c("Outcome")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("SDR Outcome objectives preset applied."),
-          origin = iphra_txt("Preset SDR: Outcomes Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("SDR Outcome preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: Outcomes Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset SDR: Outcomes Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-
-    # SDR FSL preset
-    observeEvent(input$preset_sdr_fsl, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: FSL Objectives")
-        )
-
-        selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(fsl %in% c("FSL")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("SDR FSL objectives preset applied."),
-          origin = iphra_txt("Preset SDR: FSL Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("SDR FSL preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: FSL Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset SDR: FSL Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-
-    # SDR WASH preset
-    observeEvent(input$preset_sdr_wash, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: WASH Objectives")
-        )
-
-        selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(wash %in% c("WASH")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("SDR WASH objectives preset applied."),
-          origin = iphra_txt("Preset SDR: WASH Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("SDR WASH preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: WASH Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset SDR: WASH Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-
-    # SDR Health preset
-    observeEvent(input$preset_sdr_health, {
-      iphra_try({
-
-        iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Preset SDR: Health Objectives")
-        )
-
-        selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(health %in% c("HEALTH")) %>%
-            dplyr::pull(objective_code)
-        )
-        iphra_message(
-          iphra_txt("SDR Health objectives preset applied."),
-          origin = iphra_txt("Preset SDR: Health Objectives")
-        )
-
-        iphra_message(
-          iphra_txt("SDR Health preset selection processed successfully."),
-          origin = iphra_txt("Preset SDR: Health Objectives")
-        )
-
-      },
-      on_error = "warn",
-      origin = iphra_txt("Preset SDR: Health Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-    # --- SVG with individual block IDs ---
-    base_svg <- framework$master_svg
-
-    # --- Render the initial SVG ---
-    output$framework_svg <- renderUI({
-      cat("Rendering SVG\n")
-      HTML(svg_to_display())
-      })
-
-
-    # -------------------------
     # Highlight SVG blocks
-    # -------------------------
     observe({
       iphra_try({
 
@@ -884,11 +588,6 @@ mod_goals_server <- function(id){
           # ────────────────────────────────────────────────
         sel <- selected()
         sel_sdr <- selected_sdr()
-
-
-
-
-
 
         framework$set_primary_objectives(objective_codes = sel)
         framework$set_secondary_objectives(objective_codes = sel_sdr)
@@ -934,9 +633,3 @@ mod_goals_server <- function(id){
 
   })
 }
-
-## To be copied in the UI
-# mod_goals_ui("goals_1")
-
-## To be copied in the server
-# mod_goals_server("goals_1")

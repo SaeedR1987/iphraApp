@@ -112,12 +112,19 @@ mod_goals_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    library(dplyr)
-
     # Setup Reference Objectives and Lookups ####
     protocol <- session$userData$modules[["protocol"]]
     framework <- protocol$access_nested("framework")
     reference_objectives <- framework$master_objectives_schema
+
+    # Normalize the objective_code column to character up-front so every
+    # downstream operation (setdiff, %in%, named-vector lookups, and the
+    # calls into `framework$*` which key the SVG by character element ids)
+    # sees a consistent type. The three-digit numeric codes (e.g. 101)
+    # are treated as strings ("101") throughout the module.
+    reference_objectives$objective_code <- as.character(
+      reference_objectives$objective_code
+    )
 
     # ---- Lookup maps between objective_code and short_objective ----
     unique_objectives <- reference_objectives[
@@ -125,13 +132,13 @@ mod_goals_server <- function(id){
     ]
 
     code_to_short <- setNames(
-      unique_objectives$short_objective,
-      unique_objectives$objective_code
+      as.character(unique_objectives$short_objective),
+      as.character(unique_objectives$objective_code)
     )
 
     short_to_code <- setNames(
-      unique_objectives$objective_code,
-      unique_objectives$short_objective
+      as.character(unique_objectives$objective_code),
+      as.character(unique_objectives$short_objective)
     )
 
     # --- SVG with individual block IDs ---
@@ -144,13 +151,13 @@ mod_goals_server <- function(id){
 
     # Primary Objective Selection
 
-    all_objectives <- unique(reference_objectives$objective_code)
+    all_objectives <- as.character(unique(reference_objectives$objective_code))
 
     filtered_available_objectives <- reactive({
       req(input$dynamic_select)  # Ensure input is available
 
       filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select, ]
-      unique(filtered$objective_code)  # Return character vector of objective codes
+      as.character(unique(filtered$objective_code))
 
     })
 
@@ -158,7 +165,7 @@ mod_goals_server <- function(id){
       req(input$dynamic_select_sdr)  # Ensure input is available
 
       filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select_sdr, ]
-      unique(filtered$objective_code)  # Return character vector of objective codes
+      as.character(unique(filtered$objective_code))
 
     })
 
@@ -202,33 +209,17 @@ mod_goals_server <- function(id){
 
     output$available_ui <- shiny::renderUI({
 
-      cat("Rendering available_ui\n")
-
       available_codes <- setdiff(filtered_available_objectives(), selected())
-
-      print(available_codes)
-
-      print(available_codes[1])
-
-      print(code_to_short["101"])
-
-      print(code_to_short[101])
 
       labels <- unname(code_to_short[as.character(available_codes)])
       labels <- labels[!is.na(labels)]
 
-      cat("available codes:", length(available_codes), "\n")
-      cat("labels:", length(labels), "\n")
-
-
       sortable::rank_list(
         text = iphra_txt("Available Objectives"),
         labels = labels,
-        input_id = "available",
+        input_id = ns("available"),
         options = sortable::sortable_options(group = "all_objectives")
       )
-
-
 
     })
 
@@ -239,7 +230,7 @@ mod_goals_server <- function(id){
       sortable::rank_list(
         text = iphra_txt("Selected Objectives"),
         labels = labels,
-        input_id = "selected",
+        input_id = ns("selected"),
         options = sortable::sortable_options(group = "all_objectives")
       )
     })
@@ -251,7 +242,7 @@ mod_goals_server <- function(id){
       sortable::rank_list(
         text = iphra_txt("Available Objectives"),
         labels = labels_sdr,
-        input_id = "available_sdr",
+        input_id = ns("available_sdr"),
         options = sortable::sortable_options(group = "all_objectives")
       )
     })
@@ -263,7 +254,7 @@ mod_goals_server <- function(id){
       sortable::rank_list(
         text = iphra_txt("Selected Objectives"),
         labels = labels_sdr,
-        input_id = "selected_sdr",
+        input_id = ns("selected_sdr"),
         options = sortable::sortable_options(group = "all_objectives")
       )
     })
@@ -271,15 +262,15 @@ mod_goals_server <- function(id){
     # for full text objectives preview
     output$full_objectives_ui <- renderUI({
 
-      sel <- selected()  # `selected()` should return a character vector of objectives
-      sel_sdr <- selected_sdr()  # `selected()` should return a character vector of objectives
+      sel <- as.character(selected())
+      sel_sdr <- as.character(selected_sdr())
 
       prim_obj <- reference_objectives %>%
-        filter(objective_code %in% sel) %>%
+        dplyr::filter(objective_code %in% sel) %>%
         dplyr::pull(text_objective) %>% unique()
 
       sdr_obj <- reference_objectives %>%
-        filter(objective_code %in% sel_sdr) %>%
+        dplyr::filter(objective_code %in% sel_sdr) %>%
         dplyr::pull(text_objective) %>% unique()
 
       objs <- c(prim_obj, sdr_obj)
@@ -296,36 +287,22 @@ mod_goals_server <- function(id){
 
     # --- Render the initial SVG ---
     output$framework_svg <- renderUI({
-      cat("Rendering SVG\n")
       HTML(svg_to_display())
     })
 
     # Observes ####
-
-    observe({
-      cat("dynamic_select:\n")
-      print(input$dynamic_select)
-    })
-
-    # ---- Update modified objectives schema in protocol when selections change
-    observe({
-      sel <- selected()
-      sel_sdr <- selected_sdr()
-
-      selected_objectives <- reference_objectives %>%
-        dplyr::filter(objective_code %in% c(sel, sel_sdr)) %>%
-        dplyr::pull(objective_code) %>%
-        unique()
-
-      framework$modify_adjusted_schema(selected_objectives)
-    })
 
     # ---- Keep selected() in sync with drag-and-drop
     observeEvent(input$selected, {
       iphra_try({
 
         codes <- unname(short_to_code[as.character(input$selected)])
-        selected(codes[!is.na(codes)])
+        codes <- as.character(codes[!is.na(codes)])
+        # Only update if the set actually changed to avoid feedback loops
+        # with the renderUI that rebuilds the rank_list.
+        if (!setequal(codes, selected())) {
+          selected(codes)
+        }
 
         iphra_message(
           paste0(
@@ -339,13 +316,16 @@ mod_goals_server <- function(id){
       origin = iphra_txt("Selection Update"),
       hint = iphra_txt("Check input binding or reactive assignment if this fails.")
       )
-    })
+    }, ignoreNULL = FALSE)
 
     observeEvent(input$selected_sdr, {
       iphra_try({
 
-        sdr_codes <- unname(short_to_code[input$selected_sdr])
-        selected_sdr(sdr_codes[!is.na(sdr_codes)])
+        sdr_codes <- unname(short_to_code[as.character(input$selected_sdr)])
+        sdr_codes <- as.character(sdr_codes[!is.na(sdr_codes)])
+        if (!setequal(sdr_codes, selected_sdr())) {
+          selected_sdr(sdr_codes)
+        }
         iphra_message(
           paste0(
             iphra_txt("SDR selection updated to: "),
@@ -358,18 +338,18 @@ mod_goals_server <- function(id){
       origin = iphra_txt("SDR Selection Update"),
       hint = iphra_txt("Check input binding or reactive assignment if this fails.")
       )
-    })
+    }, ignoreNULL = FALSE)
 
     # Core preset
     observeEvent(input$preset_core, {
       iphra_try({
 
-
-          selected(
-          reference_objectives %>%
-            dplyr::filter(core %in% c("Core")) %>%
-            dplyr::pull(objective_code)
-        )
+          selected(as.character(
+            reference_objectives %>%
+              dplyr::filter(core %in% c("Core")) %>%
+              dplyr::pull(objective_code) %>%
+              unique()
+          ))
         },
       on_error = "warn",
       origin = iphra_txt("Preset: Core Objectives"),
@@ -381,12 +361,12 @@ mod_goals_server <- function(id){
     observeEvent(input$preset_sdr_core, {
       iphra_try({
 
-
-          selected_sdr(
-          reference_objectives %>%
-            dplyr::filter(core %in% c("Core")) %>%
-            dplyr::pull(objective_code)
-        )
+          selected_sdr(as.character(
+            reference_objectives %>%
+              dplyr::filter(core %in% c("Core")) %>%
+              dplyr::pull(objective_code) %>%
+              unique()
+          ))
         },
       on_error = "warn",
       origin = iphra_txt("Preset SDR: Core Objectives"),
@@ -394,19 +374,30 @@ mod_goals_server <- function(id){
       )
     })
 
-    # Highlight SVG blocks
-    observeEvent(list(selected(), selected_sdr()),{
+    # Clear buttons
+    observeEvent(input$clear_objectives, {
+      selected(character(0))
+    })
+
+    observeEvent(input$clear_sdr_objectives, {
+      selected_sdr(character(0))
+    })
+
+    # ---- Single observer: update the schema, then the SVG, then the display.
+    # Both operations depend on selected()/selected_sdr(); keeping them in one
+    # observer guarantees the SVG is rebuilt against the freshly-modified
+    # schema instead of racing a separate observer.
+    observeEvent(list(selected(), selected_sdr()), {
       iphra_try({
 
         # 1️⃣ VALIDATION & PRECONDITIONS
 
         result <- iphra_try_step({
 
-        iphra_message(
-          iphra_txt("Reactive update triggered for framework visualization."),
-          origin = iphra_txt("Framework SVG Highlighter")
-        )
-        # (Optional future: validate selected() and selected_sdr() not NULL)
+          iphra_message(
+            iphra_txt("Reactive update triggered for framework visualization."),
+            origin = iphra_txt("Framework SVG Highlighter")
+          )
 
         }, step = "mod_goals_server/observe/Validation")
         if (iphra_failed(result)) return(result)
@@ -415,30 +406,29 @@ mod_goals_server <- function(id){
 
         result <- iphra_try_step({
 
-          cat("\n====================\n")
-          cat("SVG observer fired\n")
+          sel     <- as.character(selected())
+          sel_sdr <- as.character(selected_sdr())
 
-          print(selected())
-          print(selected_sdr())
+          combined <- unique(c(sel, sel_sdr))
 
-        sel <- selected()
-        sel_sdr <- selected_sdr()
+          # a) schema first, so the framework's internal state matches the
+          #    codes we are about to render.
+          framework$modify_adjusted_schema(combined)
 
-        framework$set_primary_objectives(objective_codes = sel)
-        framework$set_secondary_objectives(objective_codes = sel_sdr)
-        framework$modify_adjusted_svg(primary_objective_codes = sel, secondary_objective_codes = sel_sdr)
+          # b) push primary/secondary lists onto the framework.
+          framework$set_primary_objectives(objective_codes = sel)
+          framework$set_secondary_objectives(objective_codes = sel_sdr)
 
-        cat(
-          "Assigning SVG length:",
-          nchar(framework$adjusted_svg),
-          "\n"
-        )
+          # c) rebuild the SVG using the same character codes.
+          framework$modify_adjusted_svg(
+            primary_objective_codes   = sel,
+            secondary_objective_codes = sel_sdr
+          )
 
-        svg_to_display(framework$adjusted_svg)
-
-        cat("svg_to_display updated\n")
-
-
+          # d) always re-read adjusted_svg from the framework so the UI
+          #    reflects whatever the framework produced (including the
+          #    unmodified base SVG when both selection sets are empty).
+          svg_to_display(framework$adjusted_svg)
 
         }, step = "mod_goals_server/observe/Core Logic")
         if (iphra_failed(result)) return(result)
@@ -448,14 +438,10 @@ mod_goals_server <- function(id){
 
         result <- iphra_try_step({
 
-
-
-
-        iphra_message(
-          iphra_txt("Framework visualization updated successfully."),
-          origin = iphra_txt("Framework SVG Highlighter")
-
-        )
+          iphra_message(
+            iphra_txt("Framework visualization updated successfully."),
+            origin = iphra_txt("Framework SVG Highlighter")
+          )
         }, step = "mod_goals_server/observe/Result Handling")
         if (iphra_failed(result)) return(result)
 
@@ -464,7 +450,7 @@ mod_goals_server <- function(id){
       origin = iphra_txt("Framework SVG Highlighter"),
       hint = iphra_txt("Check reactive dependencies or JavaScript message binding if this fails.")
       )
-    })
+    }, ignoreNULL = FALSE)
 
   })
 }

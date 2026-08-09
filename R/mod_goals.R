@@ -178,13 +178,13 @@ mod_goals_server <- function(id){
     })
 
     # ---- Indicators definition (lives inside module) ----
-    all_objectives <- reference_objectives$short_objective
+    all_objectives <- reference_objectives$objective_code
 
     filtered_available_objectives <- reactive({
       req(input$dynamic_select)  # Ensure input is available
 
       filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select, ]
-      filtered$short_objective  # Return character vector of indicator names
+      filtered$objective_code  # Return character vector of objective codes
 
     })
 
@@ -192,11 +192,15 @@ mod_goals_server <- function(id){
       req(input$dynamic_select_sdr)  # Ensure input is available
 
       filtered <- reference_objectives[reference_objectives$pillar %in% input$dynamic_select_sdr, ]
-      filtered$short_objective  # Return character vector of indicator names
+      filtered$objective_code  # Return character vector of objective codes
 
     })
 
 
+
+    # ---- Lookup maps between objective_code and short_objective ----
+    code_to_short <- setNames(reference_objectives$short_objective, reference_objectives$objective_code)
+    short_to_code <- setNames(reference_objectives$objective_code, reference_objectives$short_objective)
 
     # ---- Reactive state ----
     selected <- shiny::reactiveVal(character(0))
@@ -208,7 +212,7 @@ mod_goals_server <- function(id){
       sel_sdr <- selected_sdr()
 
       selected_objectives <- reference_objectives %>%
-        dplyr::filter(short_objective %in% c(sel, sel_sdr))
+        dplyr::filter(objective_code %in% c(sel, sel_sdr))
 
       framework$modify_adjusted_schema(selected_objectives)
     })
@@ -221,11 +225,11 @@ mod_goals_server <- function(id){
       sel_sdr <- selected_sdr()  # `selected()` should return a character vector of objectives
 
       prim_obj <- reference_objectives %>%
-                 filter(short_objective %in% sel) %>%
+                 filter(objective_code %in% sel) %>%
                  dplyr::pull(text_objective)
 
       sdr_obj <- reference_objectives %>%
-                     filter(short_objective %in% sel_sdr) %>%
+                     filter(objective_code %in% sel_sdr) %>%
                      dplyr::pull(text_objective) %>% unique()
 
       objs <- c(prim_obj, sdr_obj)
@@ -241,9 +245,12 @@ mod_goals_server <- function(id){
     })
 
     output$available_ui <- shiny::renderUI({
+      available_codes <- setdiff(filtered_available_objectives(), selected())
+      labels <- unname(code_to_short[available_codes])
+      labels <- labels[!is.na(labels)]
       sortable::rank_list(
         text = iphra_txt("Available Objectives"),
-        labels = setdiff(filtered_available_objectives(), selected()),
+        labels = labels,
         input_id = ns("available"),
         options = sortable::sortable_options(group = ns("all_objectives"))
       )
@@ -251,18 +258,23 @@ mod_goals_server <- function(id){
 
     # ---- UI for selected list ----
     output$selected_ui <- shiny::renderUI({
+      labels <- unname(code_to_short[selected()])
+      labels <- labels[!is.na(labels)]
       sortable::rank_list(
         text = iphra_txt("Selected Objectives"),
-        labels = selected(),
+        labels = labels,
         input_id = ns("selected"),
         options = sortable::sortable_options(group = ns("all_objectives"))
       )
     })
 
     output$available_sdr_ui <- shiny::renderUI({
+      available_sdr_codes <- setdiff(filtered_available_sdr_objectives(), selected_sdr())
+      labels_sdr <- unname(code_to_short[available_sdr_codes])
+      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
       sortable::rank_list(
         text = iphra_txt("Available Objectives"),
-        labels = setdiff(filtered_available_sdr_objectives(), selected_sdr()),
+        labels = labels_sdr,
         input_id = ns("available_sdr"),
         options = sortable::sortable_options(group = ns("all_objectives"))
       )
@@ -270,9 +282,11 @@ mod_goals_server <- function(id){
 
     # ---- UI for selected list ----
     output$selected_sdr_ui <- shiny::renderUI({
+      labels_sdr <- unname(code_to_short[selected_sdr()])
+      labels_sdr <- labels_sdr[!is.na(labels_sdr)]
       sortable::rank_list(
         text = iphra_txt("Selected Objectives"),
-        labels = selected_sdr(),
+        labels = labels_sdr,
         input_id = ns("selected_sdr"),
         options = sortable::sortable_options(group = ns("all_objectives"))
       )
@@ -304,7 +318,8 @@ mod_goals_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
-        selected(input$selected)
+        codes <- unname(short_to_code[input$selected])
+        selected(codes[!is.na(codes)])
         iphra_message(
           paste0(
             iphra_txt("Selected item(s) updated to: "),
@@ -362,7 +377,8 @@ mod_goals_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
-        selected_sdr(input$selected_sdr)
+        sdr_codes <- unname(short_to_code[input$selected_sdr])
+        selected_sdr(sdr_codes[!is.na(sdr_codes)])
         iphra_message(
           paste0(
             iphra_txt("SDR selection updated to: "),
@@ -420,7 +436,7 @@ mod_goals_server <- function(id){
           selected(
           reference_objectives %>%
             dplyr::filter(core %in% c("Core")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("Core objectives preset applied."),
@@ -460,7 +476,7 @@ mod_goals_server <- function(id){
         selected(
           reference_objectives %>%
             dplyr::filter(extended %in% c("Extended")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("Full objectives preset applied."),
@@ -492,7 +508,7 @@ mod_goals_server <- function(id){
         selected(
           reference_objectives %>%
             dplyr::filter(outcomes %in% c("Outcome")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("Outcome objectives preset applied."),
@@ -524,7 +540,7 @@ mod_goals_server <- function(id){
         selected(
           reference_objectives %>%
             dplyr::filter(fsl %in% c("FSL")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("FSL objectives preset applied."),
@@ -556,7 +572,7 @@ mod_goals_server <- function(id){
         selected(
           reference_objectives %>%
             dplyr::filter(wash %in% c("WASH")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("WASH objectives preset applied."),
@@ -588,7 +604,7 @@ mod_goals_server <- function(id){
         selected(
           reference_objectives %>%
             dplyr::filter(health %in% c("HEALTH")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("Health objectives preset applied."),
@@ -632,7 +648,7 @@ mod_goals_server <- function(id){
           selected_sdr(
           reference_objectives %>%
             dplyr::filter(core %in% c("Core")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR Core objectives preset applied."),
@@ -672,7 +688,7 @@ mod_goals_server <- function(id){
         selected_sdr(
           reference_objectives %>%
             dplyr::filter(extended %in% c("Extended")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR Full objectives preset applied."),
@@ -704,7 +720,7 @@ mod_goals_server <- function(id){
         selected_sdr(
           reference_objectives %>%
             dplyr::filter(outcomes %in% c("Outcome")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR Outcome objectives preset applied."),
@@ -736,7 +752,7 @@ mod_goals_server <- function(id){
         selected_sdr(
           reference_objectives %>%
             dplyr::filter(fsl %in% c("FSL")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR FSL objectives preset applied."),
@@ -768,7 +784,7 @@ mod_goals_server <- function(id){
         selected_sdr(
           reference_objectives %>%
             dplyr::filter(wash %in% c("WASH")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR WASH objectives preset applied."),
@@ -800,7 +816,7 @@ mod_goals_server <- function(id){
         selected_sdr(
           reference_objectives %>%
             dplyr::filter(health %in% c("HEALTH")) %>%
-            dplyr::pull(short_objective)
+            dplyr::pull(objective_code)
         )
         iphra_message(
           iphra_txt("SDR Health objectives preset applied."),

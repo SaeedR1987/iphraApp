@@ -1261,15 +1261,18 @@ iphra_remove_protocol_tool <- function(tool_name,
 
   protocol <- iphra_get_protocol(session)
   if (!is.null(protocol)) {
-    tryCatch({
+    ok <- tryCatch({
       protocol$remove_tools(name = tool_name)
+      TRUE
     }, error = function(e) {
       iphra_warning(
         paste0("Failed to remove tool '", tool_name, "' on protocol: ",
                conditionMessage(e)),
         origin = "Protocol: Remove Tool"
       )
+      FALSE
     })
+    if (!isTRUE(ok)) return(invisible(FALSE))
   }
 
   tools_rv(setdiff(current, tool_name))

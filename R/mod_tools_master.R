@@ -1,12 +1,38 @@
 # ────────────────────────────────────────────────────────────────────────────────
-# Module: Tools Master Status
+# Module: Tools Master
 # ────────────────────────────────────────────────────────────────────────────────
 #
-# This module displays a summary status table of tools/DAP steps.
-# It reads from the checkbox_status in the session state to show
-# checkmarks or X marks for each tools step.
+# Provides Add / Remove buttons for every allowable IPHRAProtocol tool.
+# Each tool has a pair of buttons stacked vertically (Add on top, Remove
+# below); the tools themselves are laid out horizontally in a scrollable
+# row. The buttons drive the IPHRAProtocol object stored in
+# `session$userData$modules$protocol` via helpers in `utils_session.R`.
+#
+# Downstream mod_tools_* modules watch the reactive tools vector
+# (`session$userData$protocol_tools`) to dynamically show / hide their
+# sections.
 #
 # ────────────────────────────────────────────────────────────────────────────────
+
+# --- Allowable tools + human-readable labels ---------------------------------
+#
+# Kept in sync with `phr::IPHRAProtocol$new()$get_allowable_tools()`.
+iphra_tool_definitions <- function() {
+  list(
+    list(name = "tool_household_iphra_v2",                     label = "Household"),
+    list(name = "tool_kii_community_iphra_v2",                 label = "Community KII"),
+    list(name = "tool_kii_fsl_service_provider_iphra_v2",      label = "FSL Service Provider KII"),
+    list(name = "tool_kii_wash_service_provider_iphra_v2",     label = "WASH Service Provider KII"),
+    list(name = "tool_kii_markets_iphra_v2",                   label = "Markets KII"),
+    list(name = "tool_kii_nutrition_service_provider_iphra_v2",label = "Nutrition Service Provider KII"),
+    list(name = "tool_kii_health_service_provider_iphra_v2",   label = "Health Service Provider KII"),
+    list(name = "tool_obs_community_iphra_v2",                 label = "Community Observation"),
+    list(name = "tool_obs_crop_livestock_iphra_v1",            label = "Crop & Livestock Observation"),
+    list(name = "tool_obs_health_facility_iphra_v2",           label = "Health Facility Observation"),
+    list(name = "tool_obs_latrine_iphra_v2",                   label = "Latrine Observation"),
+    list(name = "tool_obs_water_point_iphra_v2",               label = "Water Point Observation")
+  )
+}
 
 #' tools_master UI Function
 #'
@@ -19,29 +45,76 @@
 #' @importFrom shiny NS tagList
 mod_tools_master_ui <- function(id) {
   ns <- NS(id)
-  tagList(
 
-    fluidRow(
-      column(
-        12,
-        actionButton(ns("export_tools"), "Export All Tools", class = "btn-warning"),
-        br(), br(),
-        # --- Status table with collapse toggle ---
-        div(
-          style = "display: flex; align-items: center; gap: 10px;",
-          h4("Tools Status"),
-          actionButton(ns("toggle_status"), "", icon = icon("chevron-down"), 
-                      class = "btn-sm btn-default",
-                      style = "margin-bottom: 10px;")
+  tools <- iphra_tool_definitions()
+
+  # Build one vertical Add/Remove stack per tool.
+  tool_cards <- lapply(tools, function(t) {
+    shiny::div(
+      class = "iphra-tool-card",
+      style = "
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 170px;
+        margin: 4px 6px;
+        padding: 8px 10px;
+        border: 1px solid #d0d5db;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+        vertical-align: top;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      ",
+      shiny::div(
+        style = "font-weight: 600; font-size: 13px; text-align: center;
+                 margin-bottom: 8px; line-height: 1.25em;",
+        t$label
+      ),
+      shiny::div(
+        style = "display: flex; flex-direction: column; gap: 6px;",
+        shiny::actionButton(
+          ns(paste0("add_", t$name)),
+          label = "Add Tool",
+          icon  = shiny::icon("plus"),
+          class = "btn-success btn-sm",
+          style = "width: 100%;"
         ),
-        div(
-          id = ns("status_table_container"),
-          shiny::uiOutput(ns("status_table"))
-        ),
-        br(), br(), br()
+        shiny::actionButton(
+          ns(paste0("remove_", t$name)),
+          label = "Remove Tool",
+          icon  = shiny::icon("minus"),
+          class = "btn-danger btn-sm",
+          style = "width: 100%;"
+        )
+      ),
+      shiny::div(
+        style = "margin-top: 6px; font-size: 11px; text-align: center; color: #666;",
+        shiny::uiOutput(ns(paste0("status_", t$name)), inline = TRUE)
       )
     )
+  })
 
+  shiny::tagList(
+    shiny::fluidRow(
+      shiny::column(
+        12,
+        shiny::actionButton(ns("export_tools"), "Export All Tools",
+                            class = "btn-warning"),
+        shiny::br(), shiny::br(),
+        shiny::h4("Tools"),
+        shiny::div(
+          style = "
+            white-space: nowrap;
+            overflow-x: auto;
+            padding: 6px 2px 12px 2px;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+          ",
+          tool_cards
+        ),
+        shiny::br()
+      )
+    )
   )
 }
 
@@ -52,48 +125,38 @@ mod_tools_master_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    # Reactive expression to get current status
-    tools_status <- shiny::reactive({
-      # Access checkbox status to create reactive dependency
-      checkbox_status <- iphra_get_checkbox_status(session)
-      tools <- checkbox_status$tools
+    tools <- iphra_tool_definitions()
 
-      # Create status list from reactive values
-      list(
-        household_tools_complete = isTRUE(tools$household_tools_complete),
-        community_tools_complete = isTRUE(tools$community_tools_complete),
-        fsl_tools_complete = isTRUE(tools$fsl_tools_complete),
-        health_tools_complete = isTRUE(tools$health_tools_complete),
-        wash_tools_complete = isTRUE(tools$wash_tools_complete)
-      )
-    })
+    # ---- One observer per Add / Remove button --------------------------------
+    lapply(tools, function(t) {
+      tool_name <- t$name
 
-    # Render the status table
-    output$status_table <- shiny::renderUI({
-      status_list <- tools_status()
-      labels <- tools_status_labels()
-      
-      # Create matrix format: columns are tools, single row for "Tools Complete"
-      steps <- c(iphra_txt("Tools Complete"))
-      status_matrix <- build_status_matrix(status_list, labels, steps, step_index = 1)
-      
-      render_matrix_master_status_table(status_matrix, title = iphra_txt("Tools Checklist"))
-    })
+      observeEvent(input[[paste0("add_", tool_name)]], {
+        iphra_try({
+          iphra_add_protocol_tool(tool_name, session)
+        },
+        on_error = "warn",
+        origin   = paste0("Tools Master: Add ", tool_name),
+        hint     = "Verify the tool name matches protocol$get_allowable_tools().")
+      }, ignoreInit = TRUE)
 
-    # ---- Toggle status table visibility ----
-    status_table_visible <- reactiveVal(TRUE)
-    
-    observeEvent(input$toggle_status, {
-      current_state <- status_table_visible()
-      status_table_visible(!current_state)
-      
-      if (!current_state) {
-        shinyjs::show("status_table_container")
-        shinyjs::html("toggle_status", html = '<i class="fa fa-chevron-down"></i>')
-      } else {
-        shinyjs::hide("status_table_container")
-        shinyjs::html("toggle_status", html = '<i class="fa fa-chevron-right"></i>')
-      }
+      observeEvent(input[[paste0("remove_", tool_name)]], {
+        iphra_try({
+          iphra_remove_protocol_tool(tool_name, session)
+        },
+        on_error = "warn",
+        origin   = paste0("Tools Master: Remove ", tool_name),
+        hint     = "The tool may not currently be added.")
+      }, ignoreInit = TRUE)
+
+      # Small status indicator underneath the buttons.
+      output[[paste0("status_", tool_name)]] <- shiny::renderUI({
+        if (iphra_has_protocol_tool(tool_name, session)) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+      })
     })
 
   })

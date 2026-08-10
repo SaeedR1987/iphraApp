@@ -11,128 +11,104 @@ mod_tools_health_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
-    shiny::fluidRow(
-      # --- Modern Checkbox: Health Tools Complete ---
-      shiny::div(
-        style = "
-          display: flex;
-          align-items: center;
-          justify-content: left;
-          padding: 6px 14px;             /* slightly more breathing room */
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          margin-top: 8px;               /* gentle space from top of tab */
-          margin-bottom: 6px;            /* half previous gap to presets */
-          margin-left: 15px;
-          width: fit-content;
-          line-height: 1.2em;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* subtle depth */
-        ",
-        tags$label(
-          class = "checkbox-inline",
-          style = "
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;                     /* tighter space between box and text */
-          ",
-          shiny::tags$input(
-            type = "checkbox",
-            id = ns("health_complete"),
-            name = ns("health_complete"),
-            onchange = sprintf("Shiny.setInputValue('%s', this.checked);", ns("health_complete"))
-          ),
-          tags$span("Health Tools Complete")
-        )
-      ),
-      shinydashboard::box(
-        title = "Health Facility Key Informant Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_health_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_health_kii"), "Core Health Facility KII"),
-        shiny::actionButton(ns("preset_full_health_kii"), "Full Health Facility KII"),
-        shiny::actionButton(ns("export_tool_health_kii"), "Export Health Facility KII Tool", class = "btn-success"),
-      )
-    ),
-    shiny::br(),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_health_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_health_kii_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.health_kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Health Facility Key Informant Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_health_kii"))
+          shiny::actionButton(ns("preset_obj_health_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_health_kii"), "Core Health Facility KII"),
+          shiny::actionButton(ns("preset_full_health_kii"), "Full Health Facility KII"),
+          shiny::actionButton(ns("export_tool_health_kii"), "Export Health Facility KII Tool", class = "btn-success"),
+        )
+      ),
+      shiny::br(),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_health_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_health_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_health_kii"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Health Facility Observation Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_health_obs"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_health_obs"), "Core Health Facility Observation Tool"),
-        shiny::actionButton(ns("preset_full_health_obs"), "Full Health Facility Observation Tool"),
-        shiny::actionButton(ns("export_tool_health_obs"), "Export Health Facility Observation Tool", class = "btn-success")
+    shiny::conditionalPanel(
+      condition = "output.health_obs_present == true",
+      ns = ns,
+      shiny::fluidRow(
+        shinydashboard::box(
+          title = "Health Facility Observation Tool - Presets",
+          width = 12,
+          shiny::actionButton(ns("preset_obj_health_obs"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_health_obs"), "Core Health Facility Observation Tool"),
+          shiny::actionButton(ns("preset_full_health_obs"), "Full Health Facility Observation Tool"),
+          shiny::actionButton(ns("export_tool_health_obs"), "Export Health Facility Observation Tool", class = "btn-success")
 
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_health_obs_ui"))
+        )
       ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_health_obs_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
-          width = 12,
-          shiny::tableOutput(ns("summary_table_health_obs"))
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_health_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_health_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_health_obs"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Nutrition Facility KII Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_nutrition_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_nutrition_kii"), "Core Nutrition Facility KII Tool"),
-        shiny::actionButton(ns("preset_full_nutrition_kii"), "Full Nutrition Facility KII Tool"),
-        shiny::actionButton(ns("export_tool_nutrition_kii"), "Export Nutrition Facility KII Tool", class = "btn-success")
-
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_nutrition_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_nutrition_kii_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.nutrition_kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Nutrition Facility KII Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_nutrition_kii"))
+          shiny::actionButton(ns("preset_obj_nutrition_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_nutrition_kii"), "Core Nutrition Facility KII Tool"),
+          shiny::actionButton(ns("preset_full_nutrition_kii"), "Full Nutrition Facility KII Tool"),
+          shiny::actionButton(ns("export_tool_nutrition_kii"), "Export Nutrition Facility KII Tool", class = "btn-success")
+
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_nutrition_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_nutrition_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_nutrition_kii"))
+          )
         )
       )
     )
@@ -171,7 +147,21 @@ mod_tools_health_server <- function(id){
       unlist(indicators_health_kii)
     )
 
-    all_indicators_health_kii <- unlist(indicators_health_kii, use.names = FALSE)
+    all_indicators_health_kii_static <- unlist(indicators_health_kii, use.names = FALSE)
+
+    output$health_kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_health_service_provider_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "health_kii_present", suspendWhenHidden = FALSE)
+
+    all_indicators_health_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_health_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_health_kii <- shiny::reactiveVal(character(0))
@@ -180,7 +170,7 @@ mod_tools_health_server <- function(id){
     output$available_health_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_health_kii, selected_health_kii()),
+        labels = setdiff(all_indicators_health_kii(), selected_health_kii()),
         input_id = ns("available_health_kii"),
         options = sortable::sortable_options(group = ns("indicators_health_kii"))
       )
@@ -220,6 +210,14 @@ mod_tools_health_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_health_kii(input$selected_health_kii)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_health_kii, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_kii_health_service_provider_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Health KII selection synchronized with: "),
@@ -384,7 +382,7 @@ mod_tools_health_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_health_kii(all_indicators_health_kii)
+          selected_health_kii(all_indicators_health_kii())
         iphra_message(
           iphra_txt("Full Health KII preset applied successfully."),
           origin = iphra_txt("Health KII Tool: Preset Full")
@@ -466,7 +464,21 @@ mod_tools_health_server <- function(id){
       unlist(indicators_health_obs)
     )
 
-    all_indicators_health_obs <- unlist(indicators_health_obs, use.names = FALSE)
+    all_indicators_health_obs_static <- unlist(indicators_health_obs, use.names = FALSE)
+
+    output$health_obs_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_obs_health_facility_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "health_obs_present", suspendWhenHidden = FALSE)
+
+    all_indicators_health_obs <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_health_obs_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_health_obs <- shiny::reactiveVal(character(0))
@@ -475,7 +487,7 @@ mod_tools_health_server <- function(id){
     output$available_health_obs_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_health_obs, selected_health_obs()),
+        labels = setdiff(all_indicators_health_obs(), selected_health_obs()),
         input_id = ns("available_health_obs"),
         options = sortable::sortable_options(group = ns("indicators_health_obs"))
       )
@@ -515,6 +527,14 @@ mod_tools_health_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_health_obs(input$selected_health_obs)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_health_obs, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_obs_health_facility_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Health Observation selection synchronized with: "),
@@ -679,7 +699,7 @@ mod_tools_health_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_health_obs(all_indicators_health_obs)
+          selected_health_obs(all_indicators_health_obs())
         iphra_message(
           iphra_txt("Full Health Observation preset applied successfully."),
           origin = iphra_txt("Health Observation Tool: Preset Full")
@@ -761,7 +781,21 @@ mod_tools_health_server <- function(id){
       unlist(indicators_nutrition_kii)
     )
 
-    all_indicators_nutrition_kii <- unlist(indicators_nutrition_kii, use.names = FALSE)
+    all_indicators_nutrition_kii_static <- unlist(indicators_nutrition_kii, use.names = FALSE)
+
+    output$nutrition_kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_nutrition_service_provider_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "nutrition_kii_present", suspendWhenHidden = FALSE)
+
+    all_indicators_nutrition_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_nutrition_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_nutrition_kii <- shiny::reactiveVal(character(0))
@@ -770,7 +804,7 @@ mod_tools_health_server <- function(id){
     output$available_nutrition_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_nutrition_kii, selected_nutrition_kii()),
+        labels = setdiff(all_indicators_nutrition_kii(), selected_nutrition_kii()),
         input_id = ns("available_nutrition_kii"),
         options = sortable::sortable_options(group = ns("indicators_nutrition_kii"))
       )
@@ -810,6 +844,14 @@ mod_tools_health_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_nutrition_kii(input$selected_nutrition_kii)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_nutrition_kii, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_kii_nutrition_service_provider_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Nutrition KII selection synchronized with: "),
@@ -974,7 +1016,7 @@ mod_tools_health_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_nutrition_kii(all_indicators_nutrition_kii)
+          selected_nutrition_kii(all_indicators_nutrition_kii())
         iphra_message(
           iphra_txt("Full Nutrition KII preset applied successfully."),
           origin = iphra_txt("Nutrition KII Tool: Preset Full")
@@ -1031,64 +1073,6 @@ mod_tools_health_server <- function(id){
       rbind(nutrition_summary, totals)
     })
 
-    # ---- Health Tools: Completion Toggle ----
-    observeEvent(input$health_complete, {
-      iphra_try({
-
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("Health Tools: Completion Toggle")
-        )
-        }, step = "mod_tools_health_server/observeEvent_health_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (isTRUE(input$health_complete)) {
-          iphra_message(
-            iphra_txt("Health Tools marked as complete ✅"),
-            origin = iphra_txt("Health Tools: Completion Toggle")
-          )
-
-          # --- Future: update project/session state to mark Health Tools as complete ---
-          # session$userData$project$set_stage_complete("health_tools", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Health Tools marked as incomplete ❌"),
-            origin = iphra_txt("Health Tools: Completion Toggle")
-          )
-
-          # --- Future: update project/session state to mark Health Tools as incomplete ---
-          # session$userData$project$set_stage_complete("health_tools", FALSE)
-        }
-        }, step = "mod_tools_health_server/observeEvent_health_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Health Tools completion toggle processed successfully."),
-          origin = iphra_txt("Health Tools: Completion Toggle")
-        )
-        }, step = "mod_tools_health_server/observeEvent_health_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Health Tools: Completion Toggle"),
-      hint = iphra_txt("Check reactive bindings or input state if toggle fails.")
-      )
-    })
 
 
   })

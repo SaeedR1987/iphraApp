@@ -11,100 +11,70 @@ mod_tools_community_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
-    shiny::fluidRow(
-
-
-      # --- Modern Checkbox: Community Tools Complete ---
-      shiny::div(
-        style = "
-          display: flex;
-          align-items: center;
-          justify-content: left;
-          padding: 6px 14px;             /* slightly more breathing room */
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          margin-top: 8px;               /* gentle space from top of tab */
-          margin-bottom: 6px;            /* half previous gap to presets */
-          margin-left: 15px;
-          width: fit-content;
-          line-height: 1.2em;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* subtle depth */
-        ",
-        tags$label(
-          class = "checkbox-inline",
-          style = "
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;                     /* tighter space between box and text */
-          ",
-          shiny::tags$input(
-            type = "checkbox",
-            id = ns("community_complete"),
-            name = ns("community_complete"),
-            onchange = sprintf("Shiny.setInputValue('%s', this.checked);", ns("community_complete"))
-          ),
-          tags$span("Community Tools Complete")
+    shiny::conditionalPanel(
+      condition = "output.kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
+        shinydashboard::box(
+          title = "Community Key Informant Tool - Presets",
+          width = 12,
+          shiny::actionButton(ns("preset_obj_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_kii"), "Core KII"),
+          shiny::actionButton(ns("preset_full_kii"), "Full KII"),
+          shiny::actionButton(ns("export_tool_kii"), "Export Community KII Tool", class = "btn-success"),
         )
       ),
-      shinydashboard::box(
-        title = "Community Key Informant Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_kii"), "Core KII"),
-        shiny::actionButton(ns("preset_full_kii"), "Full KII"),
-        shiny::actionButton(ns("export_tool_kii"), "Export Community KII Tool", class = "btn-success"),
-      )
-    ),
-    shiny::br(),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
-          width = 12,
-          shiny::tableOutput(ns("summary_table_kii"))
+      shiny::br(),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_kii"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Community Observation Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_obs"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_obs"), "Core Observation Tool"),
-        shiny::actionButton(ns("preset_full_obs"), "Full Observation Tool"),
-        shiny::actionButton(ns("export_tool_obs"), "Export Community Observation Tool", class = "btn-success")
-
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_obs_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_obs_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.obs_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Community Observation Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_obs"))
+          shiny::actionButton(ns("preset_obj_obs"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_obs"), "Core Observation Tool"),
+          shiny::actionButton(ns("preset_full_obs"), "Full Observation Tool"),
+          shiny::actionButton(ns("export_tool_obs"), "Export Community Observation Tool", class = "btn-success")
+
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_obs"))
+          )
         )
       )
     )
@@ -142,7 +112,23 @@ mod_tools_community_server <- function(id){
       unlist(indicators_kii)
     )
 
-    all_indicators_kii <- unlist(indicators_kii, use.names = FALSE)
+    all_indicators_kii_static <- unlist(indicators_kii, use.names = FALSE)
+
+    # ---- Tool presence flag ----
+    output$kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_community_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "kii_present", suspendWhenHidden = FALSE)
+
+    # ---- Reactive available indicators sourced from master_indicator_bank ----
+    all_indicators_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_kii <- shiny::reactiveVal(character(0))
@@ -151,7 +137,7 @@ mod_tools_community_server <- function(id){
     output$available_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_kii, selected_kii()),
+        labels = setdiff(all_indicators_kii(), selected_kii()),
         input_id = ns("available_kii"),
         options = sortable::sortable_options(group = ns("indicators_kii"))
       )
@@ -196,6 +182,16 @@ mod_tools_community_server <- function(id){
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
         selected_kii(input$selected_kii)
+
+        # ---- Sync KII selection to IPHRAProtocol ----
+        codes <- iphra_indicator_names_to_codes(input$selected_kii, session)
+        iphra_modify_indicator_bank(codes, session)
+        iphra_filter_tool_survey(
+          tool_name       = "tool_kii_community_iphra_v2",
+          indicator_codes = codes,
+          session         = session
+        )
+
         iphra_message(
           paste0(
             iphra_txt("KII selection synchronized with: "),
@@ -372,7 +368,7 @@ mod_tools_community_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_kii(all_indicators_kii)
+          selected_kii(all_indicators_kii())
         iphra_message(
           iphra_txt("Full KII preset applied successfully."),
           origin = iphra_txt("KII Tool: Preset Full")
@@ -457,7 +453,23 @@ mod_tools_community_server <- function(id){
       unlist(indicators_obs)
     )
 
-    all_indicators_obs <- unlist(indicators_obs, use.names = FALSE)
+    all_indicators_obs_static <- unlist(indicators_obs, use.names = FALSE)
+
+    # ---- Tool presence flag ----
+    output$obs_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_obs_community_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "obs_present", suspendWhenHidden = FALSE)
+
+    # ---- Reactive available indicators sourced from master_indicator_bank ----
+    all_indicators_obs <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_obs_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_obs <- shiny::reactiveVal(character(0))
@@ -466,7 +478,7 @@ mod_tools_community_server <- function(id){
     output$available_obs_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_obs, selected_obs()),
+        labels = setdiff(all_indicators_obs(), selected_obs()),
         input_id = ns("available_obs"),
         options = sortable::sortable_options(group = ns("indicators_obs"))
       )
@@ -511,6 +523,15 @@ mod_tools_community_server <- function(id){
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
         selected_obs(input$selected_obs)
+
+        # ---- Sync OBS selection to IPHRAProtocol ----
+        codes <- iphra_indicator_names_to_codes(input$selected_obs, session)
+        iphra_modify_indicator_bank(codes, session)
+        iphra_filter_tool_survey(
+          tool_name       = "tool_obs_community_iphra_v2",
+          indicator_codes = codes,
+          session         = session
+        )
         iphra_message(
           paste0(
             iphra_txt("Observation Tool selection synchronized with: "),
@@ -667,7 +688,7 @@ mod_tools_community_server <- function(id){
           origin = iphra_txt("Observation Tool: Preset Full")
         )
 
-        selected_obs(all_indicators_obs)
+        selected_obs(all_indicators_obs())
         iphra_message(
           iphra_txt("Full Observation preset applied successfully."),
           origin = iphra_txt("Observation Tool: Preset Full")
@@ -716,67 +737,6 @@ mod_tools_community_server <- function(id){
       rbind(sector_summary_obs, totals)
     })
 
-    # ---- Toggle: Community Tools Complete ----
-    observeEvent(input$community_complete, {
-      iphra_try({
-
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (is.null(input$community_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("Community Tool: Completion Toggle")
-          )
-          return(NULL)
-        }
-        }, step = "mod_tools_community_server/observeEvent_community_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (isTRUE(input$community_complete)) {
-          iphra_message(
-            iphra_txt("Community Tools marked as complete ✅"),
-            origin = iphra_txt("Community Tool: Completion Toggle")
-          )
-
-          # --- Future: save completion status to project/session ---
-          # session$userData$project$set_stage_completed("community_tools", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Community Tools marked as incomplete ❌"),
-            origin = iphra_txt("Community Tool: Completion Toggle")
-          )
-
-          # --- Future: reset completion flag in session/project ---
-          # session$userData$project$set_stage_completed("community_tools", FALSE)
-        }
-        }, step = "mod_tools_community_server/observeEvent_community_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Community Tools completion status updated successfully."),
-          origin = iphra_txt("Community Tool: Completion Toggle")
-        )
-        }, step = "mod_tools_community_server/observeEvent_community_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Community Tool: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and project completion update logic if this fails.")
-      )
-    })
 
   })
 

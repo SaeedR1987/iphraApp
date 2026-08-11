@@ -11,47 +11,13 @@ mod_tools_household_ui <- function(id, all_indicators) {
   ns <- NS(id)
 
   shiny::tagList(
-    shiny::fluidRow(
+    shiny::conditionalPanel(
+      condition = "output.tool_present == true",
+      ns = ns,
+      shiny::fluidRow(
 
-      # --- Modern Checkbox: Household Tools Complete ---
-      shiny::div(
-        style = "
-          display: flex;
-          align-items: center;
-          justify-content: left;
-          padding: 6px 14px;             /* slightly more breathing room */
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          margin-top: 8px;               /* gentle space from top of tab */
-          margin-bottom: 6px;            /* half previous gap to presets */
-          margin-left: 15px;
-          width: fit-content;
-          line-height: 1.2em;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* subtle depth */
-        ",
-        tags$label(
-          class = "checkbox-inline",
-          style = "
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;                     /* tighter space between box and text */
-          ",
-          shiny::tags$input(
-            type = "checkbox",
-            id = ns("household_complete"),
-            name = ns("household_complete"),
-            onchange = sprintf("Shiny.setInputValue('%s', this.checked);", ns("household_complete"))
-          ),
-          tags$span("Household Tools Complete")
-        )
-      ),
-
-      # --- Existing Indicators Preset Box ---
-      shinydashboard::box(
+        # --- Existing Indicators Preset Box ---
+        shinydashboard::box(
         title = "Household Tool - Presets",
         width = 12,
         shiny::actionButton(ns("preset_obj"), "Match Objectives"),
@@ -85,6 +51,7 @@ mod_tools_household_ui <- function(id, all_indicators) {
         )
       )
     )
+    )  # /conditionalPanel
   )
 }
 
@@ -95,23 +62,41 @@ mod_tools_household_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    protocol <- session$userData$modules[["protocol"]]
+    framework <- protocol$access_nested(field = "framework")
+    tool <- protocol$access_nested(field = "tools", name = "tool_household_iphra_v2")
+
     # ---- Indicators definition (lives inside module) ----
-    indicators <- list(
-      Demographics = c("Household size", "Age distribution"),
-      Health_Core       = c("Access to care", "Illness prevalence"),
-      Outcomes    = c("MUAC", "Mortality"),
-      FSL_Core          = c("Market access", "Food consumption score"),
-      WASH_Core         = c("Water source", "Latrine access"),
-      Shelter_Core      = c("Shelter type", "Overcrowding")
+    indicator_bank <- unique(
+      protocol$framework$master_indicator_bank[
+        , c("indicator_code", "indicator_name")
+      ]
     )
 
-    # Estimated times per indicator (mins)
-    indicator_times <- setNames(
-      rep(5, length(unlist(indicators))),
-      unlist(indicators)
-    )
+    all_indicators_static <- unlist(framework$master_indicator_bank, use.names = FALSE)
 
-    all_indicators <- unlist(indicators, use.names = FALSE)
+    #OUTPUTS ####
+
+    # ---- Tool presence flag for conditional UI ----
+    output$tool_present <- shiny::reactive({
+      protocol$.tool_household_iphra
+    })
+
+    shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
+
+    # ---- Reactive available indicators sourced from the framework's
+    # master_indicator_bank (indicator_name used for display). Falls
+    # back to the static list when the bank is empty so the UI still
+    # shows something during early / stub sessions. ----
+    all_indicators <- shiny::reactive({
+      # Re-evaluate whenever the indicator bank version changes.
+      if (!is.null(framework$modified_indicator_bank)) {
+        framework$modified_indicator_bank
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(indicator_bank$indicator_name)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected <- shiny::reactiveVal(character(0))
@@ -120,7 +105,7 @@ mod_tools_household_server <- function(id){
     output$available_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators, selected()),
+        labels = setdiff(all_indicators(), selected()),
         input_id = ns("available"),
         options = sortable::sortable_options(group = ns("indicators"))
       )
@@ -141,7 +126,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -165,6 +150,18 @@ mod_tools_household_server <- function(id){
         result <- iphra_try_step({
           # ────────────────────────────────────────────────
         selected(input$selected)
+
+        # ---- Sync selection to IPHRAProtocol ----
+        # (a) modify the framework's master indicator bank
+        # (b) filter the household tool's survey/choices
+        codes <- iphra_indicator_names_to_codes(input$selected, session)
+        iphra_modify_indicator_bank(codes, session)
+        iphra_filter_tool_survey(
+          tool_name       = "tool_household_iphra_v2",
+          indicator_codes = codes,
+          session         = session
+        )
+
         iphra_message(
           paste0(
             iphra_txt("Selection synchronized with: "),
@@ -204,7 +201,7 @@ mod_tools_household_server <- function(id){
     observeEvent(input$preset_obj, {
       iphra_try({
 
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -296,7 +293,7 @@ mod_tools_household_server <- function(id){
           origin = iphra_txt("Household Tool: Preset Full")
         )
 
-        selected(all_indicators)
+        selected(all_indicators())
         iphra_message(
           iphra_txt("Full preset applied successfully."),
           origin = iphra_txt("Household Tool: Preset Full")
@@ -454,76 +451,6 @@ mod_tools_household_server <- function(id){
       rbind(sector_summary, totals)
     })
 
-    # ---- Toggle: Household Tools Complete ----
-    observeEvent(input$household_complete, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$household_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("Household Tool: Completion Toggle")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_tools_household_server/observeEvent_household_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (isTRUE(input$household_complete)) {
-          iphra_message(
-            iphra_txt("Household Tools marked as complete ✅"),
-            origin = iphra_txt("Household Tool: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., save completion status, update session/project) ---
-          # session$userData$project$set_stage_completed("household_tools", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Household Tools marked as incomplete ❌"),
-            origin = iphra_txt("Household Tool: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., reset completion flag) ---
-          # session$userData$project$set_stage_completed("household_tools", FALSE)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_tools_household_server/observeEvent_household_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Household Tools completion status updated successfully."),
-          origin = iphra_txt("Household Tool: Completion Toggle")
-        )
-        }, step = "mod_tools_household_server/observeEvent_household_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Household Tool: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and completion state logic if this fails.")
-      )
-    })
-
     # ────────────────────────────────────────────────
     # ▶️ TOGGLE: Sample Size Complete
     # ────────────────────────────────────────────────
@@ -531,7 +458,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -605,7 +532,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -679,7 +606,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────

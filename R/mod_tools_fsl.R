@@ -11,132 +11,108 @@ mod_tools_fsl_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
-    shiny::fluidRow(
-      # --- Modern Checkbox: FSL Tools Complete ---
-      shiny::div(
-        style = "
-          display: flex;
-          align-items: center;
-          justify-content: left;
-          padding: 6px 14px;             /* slightly more breathing room */
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          margin-top: 8px;               /* gentle space from top of tab */
-          margin-bottom: 6px;            /* half previous gap to presets */
-          margin-left: 15px;
-          width: fit-content;
-          line-height: 1.2em;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* subtle depth */
-        ",
-        tags$label(
-          class = "checkbox-inline",
-          style = "
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;                     /* tighter space between box and text */
-          ",
-          shiny::tags$input(
-            type = "checkbox",
-            id = ns("fsl_complete"),
-            name = ns("fsl_complete"),
-            onchange = sprintf("Shiny.setInputValue('%s', this.checked);", ns("fsl_complete"))
-          ),
-          tags$span("FSL Tools Complete")
+    shiny::conditionalPanel(
+      condition = "output.fsl_kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
+        shinydashboard::box(
+          title = "FSL Service Provider Key Informant Tool - Presets",
+          width = 12,
+          shiny::actionButton(ns("preset_obj_fsl_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_fsl_kii"), "Core FSL Service Provider KII"),
+          shiny::actionButton(ns("preset_full_fsl_kii"), "Full FSL Service Provider KII"),
+          shiny::actionButton(ns("export_tool_kobo_fsl_kii"), "Export FSL Service Provider KII Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_fsl_kii"), "Export FSL Service Provider KII Paper Tool", class = "btn-success"),
+
         )
       ),
-      shinydashboard::box(
-        title = "FSL Service Provider Key Informant Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_fsl_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_fsl_kii"), "Core FSL Service Provider KII"),
-        shiny::actionButton(ns("preset_full_fsl_kii"), "Full FSL Service Provider KII"),
-        shiny::actionButton(ns("export_tool_kobo_fsl_kii"), "Export FSL Service Provider KII Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_fsl_kii"), "Export FSL Service Provider KII Paper Tool", class = "btn-success"),
-
-      )
-    ),
-    shiny::br(),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_fsl_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_fsl_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
-          width = 12,
-          shiny::tableOutput(ns("summary_table_fsl_kii"))
+      shiny::br(),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_fsl_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_fsl_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_fsl_kii"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Market Vendor KII Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_markets_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_markets_kii"), "Core Market Vendor KII Tool"),
-        shiny::actionButton(ns("preset_full_markets_kii"), "Full Market Vendor KII Tool"),
-        shiny::actionButton(ns("export_tool_kobo_markets_kii"), "Export Market Vendor KII Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_markets_kii"), "Export Market Vendor KII Paper Tool", class = "btn-success")
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_markets_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_markets_kii_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.markets_kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Market Vendor KII Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_markets_kii"))
+          shiny::actionButton(ns("preset_obj_markets_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_markets_kii"), "Core Market Vendor KII Tool"),
+          shiny::actionButton(ns("preset_full_markets_kii"), "Full Market Vendor KII Tool"),
+          shiny::actionButton(ns("export_tool_kobo_markets_kii"), "Export Market Vendor KII Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_markets_kii"), "Export Market Vendor KII Paper Tool", class = "btn-success")
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_markets_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_markets_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_markets_kii"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Livelihoods Observation Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_livelihoods_obs"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_livelihoods_obs"), "Core Livelihoods Observation Tool"),
-        shiny::actionButton(ns("preset_full_livelihoods_obs"), "Full Livelihoods Observation Tool"),
-        shiny::actionButton(ns("export_tool_kobo_livelihoods_obs"), "Export Livelihoods Observation Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_livelihoods_obs"), "Export Livelihoods Observation Paper Tool", class = "btn-success")
-
-
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_livelihoods_obs_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_livelihoods_obs_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.livelihoods_obs_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Livelihoods Observation Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_livelihoods_obs"))
+          shiny::actionButton(ns("preset_obj_livelihoods_obs"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_livelihoods_obs"), "Core Livelihoods Observation Tool"),
+          shiny::actionButton(ns("preset_full_livelihoods_obs"), "Full Livelihoods Observation Tool"),
+          shiny::actionButton(ns("export_tool_kobo_livelihoods_obs"), "Export Livelihoods Observation Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_livelihoods_obs"), "Export Livelihoods Observation Paper Tool", class = "btn-success")
+
+
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_livelihoods_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_livelihoods_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_livelihoods_obs"))
+          )
         )
       )
     )
@@ -174,7 +150,23 @@ mod_tools_fsl_server <- function(id){
       unlist(indicators_fsl_kii)
     )
 
-    all_indicators_fsl_kii <- unlist(indicators_fsl_kii, use.names = FALSE)
+    all_indicators_fsl_kii_static <- unlist(indicators_fsl_kii, use.names = FALSE)
+
+    # ---- Tool presence flag ----
+    output$fsl_kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_fsl_service_provider_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "fsl_kii_present", suspendWhenHidden = FALSE)
+
+    # ---- Reactive available indicators sourced from master_indicator_bank ----
+    all_indicators_fsl_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_fsl_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_fsl_kii <- shiny::reactiveVal(character(0))
@@ -183,7 +175,7 @@ mod_tools_fsl_server <- function(id){
     output$available_fsl_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_fsl_kii, selected_fsl_kii()),
+        labels = setdiff(all_indicators_fsl_kii(), selected_fsl_kii()),
         input_id = ns("available_fsl_kii"),
         options = sortable::sortable_options(group = ns("indicators_fsl_kii"))
       )
@@ -223,6 +215,15 @@ mod_tools_fsl_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_fsl_kii(input$selected_fsl_kii)
+
+          # ---- Sync selection to IPHRAProtocol ----
+          codes <- iphra_indicator_names_to_codes(input$selected_fsl_kii, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_kii_fsl_service_provider_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("FSL KII selection synchronized with: "),
@@ -386,7 +387,7 @@ mod_tools_fsl_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_fsl_kii(all_indicators_fsl_kii)
+          selected_fsl_kii(all_indicators_fsl_kii())
         iphra_message(
           iphra_txt("Full FSL KII preset applied successfully."),
           origin = iphra_txt("FSL KII Tool: Preset Full")
@@ -468,7 +469,21 @@ mod_tools_fsl_server <- function(id){
       unlist(indicators_markets_kii)
     )
 
-    all_indicators_markets_kii <- unlist(indicators_markets_kii, use.names = FALSE)
+    all_indicators_markets_kii_static <- unlist(indicators_markets_kii, use.names = FALSE)
+
+    output$markets_kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_markets_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "markets_kii_present", suspendWhenHidden = FALSE)
+
+    all_indicators_markets_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_markets_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_markets_kii <- shiny::reactiveVal(character(0))
@@ -477,7 +492,7 @@ mod_tools_fsl_server <- function(id){
     output$available_markets_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_markets_kii, selected_markets_kii()),
+        labels = setdiff(all_indicators_markets_kii(), selected_markets_kii()),
         input_id = ns("available_markets_kii"),
         options = sortable::sortable_options(group = ns("indicators_markets_kii"))
       )
@@ -517,6 +532,14 @@ mod_tools_fsl_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_markets_kii(input$selected_markets_kii)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_markets_kii, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_kii_markets_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Markets KII selection synchronized with: "),
@@ -681,7 +704,7 @@ mod_tools_fsl_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_markets_kii(all_indicators_markets_kii)
+          selected_markets_kii(all_indicators_markets_kii())
         iphra_message(
           iphra_txt("Full Markets KII preset applied successfully."),
           origin = iphra_txt("Markets KII Tool: Preset Full")
@@ -762,7 +785,21 @@ mod_tools_fsl_server <- function(id){
       unlist(indicators_livelihoods_obs)
     )
 
-    all_indicators_livelihoods_obs <- unlist(indicators_livelihoods_obs, use.names = FALSE)
+    all_indicators_livelihoods_obs_static <- unlist(indicators_livelihoods_obs, use.names = FALSE)
+
+    output$livelihoods_obs_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_obs_crop_livestock_iphra_v1", session)
+    })
+    shiny::outputOptions(output, "livelihoods_obs_present", suspendWhenHidden = FALSE)
+
+    all_indicators_livelihoods_obs <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_livelihoods_obs_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_livelihoods_obs <- shiny::reactiveVal(character(0))
@@ -771,7 +808,7 @@ mod_tools_fsl_server <- function(id){
     output$available_livelihoods_obs_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_livelihoods_obs, selected_livelihoods_obs()),
+        labels = setdiff(all_indicators_livelihoods_obs(), selected_livelihoods_obs()),
         input_id = ns("available_livelihoods_obs"),
         options = sortable::sortable_options(group = ns("indicators_livelihoods_obs"))
       )
@@ -811,6 +848,14 @@ mod_tools_fsl_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_livelihoods_obs(input$selected_livelihoods_obs)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_livelihoods_obs, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_obs_crop_livestock_iphra_v1",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Livelihoods Observation selection synchronized with: "),
@@ -975,7 +1020,7 @@ mod_tools_fsl_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_livelihoods_obs(all_indicators_livelihoods_obs)
+          selected_livelihoods_obs(all_indicators_livelihoods_obs())
         iphra_message(
           iphra_txt("Full Livelihoods Observation preset applied successfully."),
           origin = iphra_txt("Livelihoods Observation Tool: Preset Full")
@@ -1032,68 +1077,6 @@ mod_tools_fsl_server <- function(id){
       rbind(livelihoods_obs_summary, totals)
     })
 
-
-    # ---- Toggle: FSL Tools Complete ----
-    observeEvent(input$fsl_complete, {
-      iphra_try({
-
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (is.null(input$fsl_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("FSL Tool: Completion Toggle")
-          )
-          return(NULL)
-        }
-        }, step = "mod_tools_fsl_server/observeEvent_fsl_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (isTRUE(input$fsl_complete)) {
-          iphra_message(
-            iphra_txt("FSL Tools marked as complete ✅"),
-            origin = iphra_txt("FSL Tool: Completion Toggle")
-          )
-
-          # --- Future: save completion status to project/session ---
-          # session$userData$project$set_stage_completed("fsl_tools", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("FSL Tools marked as incomplete ❌"),
-            origin = iphra_txt("FSL Tool: Completion Toggle")
-          )
-
-          # --- Future: reset completion flag in session/project ---
-          # session$userData$project$set_stage_completed("fsl_tools", FALSE)
-        }
-        }, step = "mod_tools_fsl_server/observeEvent_fsl_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("FSL Tools completion status updated successfully."),
-          origin = iphra_txt("FSL Tool: Completion Toggle")
-        )
-        }, step = "mod_tools_fsl_server/observeEvent_fsl_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("FSL Tool: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and project completion update logic if this fails.")
-      )
-    })
 
 
 

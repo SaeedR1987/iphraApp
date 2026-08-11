@@ -11,132 +11,107 @@ mod_tools_wash_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
-    shiny::fluidRow(
+    shiny::conditionalPanel(
+      condition = "output.wash_kii_present == true",
+      ns = ns,
+      shiny::fluidRow(
+        shinydashboard::box(
+          title = "WASH Service Provider Key Informant Tool - Presets",
+          width = 12,
+          shiny::actionButton(ns("preset_obj_wash_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_wash_kii"), "Core WASH Service Provider KII"),
+          shiny::actionButton(ns("preset_full_wash_kii"), "Full WASH Service Provider KII"),
+          shiny::actionButton(ns("export_tool_kobo_wash_kii"), "Export WASH Service Provider KII Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_wash_kii"), "Export WASH Service Provider KII Paper Tool", class = "btn-success"),
 
-      # --- Modern Checkbox: WASH Tools Complete ---
-      shiny::div(
-        style = "
-          display: flex;
-          align-items: center;
-          justify-content: left;
-          padding: 6px 14px;             /* slightly more breathing room */
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          margin-top: 8px;               /* gentle space from top of tab */
-          margin-bottom: 6px;            /* half previous gap to presets */
-          margin-left: 15px;
-          width: fit-content;
-          line-height: 1.2em;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* subtle depth */
-        ",
-        tags$label(
-          class = "checkbox-inline",
-          style = "
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;                     /* tighter space between box and text */
-          ",
-          shiny::tags$input(
-            type = "checkbox",
-            id = ns("wash_complete"),
-            name = ns("wash_complete"),
-            onchange = sprintf("Shiny.setInputValue('%s', this.checked);", ns("wash_complete"))
-          ),
-          tags$span("WASH Tools Complete")
         )
       ),
-      shinydashboard::box(
-        title = "WASH Service Provider Key Informant Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_wash_kii"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_wash_kii"), "Core WASH Service Provider KII"),
-        shiny::actionButton(ns("preset_full_wash_kii"), "Full WASH Service Provider KII"),
-        shiny::actionButton(ns("export_tool_kobo_wash_kii"), "Export WASH Service Provider KII Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_wash_kii"), "Export WASH Service Provider KII Paper Tool", class = "btn-success"),
-
-      )
-    ),
-    shiny::br(),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_wash_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_wash_kii_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
-          width = 12,
-          shiny::tableOutput(ns("summary_table_wash_kii"))
+      shiny::br(),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_wash_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_wash_kii_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_wash_kii"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Water Point Observation Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_water_obs"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_water_obs"), "Core Water Point Observation Tool"),
-        shiny::actionButton(ns("preset_full_water_obs"), "Full Water Point Observation Tool"),
-        shiny::actionButton(ns("export_tool_kobo_water_obs"), "Export Water Point Observation Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_water_obs"), "Export Water Point Observation Paper Tool", class = "btn-success")
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_water_obs_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_water_obs_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.water_obs_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Water Point Observation Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_water_obs"))
+          shiny::actionButton(ns("preset_obj_water_obs"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_water_obs"), "Core Water Point Observation Tool"),
+          shiny::actionButton(ns("preset_full_water_obs"), "Full Water Point Observation Tool"),
+          shiny::actionButton(ns("export_tool_kobo_water_obs"), "Export Water Point Observation Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_water_obs"), "Export Water Point Observation Paper Tool", class = "btn-success")
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_water_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_water_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_water_obs"))
+          )
         )
       )
     ),
     shiny::br(),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = "Latrine Observation Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj_latrine_obs"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core_latrine_obs"), "Core Latrine Observation Tool"),
-        shiny::actionButton(ns("preset_full_latrine_obs"), "Full Latrine Observation Tool"),
-        shiny::actionButton(ns("export_tool_kobo_latrine_obs"), "Export Latrine Observation Kobo Tool", class = "btn-success"),
-        shiny::actionButton(ns("export_tool_paper_latrine_obs"), "Export Latrine Observation Paper Tool", class = "btn-success")
-
-      )
-    ),
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_latrine_obs_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_latrine_obs_ui"))
-      ),
-      shiny::column(
-        4,
+    shiny::conditionalPanel(
+      condition = "output.latrine_obs_present == true",
+      ns = ns,
+      shiny::fluidRow(
         shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Latrine Observation Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table_latrine_obs"))
+          shiny::actionButton(ns("preset_obj_latrine_obs"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_latrine_obs"), "Core Latrine Observation Tool"),
+          shiny::actionButton(ns("preset_full_latrine_obs"), "Full Latrine Observation Tool"),
+          shiny::actionButton(ns("export_tool_kobo_latrine_obs"), "Export Latrine Observation Kobo Tool", class = "btn-success"),
+          shiny::actionButton(ns("export_tool_paper_latrine_obs"), "Export Latrine Observation Paper Tool", class = "btn-success")
+
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_latrine_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_latrine_obs_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table_latrine_obs"))
+          )
         )
       )
     )
@@ -174,7 +149,21 @@ mod_tools_wash_server <- function(id){
       unlist(indicators_wash_kii)
     )
 
-    all_indicators_wash_kii <- unlist(indicators_wash_kii, use.names = FALSE)
+    all_indicators_wash_kii_static <- unlist(indicators_wash_kii, use.names = FALSE)
+
+    output$wash_kii_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_kii_wash_service_provider_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "wash_kii_present", suspendWhenHidden = FALSE)
+
+    all_indicators_wash_kii <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_wash_kii_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_wash_kii <- shiny::reactiveVal(character(0))
@@ -183,7 +172,7 @@ mod_tools_wash_server <- function(id){
     output$available_wash_kii_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_wash_kii, selected_wash_kii()),
+        labels = setdiff(all_indicators_wash_kii(), selected_wash_kii()),
         input_id = ns("available_wash_kii"),
         options = sortable::sortable_options(group = ns("indicators_wash_kii"))
       )
@@ -223,6 +212,14 @@ mod_tools_wash_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_wash_kii(input$selected_wash_kii)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_wash_kii, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_kii_wash_service_provider_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("WASH KII selection synchronized with: "),
@@ -387,7 +384,7 @@ mod_tools_wash_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_wash_kii(all_indicators_wash_kii)
+          selected_wash_kii(all_indicators_wash_kii())
         iphra_message(
           iphra_txt("Full WASH KII preset applied successfully."),
           origin = iphra_txt("WASH KII Tool: Preset Full")
@@ -467,7 +464,21 @@ mod_tools_wash_server <- function(id){
       unlist(indicators_water_obs)
     )
 
-    all_indicators_water_obs <- unlist(indicators_water_obs, use.names = FALSE)
+    all_indicators_water_obs_static <- unlist(indicators_water_obs, use.names = FALSE)
+
+    output$water_obs_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_obs_water_point_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "water_obs_present", suspendWhenHidden = FALSE)
+
+    all_indicators_water_obs <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_water_obs_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_water_obs <- shiny::reactiveVal(character(0))
@@ -476,7 +487,7 @@ mod_tools_wash_server <- function(id){
     output$available_water_obs_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_water_obs, selected_water_obs()),
+        labels = setdiff(all_indicators_water_obs(), selected_water_obs()),
         input_id = ns("available_water_obs"),
         options = sortable::sortable_options(group = ns("indicators_water_obs"))
       )
@@ -516,6 +527,14 @@ mod_tools_wash_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_water_obs(input$selected_water_obs)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_water_obs, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_obs_water_point_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Water Observation selection synchronized with: "),
@@ -680,7 +699,7 @@ mod_tools_wash_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_water_obs(all_indicators_water_obs)
+          selected_water_obs(all_indicators_water_obs())
         iphra_message(
           iphra_txt("Full Water Observation preset applied successfully."),
           origin = iphra_txt("Water Observation Tool: Preset Full")
@@ -763,7 +782,21 @@ mod_tools_wash_server <- function(id){
       unlist(indicators_latrine_obs)
     )
 
-    all_indicators_latrine_obs <- unlist(indicators_latrine_obs, use.names = FALSE)
+    all_indicators_latrine_obs_static <- unlist(indicators_latrine_obs, use.names = FALSE)
+
+    output$latrine_obs_present <- shiny::reactive({
+      iphra_has_protocol_tool("tool_obs_latrine_iphra_v2", session)
+    })
+    shiny::outputOptions(output, "latrine_obs_present", suspendWhenHidden = FALSE)
+
+    all_indicators_latrine_obs <- shiny::reactive({
+      if (!is.null(session$userData$indicator_bank_version)) {
+        session$userData$indicator_bank_version()
+      }
+      bank <- iphra_get_indicator_bank(session)
+      if (nrow(bank) == 0) return(all_indicators_latrine_obs_static)
+      bank$indicator_name
+    })
 
     # ---- Reactive state ----
     selected_latrine_obs <- shiny::reactiveVal(character(0))
@@ -772,7 +805,7 @@ mod_tools_wash_server <- function(id){
     output$available_latrine_obs_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators_latrine_obs, selected_latrine_obs()),
+        labels = setdiff(all_indicators_latrine_obs(), selected_latrine_obs()),
         input_id = ns("available_latrine_obs"),
         options = sortable::sortable_options(group = ns("indicators_latrine_obs"))
       )
@@ -812,6 +845,14 @@ mod_tools_wash_server <- function(id){
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
           selected_latrine_obs(input$selected_latrine_obs)
+
+          codes <- iphra_indicator_names_to_codes(input$selected_latrine_obs, session)
+          iphra_modify_indicator_bank(codes, session)
+          iphra_filter_tool_survey(
+            tool_name       = "tool_obs_latrine_iphra_v2",
+            indicator_codes = codes,
+            session         = session
+          )
         iphra_message(
           paste0(
             iphra_txt("Latrine Observation selection synchronized with: "),
@@ -976,7 +1017,7 @@ mod_tools_wash_server <- function(id){
         # 2️⃣ CORE LOGIC
         # ────────────────────────────────────────────────
         result <- iphra_try_step({
-          selected_latrine_obs(all_indicators_latrine_obs)
+          selected_latrine_obs(all_indicators_latrine_obs())
         iphra_message(
           iphra_txt("Full Latrine Observation preset applied successfully."),
           origin = iphra_txt("Latrine Observation Tool: Preset Full")
@@ -1033,64 +1074,6 @@ mod_tools_wash_server <- function(id){
       rbind(latrine_obs_summary, totals)
     })
 
-    # ---- WASH Tools: Completion Toggle ----
-    observeEvent(input$wash_complete, {
-      iphra_try({
-
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validation checks passed (dummy mode)."),
-          origin = iphra_txt("WASH Tools: Completion Toggle")
-        )
-        }, step = "mod_tools_wash_server/observeEvent_wash_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (isTRUE(input$wash_complete)) {
-          iphra_message(
-            iphra_txt("WASH Tools marked as complete ✅"),
-            origin = iphra_txt("WASH Tools: Completion Toggle")
-          )
-
-          # --- Future: update project/session state to mark WASH Tools as complete ---
-          # session$userData$project$set_stage_complete("wash_tools", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("WASH Tools marked as incomplete ❌"),
-            origin = iphra_txt("WASH Tools: Completion Toggle")
-          )
-
-          # --- Future: update project/session state to mark WASH Tools as incomplete ---
-          # session$userData$project$set_stage_complete("wash_tools", FALSE)
-        }
-        }, step = "mod_tools_wash_server/observeEvent_wash_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("WASH Tools completion toggle processed successfully."),
-          origin = iphra_txt("WASH Tools: Completion Toggle")
-        )
-        }, step = "mod_tools_wash_server/observeEvent_wash_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("WASH Tools: Completion Toggle"),
-      hint = iphra_txt("Check reactive binding or input state if toggle fails.")
-      )
-    })
 
   })
 }

@@ -62,18 +62,14 @@ mod_tools_household_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    # SETUP ####
     protocol <- session$userData$modules[["protocol"]]
     framework <- protocol$access_nested(field = "framework")
     tool <- protocol$access_nested(field = "tools", name = "tool_household_iphra_v2")
 
-    # ---- Indicators definition (lives inside module) ----
-    indicator_bank <- unique(
-      protocol$framework$master_indicator_bank[
-        , c("indicator_code", "indicator_name")
-      ]
-    )
+    # ---- All indicators from framework
 
-    all_indicators_static <- unlist(framework$master_indicator_bank, use.names = FALSE)
+    all_indicators_static <- framework$master_indicator_bank[framework$master_indicator_bank$tool == "household", c("indicator_code", "indicator_name")]
 
     #OUTPUTS ####
 
@@ -85,33 +81,43 @@ mod_tools_household_server <- function(id){
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
 
     # ---- Reactive available indicators sourced from the framework's
-    # master_indicator_bank (indicator_name used for display). Falls
+    # modified_indicator_bank (indicator_name used for display). Falls
     # back to the static list when the bank is empty so the UI still
     # shows something during early / stub sessions. ----
+
+    # REACTIVES ####
+
     all_indicators <- shiny::reactive({
       # Re-evaluate whenever the indicator bank version changes.
-      if (!is.null(framework$modified_indicator_bank)) {
-        framework$modified_indicator_bank
-      }
-      bank <- iphra_get_indicator_bank(session)
-      if (nrow(bank) == 0) return(indicator_bank$indicator_name)
-      bank$indicator_name
+
+      framework$modified_indicator_bank[framework$modified_indicator_bank$tool == "household", c("indicator_code", "indicator_name")]
+
     })
 
-    # ---- Reactive state ----
     selected <- shiny::reactiveVal(character(0))
+
+    selected_indicators <- shiny::reactive({
+      inds <- all_indicators()
+      sel  <- selected()
+
+      inds[inds$indicator_name %in% sel, ]
+    })
+
 
     # ---- UI for available list ----
     output$available_ui <- shiny::renderUI({
+
+      labels <- all_indicators()
+
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(all_indicators(), selected()),
+        labels = setdiff(labels$indicator_name, selected()),
         input_id = ns("available"),
         options = sortable::sortable_options(group = ns("indicators"))
       )
     })
 
-    # ---- UI for selected list ----
+    # ---- UI for selected list
     output$selected_ui <- shiny::renderUI({
       sortable::rank_list(
         text = "Selected Indicators (drag to reorder)",
@@ -121,46 +127,13 @@ mod_tools_household_server <- function(id){
       )
     })
 
-    # ---- Keep selected() in sync with drag-and-drop ----
+    # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
       iphra_try({
 
-        # ────────────────────────────────────────────────
+        indicators_selected <- selected_indicators()
 
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$selected)) {
-          iphra_message(
-            iphra_txt("No selection detected — skipping sync update."),
-            origin = iphra_txt("Household Tool: Selection Sync")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_tools_household_server/observeEvent_selected/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        selected(input$selected)
-
-        # ---- Sync selection to IPHRAProtocol ----
-        # (a) modify the framework's master indicator bank
-        # (b) filter the household tool's survey/choices
-        codes <- iphra_indicator_names_to_codes(input$selected, session)
-        iphra_modify_indicator_bank(codes, session)
-        iphra_filter_tool_survey(
-          tool_name       = "tool_household_iphra_v2",
-          indicator_codes = codes,
-          session         = session
-        )
+        tool$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
 
         iphra_message(
           paste0(
@@ -169,26 +142,7 @@ mod_tools_household_server <- function(id){
           ),
           origin = iphra_txt("Household Tool: Selection Sync")
         )
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_tools_household_server/observeEvent_selected/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        # Typically none for sync observers — they’re internal updates only.
-        # Still, log completion for traceability.
-        iphra_message(
-          iphra_txt("Selection synchronization completed successfully."),
-          origin = iphra_txt("Household Tool: Selection Sync")
-        )
-        }, step = "mod_tools_household_server/observeEvent_selected/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+      },
       on_error = "warn",
       origin = iphra_txt("Household Tool: Selection Sync"),
       hint = iphra_txt("Ensure the drag-and-drop or selection input is properly bound.")

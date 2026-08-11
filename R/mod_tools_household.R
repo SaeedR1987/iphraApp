@@ -62,28 +62,26 @@ mod_tools_household_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    protocol <- session$userData$modules[["protocol"]]
+    framework <- protocol$access_nested(field = "framework")
+    tool <- protocol$access_nested(field = "tools", name = "tool_household_iphra_v2")
+
     # ---- Indicators definition (lives inside module) ----
-    indicators <- list(
-      Demographics = c("Household size", "Age distribution"),
-      Health_Core       = c("Access to care", "Illness prevalence"),
-      Outcomes    = c("MUAC", "Mortality"),
-      FSL_Core          = c("Market access", "Food consumption score"),
-      WASH_Core         = c("Water source", "Latrine access"),
-      Shelter_Core      = c("Shelter type", "Overcrowding")
+    indicator_bank <- unique(
+      protocol$framework$master_indicator_bank[
+        , c("indicator_code", "indicator_name")
+      ]
     )
 
-    # Estimated times per indicator (mins)
-    indicator_times <- setNames(
-      rep(5, length(unlist(indicators))),
-      unlist(indicators)
-    )
+    all_indicators_static <- unlist(framework$master_indicator_bank, use.names = FALSE)
 
-    all_indicators_static <- unlist(indicators, use.names = FALSE)
+    #OUTPUTS ####
 
     # ---- Tool presence flag for conditional UI ----
     output$tool_present <- shiny::reactive({
-      iphra_has_protocol_tool("tool_household_iphra_v2", session)
+      protocol$.tool_household_iphra
     })
+
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
 
     # ---- Reactive available indicators sourced from the framework's
@@ -92,11 +90,11 @@ mod_tools_household_server <- function(id){
     # shows something during early / stub sessions. ----
     all_indicators <- shiny::reactive({
       # Re-evaluate whenever the indicator bank version changes.
-      if (!is.null(session$userData$indicator_bank_version)) {
-        session$userData$indicator_bank_version()
+      if (!is.null(framework$modified_indicator_bank)) {
+        framework$modified_indicator_bank
       }
       bank <- iphra_get_indicator_bank(session)
-      if (nrow(bank) == 0) return(all_indicators_static)
+      if (nrow(bank) == 0) return(indicator_bank$indicator_name)
       bank$indicator_name
     })
 
@@ -128,7 +126,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -203,7 +201,7 @@ mod_tools_household_server <- function(id){
     observeEvent(input$preset_obj, {
       iphra_try({
 
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -460,7 +458,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -534,7 +532,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────
@@ -608,7 +606,7 @@ mod_tools_household_server <- function(id){
       iphra_try({
 
         # ────────────────────────────────────────────────
-        
+
         # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION & PRECONDITIONS
         # ────────────────────────────────────────────────

@@ -125,6 +125,8 @@ mod_tools_master_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    protocol  <- session$userData$modules[["protocol"]]
+
     tools <- iphra_tool_definitions()
 
     # ---- One observer per Add / Remove button --------------------------------
@@ -133,7 +135,33 @@ mod_tools_master_server <- function(id){
 
       observeEvent(input[[paste0("add_", tool_name)]], {
         iphra_try({
-          iphra_add_protocol_tool(tool_name, session)
+
+          if(tool_name == "tool_household_iphra_v2") {
+            protocol$add_tools("tool_household_iphra_v2")
+          } else if(tool_name == "tool_kii_community_iphra_v2") {
+            protocol$add_tools("tool_kii_community_iphra_v2")
+          } else if(tool_name == "tool_kii_fsl_service_provider_iphra_v2") {
+            protocol$add_tools("tool_kii_fsl_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_wash_service_provider_iphra_v2") {
+            protocol$add_tools("tool_kii_wash_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_markets_iphra_v2") {
+            protocol$add_tools("tool_kii_markets_iphra_v2")
+          } else if(tool_name == "tool_kii_nutrition_service_provider_iphra_v2") {
+            protocol$add_tools("tool_kii_nutrition_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_health_service_provider_iphra_v2") {
+            protocol$add_tools("tool_kii_health_service_provider_iphra_v2")
+          } else if(tool_name == "tool_obs_community_iphra_v2") {
+            protocol$add_tools("tool_obs_community_iphra_v2")
+          } else if(tool_name == "tool_obs_crop_livestock_iphra_v1") {
+            protocol$add_tools("tool_obs_crop_livestock_iphra_v1")
+          } else if(tool_name == "tool_obs_health_facility_iphra_v2") {
+            protocol$add_tools("tool_obs_health_facility_iphra_v2")
+          } else if(tool_name == "tool_obs_latrine_iphra_v2") {
+            protocol$add_tools("tool_obs_latrine_iphra_v2")
+          } else if(tool_name == "tool_obs_water_point_iphra_v2") {
+            protocol$add_tools("tool_obs_water_point_iphra_v2")
+          }
+
         },
         on_error = "warn",
         origin   = paste0("Tools Master: Add ", tool_name),

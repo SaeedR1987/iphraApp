@@ -22,11 +22,6 @@ mod_tools_household_ui <- function(id, all_indicators) {
         width = 12,
         shiny::actionButton(ns("preset_obj"), "Match Objectives"),
         shiny::actionButton(ns("preset_core"), "Core"),
-        shiny::actionButton(ns("preset_full"), "Extended"),
-        shiny::actionButton(ns("preset_outcomes"), "Outcome Focused"),
-        shiny::actionButton(ns("preset_fsl"), "FSL Focused"),
-        shiny::actionButton(ns("preset_wash"), "WASH Focused"),
-        shiny::actionButton(ns("preset_health"), "Health Focused"),
         shiny::actionButton(ns("export_tool"), "Export Household Tool", class = "btn-success")
       )
     ),

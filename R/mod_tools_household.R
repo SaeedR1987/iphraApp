@@ -385,8 +385,6 @@ mod_tools_household_server <- function(id){
           iphra_txt("Household tool exported to Excel."),
           origin = iphra_txt("Household Tool: Export")
         )
-
-        shiny::removeModal()
       }
     )
 

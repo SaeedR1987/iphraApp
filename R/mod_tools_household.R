@@ -59,14 +59,7 @@ mod_tools_household_server <- function(id){
 
     # SETUP ####
     protocol  <- session$userData$modules[["protocol"]]
-    framework <- protocol$framework
     tool      <- protocol$tools$tool_household_iphra_v2
-
-    # ---- All indicators from framework (static snapshot) ----
-    all_indicators_static <- framework$master_indicator_bank[
-      framework$master_indicator_bank$tool == "household",
-      c("indicator_code", "indicator_name")
-    ]
 
     #OUTPUTS ####
 
@@ -80,18 +73,12 @@ mod_tools_household_server <- function(id){
 
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
 
-    # ---- Reactive available indicators sourced from the framework's
-    # modified_indicator_bank (indicator_name used for display). Falls
-    # back to the static list when the bank is empty so the UI still
-    # shows something during early / stub sessions. ----
-
     # REACTIVES ####
 
     all_indicators <- shiny::reactive({
-      framework$modified_indicator_bank[
-        framework$modified_indicator_bank$tool == "household",
-        c("indicator_code", "indicator_name")
-      ]
+      fw <- session$userData$modules[["protocol"]]$framework
+      bank <- fw$modified_indicator_bank
+      bank[bank$tool == "household", c("indicator_code", "indicator_name")]
     })
 
     selected <- shiny::reactiveVal(character(0))

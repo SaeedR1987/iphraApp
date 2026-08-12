@@ -103,6 +103,8 @@ mod_tools_household_server <- function(id){
       inds[inds$indicator_name %in% sel, ]
     })
 
+    # OUTPUTS ####
+
 
     # ---- UI for available list ----
     output$available_ui <- shiny::renderUI({
@@ -126,6 +128,38 @@ mod_tools_household_server <- function(id){
         options = sortable::sortable_options(group = ns("indicators"))
       )
     })
+
+    # ---- Summary table ----
+    output$summary_table <- shiny::renderTable({
+
+      sel <- selected()
+
+      if (length(sel) == 0) {
+        return(data.frame(
+          Sector = c(names(indicators), "Total"),
+          Indicators = 0,
+          Minutes = 0
+        ))
+      }
+
+      sector_summary <- lapply(names(indicators), function(sector) {
+        inds <- indicators[[sector]]
+        count <- sum(sel %in% inds)
+        time <- sum(indicator_times[sel[sel %in% inds]])
+        data.frame(Sector = sector, Indicators = count, Minutes = time)
+      })
+      sector_summary <- do.call(rbind, sector_summary)
+
+      totals <- data.frame(
+        Sector = "Total",
+        Indicators = sum(sector_summary$Indicators),
+        Minutes = sum(sector_summary$Minutes)
+      )
+
+      rbind(sector_summary, totals)
+    })
+
+    # OBSERVES ####
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
@@ -196,43 +230,12 @@ mod_tools_household_server <- function(id){
         }, step = "mod_tools_household_server/observeEvent_preset_obj/Result Handling")
         if (iphra_failed(result)) return(result)
 
-},
+      },
       on_error = "warn",
       origin = iphra_txt("Household Tool: Preset Objectives"),
       hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
       )
     })
-
-    # ---- Summary table ----
-    output$summary_table <- shiny::renderTable({
-
-      sel <- selected()
-
-      if (length(sel) == 0) {
-        return(data.frame(
-          Sector = c(names(indicators), "Total"),
-          Indicators = 0,
-          Minutes = 0
-        ))
-      }
-
-      sector_summary <- lapply(names(indicators), function(sector) {
-        inds <- indicators[[sector]]
-        count <- sum(sel %in% inds)
-        time <- sum(indicator_times[sel[sel %in% inds]])
-        data.frame(Sector = sector, Indicators = count, Minutes = time)
-      })
-      sector_summary <- do.call(rbind, sector_summary)
-
-      totals <- data.frame(
-        Sector = "Total",
-        Indicators = sum(sector_summary$Indicators),
-        Minutes = sum(sector_summary$Minutes)
-      )
-
-      rbind(sector_summary, totals)
-    })
-
 
   })
 }

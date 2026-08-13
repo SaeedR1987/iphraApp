@@ -17,6 +17,164 @@ mod_goals_ui <- function(id) {
         shiny::tabsetPanel(
           id = ns("tabs"),
 
+          # ---- Assessment Info Tab ----
+          shiny::tabPanel(
+            title = iphra_txt("Assessment Info"),
+
+            # Group 1
+            shinydashboard::box(
+              title = iphra_txt("General Information"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::textInput(ns("country_name"),   iphra_txt("Country Name")),
+              shiny::textInput(ns("country"),        iphra_txt("Country Code")),
+              shiny::textInput(ns("month_year"),     iphra_txt("Month/Year")),
+              shiny::textInput(ns("research_cycle_id"), iphra_txt("Research Cycle ID")),
+              shiny::textInput(ns("assessment_title"),  iphra_txt("Assessment Title")),
+              shiny::textInput(ns("type_emergency"), iphra_txt("Type of Emergency")),
+              shiny::textInput(ns("type_crisis"),    iphra_txt("Type of Crisis")),
+              shiny::textInput(ns("population"),     iphra_txt("Population")),
+              shiny::textInput(ns("rationale"),      iphra_txt("Rationale")),
+              shiny::textInput(ns("geographic_coverage"), iphra_txt("Geographic Coverage")),
+              shiny::textInput(ns("stratification"), iphra_txt("Stratification")),
+              shiny::dateInput(ns("release_date"),   iphra_txt("Release Date"), value = NA),
+              shiny::numericInput(ns("version_number"), iphra_txt("Version Number"), value = NA, min = 0, step = 1),
+              shiny::textInput(ns("mandating_body"), iphra_txt("Mandating Body")),
+              shiny::textInput(ns("project_code"),   iphra_txt("Project Code"))
+            ),
+
+            # Group 2
+            shinydashboard::box(
+              title = iphra_txt("Timelines & Milestones"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::dateInput(ns("overall_timeframe"),              iphra_txt("Overall Timeframe"), value = NA),
+              shiny::dateInput(ns("date_pilot_training"),            iphra_txt("Date: Pilot Training"), value = NA),
+              shiny::dateInput(ns("date_data_collection_start"),     iphra_txt("Date: Data Collection Start"), value = NA),
+              shiny::dateInput(ns("date_data_collection_end"),       iphra_txt("Date: Data Collection End"), value = NA),
+              shiny::dateInput(ns("date_data_analysis"),             iphra_txt("Date: Data Analysis"), value = NA),
+              shiny::dateInput(ns("date_data_validation"),           iphra_txt("Date: Data Validation"), value = NA),
+              shiny::dateInput(ns("date_preliminary_presentation"),  iphra_txt("Date: Preliminary Presentation"), value = NA),
+              shiny::dateInput(ns("date_outputs_validation"),        iphra_txt("Date: Outputs Validation"), value = NA),
+              shiny::dateInput(ns("date_outputs_publication"),       iphra_txt("Date: Outputs Publication"), value = NA),
+              shiny::dateInput(ns("date_final_presentation"),        iphra_txt("Date: Final Presentation"), value = NA),
+              shiny::dateInput(ns("date_milestone_donor"),           iphra_txt("Date: Milestone Donor"), value = NA),
+              shiny::dateInput(ns("date_milestone_intercluster"),    iphra_txt("Date: Milestone Intercluster"), value = NA),
+              shiny::dateInput(ns("date_milestone_cluster"),         iphra_txt("Date: Milestone Cluster"), value = NA),
+              shiny::dateInput(ns("date_milestone_ngo_platform"),    iphra_txt("Date: Milestone NGO Platform"), value = NA),
+              shiny::dateInput(ns("date_milestone_other"),           iphra_txt("Date: Milestone Other"), value = NA)
+            ),
+
+            # Group 3
+            shinydashboard::box(
+              title = iphra_txt("Audiences & Expected Outputs"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::textInput(ns("audience_type_cluster"), iphra_txt("Audience Type (Cluster)")),
+              shiny::selectInput(ns("expected_output_cluster"),
+                label = iphra_txt("Expected Output (Cluster)"),
+                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("expected_output_donor"),
+                label = iphra_txt("Expected Output (Donor)"),
+                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("expected_output_operational_actor"),
+                label = iphra_txt("Expected Output (Operational Actor)"),
+                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("expected_output_other"),
+                label = iphra_txt("Expected Output (Other)"),
+                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                multiple = TRUE, selected = NULL)
+            ),
+
+            # Group 4
+            shinydashboard::box(
+              title = iphra_txt("Dissemination Strategy"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::selectInput(ns("dissemination_strategy_cluster"),
+                label = iphra_txt("Dissemination Strategy (Cluster)"),
+                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("dissemination_strategy_donor"),
+                label = iphra_txt("Dissemination Strategy (Donor)"),
+                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("dissemination_strategy_operational_actor"),
+                label = iphra_txt("Dissemination Strategy (Operational Actor)"),
+                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("dissemination_strategy_other"),
+                label = iphra_txt("Dissemination Strategy (Other)"),
+                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                multiple = TRUE, selected = NULL)
+            ),
+
+            # Group 5
+            shinydashboard::box(
+              title = iphra_txt("Access"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::selectInput(ns("access_cluster"),
+                label = iphra_txt("Access (Cluster)"),
+                choices = c("Public", "Bilateral", "Restricted"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("access_donor"),
+                label = iphra_txt("Access (Donor)"),
+                choices = c("Public", "Bilateral", "Restricted"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("access_operational_actor"),
+                label = iphra_txt("Access (Operational Actor)"),
+                choices = c("Public", "Bilateral", "Restricted"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("access_other"),
+                label = iphra_txt("Access (Other)"),
+                choices = c("Public", "Bilateral", "Restricted"),
+                multiple = TRUE, selected = NULL)
+            ),
+
+            # Group 6
+            shinydashboard::box(
+              title = iphra_txt("Visibility"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::selectInput(ns("visibility_cluster"),
+                label = iphra_txt("Visibility (Cluster)"),
+                choices = c("Public", "Restricted", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("visibility_donor"),
+                label = iphra_txt("Visibility (Donor)"),
+                choices = c("Public", "Restricted", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("visibility_operational_actor"),
+                label = iphra_txt("Visibility (Operational Actor)"),
+                choices = c("Public", "Restricted", "Not Applicable"),
+                multiple = TRUE, selected = NULL),
+              shiny::selectInput(ns("visibility_other"),
+                label = iphra_txt("Visibility (Other)"),
+                choices = c("Public", "Restricted", "Not Applicable"),
+                multiple = TRUE, selected = NULL)
+            ),
+
+            # Group 7
+            shinydashboard::box(
+              title = iphra_txt("Output Counts"),
+              width = 12,
+              collapsible = TRUE,
+              shiny::numericInput(ns("num_report"),               iphra_txt("# Reports"),               value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_profile"),              iphra_txt("# Profiles"),              value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_prelim_presentation"),  iphra_txt("# Preliminary Presentations"), value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_final_presentation"),   iphra_txt("# Final Presentations"),   value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_factsheet"),            iphra_txt("# Factsheets"),            value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_dashboard"),            iphra_txt("# Dashboards"),            value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_webmap"),               iphra_txt("# Webmaps"),               value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_map"),                  iphra_txt("# Maps"),                  value = NA, min = 0, step = 1),
+              shiny::numericInput(ns("num_output_other"),         iphra_txt("# Other Outputs"),         value = NA, min = 0, step = 1)
+            )
+          ),
+
           # ---- Primary Tab ----
           shiny::tabPanel(
             title = iphra_txt("Primary"),
@@ -291,6 +449,99 @@ mod_goals_server <- function(id){
     })
 
     # Observes ####
+
+    # ---- Assessment Info metadata observers ----
+    # Character fields (group 1)
+    local({
+      char_fields <- c(
+        "country_name", "country", "month_year", "research_cycle_id",
+        "assessment_title", "type_emergency", "type_crisis", "population",
+        "rationale", "geographic_coverage", "stratification", "mandating_body",
+        "project_code"
+      )
+      for (fld in char_fields) {
+        local({
+          f <- fld
+          observeEvent(input[[f]], {
+            protocol$metadata[[f]] <- input[[f]]
+          }, ignoreNULL = FALSE, ignoreInit = TRUE)
+        })
+      }
+    })
+
+    # Numeric field (group 1)
+    observeEvent(input$version_number, {
+      protocol$metadata$version_number <- input$version_number
+    }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+    # Date fields (group 1)
+    observeEvent(input$release_date, {
+      protocol$metadata$release_date <- input$release_date
+    }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+    # Date fields (group 2)
+    local({
+      date_fields <- c(
+        "overall_timeframe", "date_pilot_training", "date_data_collection_start",
+        "date_data_collection_end", "date_data_analysis", "date_data_validation",
+        "date_preliminary_presentation", "date_outputs_validation",
+        "date_outputs_publication", "date_final_presentation",
+        "date_milestone_donor", "date_milestone_intercluster",
+        "date_milestone_cluster", "date_milestone_ngo_platform",
+        "date_milestone_other"
+      )
+      for (fld in date_fields) {
+        local({
+          f <- fld
+          observeEvent(input[[f]], {
+            protocol$metadata[[f]] <- input[[f]]
+          }, ignoreNULL = FALSE, ignoreInit = TRUE)
+        })
+      }
+    })
+
+    # Character field (group 3)
+    observeEvent(input$audience_type_cluster, {
+      protocol$metadata$audience_type_cluster <- input$audience_type_cluster
+    }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+    # Select multiple fields (groups 3-6)
+    local({
+      multi_fields <- c(
+        "expected_output_cluster", "expected_output_donor",
+        "expected_output_operational_actor", "expected_output_other",
+        "dissemination_strategy_cluster", "dissemination_strategy_donor",
+        "dissemination_strategy_operational_actor", "dissemination_strategy_other",
+        "access_cluster", "access_donor", "access_operational_actor", "access_other",
+        "visibility_cluster", "visibility_donor", "visibility_operational_actor",
+        "visibility_other"
+      )
+      for (fld in multi_fields) {
+        local({
+          f <- fld
+          observeEvent(input[[f]], {
+            protocol$metadata[[f]] <- input[[f]]
+          }, ignoreNULL = FALSE, ignoreInit = TRUE)
+        })
+      }
+    })
+
+    # Numeric integer fields (group 7)
+    local({
+      num_fields <- c(
+        "num_report", "num_profile", "num_prelim_presentation",
+        "num_final_presentation", "num_factsheet", "num_dashboard",
+        "num_webmap", "num_map", "num_output_other"
+      )
+      for (fld in num_fields) {
+        local({
+          f <- fld
+          observeEvent(input[[f]], {
+            protocol$metadata[[f]] <- as.integer(input[[f]])
+          }, ignoreNULL = FALSE, ignoreInit = TRUE)
+        })
+      }
+    })
 
     # ---- Keep selected() in sync with drag-and-drop
     observeEvent(input$selected, {

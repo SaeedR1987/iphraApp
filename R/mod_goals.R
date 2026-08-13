@@ -9,6 +9,13 @@
 #' @importFrom shiny NS tagList
 mod_goals_ui <- function(id) {
   ns <- NS(id)
+
+  # Shared choices for select-multiple inputs
+  .output_choices        <- c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable")
+  .dissemination_choices <- c("In-Person", "Email", "Remote Presentation", "Not Applicable")
+  .access_choices        <- c("Public", "Bilateral", "Restricted")
+  .visibility_choices    <- c("Public", "Restricted", "Not Applicable")
+
   tagList(
     shiny::fluidRow(
       # Left side (controls in tabset)
@@ -73,19 +80,19 @@ mod_goals_ui <- function(id) {
               shiny::textInput(ns("audience_type_cluster"), iphra_txt("Audience Type (Cluster)")),
               shiny::selectInput(ns("expected_output_cluster"),
                 label = iphra_txt("Expected Output (Cluster)"),
-                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                choices = .output_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("expected_output_donor"),
                 label = iphra_txt("Expected Output (Donor)"),
-                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                choices = .output_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("expected_output_operational_actor"),
                 label = iphra_txt("Expected Output (Operational Actor)"),
-                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                choices = .output_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("expected_output_other"),
                 label = iphra_txt("Expected Output (Other)"),
-                choices = c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable"),
+                choices = .output_choices,
                 multiple = TRUE, selected = NULL)
             ),
 
@@ -96,19 +103,19 @@ mod_goals_ui <- function(id) {
               collapsible = TRUE,
               shiny::selectInput(ns("dissemination_strategy_cluster"),
                 label = iphra_txt("Dissemination Strategy (Cluster)"),
-                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                choices = .dissemination_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("dissemination_strategy_donor"),
                 label = iphra_txt("Dissemination Strategy (Donor)"),
-                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                choices = .dissemination_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("dissemination_strategy_operational_actor"),
                 label = iphra_txt("Dissemination Strategy (Operational Actor)"),
-                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                choices = .dissemination_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("dissemination_strategy_other"),
                 label = iphra_txt("Dissemination Strategy (Other)"),
-                choices = c("In-Person", "Email", "Remote Presentation", "Not Applicable"),
+                choices = .dissemination_choices,
                 multiple = TRUE, selected = NULL)
             ),
 
@@ -119,19 +126,19 @@ mod_goals_ui <- function(id) {
               collapsible = TRUE,
               shiny::selectInput(ns("access_cluster"),
                 label = iphra_txt("Access (Cluster)"),
-                choices = c("Public", "Bilateral", "Restricted"),
+                choices = .access_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("access_donor"),
                 label = iphra_txt("Access (Donor)"),
-                choices = c("Public", "Bilateral", "Restricted"),
+                choices = .access_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("access_operational_actor"),
                 label = iphra_txt("Access (Operational Actor)"),
-                choices = c("Public", "Bilateral", "Restricted"),
+                choices = .access_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("access_other"),
                 label = iphra_txt("Access (Other)"),
-                choices = c("Public", "Bilateral", "Restricted"),
+                choices = .access_choices,
                 multiple = TRUE, selected = NULL)
             ),
 
@@ -142,19 +149,19 @@ mod_goals_ui <- function(id) {
               collapsible = TRUE,
               shiny::selectInput(ns("visibility_cluster"),
                 label = iphra_txt("Visibility (Cluster)"),
-                choices = c("Public", "Restricted", "Not Applicable"),
+                choices = .visibility_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("visibility_donor"),
                 label = iphra_txt("Visibility (Donor)"),
-                choices = c("Public", "Restricted", "Not Applicable"),
+                choices = .visibility_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("visibility_operational_actor"),
                 label = iphra_txt("Visibility (Operational Actor)"),
-                choices = c("Public", "Restricted", "Not Applicable"),
+                choices = .visibility_choices,
                 multiple = TRUE, selected = NULL),
               shiny::selectInput(ns("visibility_other"),
                 label = iphra_txt("Visibility (Other)"),
-                choices = c("Public", "Restricted", "Not Applicable"),
+                choices = .visibility_choices,
                 multiple = TRUE, selected = NULL)
             ),
 
@@ -451,13 +458,13 @@ mod_goals_server <- function(id){
     # Observes ####
 
     # ---- Assessment Info metadata observers ----
-    # Character fields (group 1)
+    # Character fields (groups 1 & 3)
     local({
       char_fields <- c(
         "country_name", "country", "month_year", "research_cycle_id",
         "assessment_title", "type_emergency", "type_crisis", "population",
         "rationale", "geographic_coverage", "stratification", "mandating_body",
-        "project_code"
+        "project_code", "audience_type_cluster"
       )
       for (fld in char_fields) {
         local({
@@ -469,19 +476,10 @@ mod_goals_server <- function(id){
       }
     })
 
-    # Numeric field (group 1)
-    observeEvent(input$version_number, {
-      protocol$metadata$version_number <- input$version_number
-    }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-    # Date fields (group 1)
-    observeEvent(input$release_date, {
-      protocol$metadata$release_date <- input$release_date
-    }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-    # Date fields (group 2)
+    # Date fields (groups 1 & 2)
     local({
       date_fields <- c(
+        "release_date",
         "overall_timeframe", "date_pilot_training", "date_data_collection_start",
         "date_data_collection_end", "date_data_analysis", "date_data_validation",
         "date_preliminary_presentation", "date_outputs_validation",
@@ -499,11 +497,6 @@ mod_goals_server <- function(id){
         })
       }
     })
-
-    # Character field (group 3)
-    observeEvent(input$audience_type_cluster, {
-      protocol$metadata$audience_type_cluster <- input$audience_type_cluster
-    }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
     # Select multiple fields (groups 3-6)
     local({
@@ -526,9 +519,10 @@ mod_goals_server <- function(id){
       }
     })
 
-    # Numeric integer fields (group 7)
+    # Numeric fields (groups 1 & 7)
     local({
       num_fields <- c(
+        "version_number",
         "num_report", "num_profile", "num_prelim_presentation",
         "num_final_presentation", "num_factsheet", "num_dashboard",
         "num_webmap", "num_map", "num_output_other"
@@ -537,7 +531,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol$metadata[[f]] <- as.integer(input[[f]])
+            protocol$metadata[[f]] <- input[[f]]
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
       }

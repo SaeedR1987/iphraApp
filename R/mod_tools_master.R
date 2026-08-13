@@ -162,6 +162,9 @@ mod_tools_master_server <- function(id){
             protocol$add_tools("tool_obs_water_point_iphra_v2")
           }
 
+          # Notify downstream modules that the tool list changed.
+          session$userData$protocol_tools(names(protocol$tools))
+
         },
         on_error = "warn",
         origin   = paste0("Tools Master: Add ", tool_name),
@@ -196,6 +199,9 @@ mod_tools_master_server <- function(id){
           } else if(tool_name == "tool_obs_water_point_iphra_v2") {
             protocol$remove_tools("tool_obs_water_point_iphra_v2")
           }
+
+          # Notify downstream modules that the tool list changed.
+          session$userData$protocol_tools(names(protocol$tools))
 
         },
         on_error = "warn",

@@ -64,11 +64,11 @@ mod_tools_household_server <- function(id){
     #OUTPUTS ####
 
     # ---- Tool presence flag for conditional UI ----
-    # `.tool_household_iphra` is an active binding on the IPHRAProtocol
-    # class that returns TRUE/FALSE depending on whether the household tool
-    # has been added to the protocol object.
+    # Reads from the `protocol_tools` reactiveVal (updated by mod_tools_master_server
+    # whenever a tool is added or removed) so that this output re-evaluates
+    # reactively and the conditionalPanel shows/hides correctly.
     output$tool_present <- shiny::renderText({
-      if (isTRUE(protocol$.tool_household_iphra)) "true" else "false"
+      if ("tool_household_iphra_v2" %in% session$userData$protocol_tools()) "true" else "false"
     })
 
 

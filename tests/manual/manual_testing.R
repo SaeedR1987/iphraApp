@@ -19,3 +19,4 @@ test_protocol$tools$tool_household_iphra_v2$survey %>%
   dplyr::summarise(time = sum(as.numeric(time_seconds))) %>%
   dplyr::mutate(time_minutes = time / 60) %>%
   dplyr::filter(time > 0) %>% View()
+head(test_protocol$tools$tool_household_iphra_v2$revised_survey)

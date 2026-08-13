@@ -212,7 +212,7 @@ mod_tools_master_server <- function(id){
       # Small status indicator underneath the buttons.
       output[[paste0("status_tool_household_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_household_iphra) {
+      if("tool_household_iphra_v2" %in% session$userData$protocol_tools()) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")

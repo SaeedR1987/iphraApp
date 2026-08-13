@@ -12,7 +12,7 @@ mod_tools_household_ui <- function(id, all_indicators) {
 
   shiny::tagList(
     shiny::conditionalPanel(
-      condition = "output.tool_present == true",
+      condition = "output.tool_present == 'true'",
       ns = ns,
       shiny::fluidRow(
 
@@ -67,9 +67,10 @@ mod_tools_household_server <- function(id){
     # `.tool_household_iphra` is an active binding on the IPHRAProtocol
     # class that returns TRUE/FALSE depending on whether the household tool
     # has been added to the protocol object.
-    output$tool_present <- shiny::reactive({
-      protocol$.tool_household_iphra
+    output$tool_present <- shiny::renderText({
+      if (isTRUE(protocol$.tool_household_iphra)) "true" else "false"
     })
+
 
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
 

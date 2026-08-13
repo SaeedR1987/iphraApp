@@ -6,6 +6,10 @@ test_protocol$get_allowable_tools()
 
 test_protocol$add_tools("tool_household_iphra_v2")
 
+test_protocol$remove_tools("tool_household_iphra_v2")
+
+test_protocol$.tool_household_iphra
+
 test_protocol$tools$tool_household_iphra_v2$filter_survey_by_indicator(indicator_codes = )
 
 library(dplyr)

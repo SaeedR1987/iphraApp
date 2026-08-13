@@ -170,7 +170,33 @@ mod_tools_master_server <- function(id){
 
       observeEvent(input[[paste0("remove_", tool_name)]], {
         iphra_try({
-          iphra_remove_protocol_tool(tool_name, session)
+
+          if(tool_name == "tool_household_iphra_v2") {
+            protocol$remove_tools("tool_household_iphra_v2")
+          } else if(tool_name == "tool_kii_community_iphra_v2") {
+            protocol$remove_tools("tool_kii_community_iphra_v2")
+          } else if(tool_name == "tool_kii_fsl_service_provider_iphra_v2") {
+            protocol$remove_tools("tool_kii_fsl_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_wash_service_provider_iphra_v2") {
+            protocol$remove_tools("tool_kii_wash_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_markets_iphra_v2") {
+            protocol$remove_tools("tool_kii_markets_iphra_v2")
+          } else if(tool_name == "tool_kii_nutrition_service_provider_iphra_v2") {
+            protocol$remove_tools("tool_kii_nutrition_service_provider_iphra_v2")
+          } else if(tool_name == "tool_kii_health_service_provider_iphra_v2") {
+            protocol$remove_tools("tool_kii_health_service_provider_iphra_v2")
+          } else if(tool_name == "tool_obs_community_iphra_v2") {
+            protocol$remove_tools("tool_obs_community_iphra_v2")
+          } else if(tool_name == "tool_obs_crop_livestock_iphra_v1") {
+            protocol$remove_tools("tool_obs_crop_livestock_iphra_v1")
+          } else if(tool_name == "tool_obs_health_facility_iphra_v2") {
+            protocol$remove_tools("tool_obs_health_facility_iphra_v2")
+          } else if(tool_name == "tool_obs_latrine_iphra_v2") {
+            protocol$remove_tools("tool_obs_latrine_iphra_v2")
+          } else if(tool_name == "tool_obs_water_point_iphra_v2") {
+            protocol$remove_tools("tool_obs_water_point_iphra_v2")
+          }
+
         },
         on_error = "warn",
         origin   = paste0("Tools Master: Remove ", tool_name),
@@ -178,13 +204,126 @@ mod_tools_master_server <- function(id){
       }, ignoreInit = TRUE)
 
       # Small status indicator underneath the buttons.
-      output[[paste0("status_", tool_name)]] <- shiny::renderUI({
-        if (iphra_has_protocol_tool(tool_name, session)) {
+      output[[paste0("status_tool_household_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_household_iphra) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
         }
+
       })
+
+      output[[paste0("status_tool_kii_community_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_community_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_kii_fsl_service_provider_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_fsl_provider_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_kii_wash_service_provider_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_wash_provider_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_kii_markets_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_market_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_kii_nutrition_service_provider_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_nutrition_facility_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_kii_health_service_provider_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_health_facility_kii) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_obs_community_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_community_observation) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_obs_crop_livestock_iphra_v1")]] <- shiny::renderUI({
+
+        if(protocol$.tool_crops_livestock_observation) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_obs_health_facility_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_health_facility_observation) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_obs_latrine_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_latrine_observation) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
+      output[[paste0("status_tool_obs_water_point_iphra_v2")]] <- shiny::renderUI({
+
+        if(protocol$.tool_water_point_observation) {
+          shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
+        } else {
+          shiny::span(style = "color: #868e96;", "Not added")
+        }
+
+      })
+
     })
 
   })

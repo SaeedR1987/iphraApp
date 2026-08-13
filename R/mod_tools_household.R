@@ -68,8 +68,7 @@ mod_tools_household_server <- function(id){
     # whenever a tool is added or removed) so that this output re-evaluates
     # reactively and the conditionalPanel shows/hides correctly.
     output$tool_present <- shiny::renderText({
-      session$userData$protocol_tools()  # establish reactive dependency
-      if (isTRUE(protocol$.tool_household_iphra)) "true" else "false"
+      if ("tool_household_iphra_v2" %in% session$userData$protocol_tools()) "true" else "false"
     })
 
 

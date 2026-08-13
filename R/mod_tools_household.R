@@ -58,35 +58,27 @@ mod_tools_household_server <- function(id){
     ns <- session$ns
 
     # SETUP ####
-    protocol <- session$userData$modules[["protocol"]]
-    framework <- protocol$access_nested(field = "framework")
-    tool <- protocol$access_nested(field = "tools", name = "tool_household_iphra_v2")
-
-    # ---- All indicators from framework
-
-    all_indicators_static <- framework$master_indicator_bank[framework$master_indicator_bank$tool == "household", c("indicator_code", "indicator_name")]
+    protocol  <- session$userData$modules[["protocol"]]
+    tool      <- protocol$tools$tool_household_iphra_v2
 
     #OUTPUTS ####
 
     # ---- Tool presence flag for conditional UI ----
+    # `.tool_household_iphra` is an active binding on the IPHRAProtocol
+    # class that returns TRUE/FALSE depending on whether the household tool
+    # has been added to the protocol object.
     output$tool_present <- shiny::reactive({
       protocol$.tool_household_iphra
     })
 
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
 
-    # ---- Reactive available indicators sourced from the framework's
-    # modified_indicator_bank (indicator_name used for display). Falls
-    # back to the static list when the bank is empty so the UI still
-    # shows something during early / stub sessions. ----
-
     # REACTIVES ####
 
     all_indicators <- shiny::reactive({
-      # Re-evaluate whenever the indicator bank version changes.
-
-      framework$modified_indicator_bank[framework$modified_indicator_bank$tool == "household", c("indicator_code", "indicator_name")]
-
+      fw <- session$userData$modules[["protocol"]]$framework
+      bank <- fw$modified_indicator_bank
+      bank[bank$tool == "household", c("indicator_code", "indicator_name")]
     })
 
     selected <- shiny::reactiveVal(character(0))
@@ -125,33 +117,49 @@ mod_tools_household_server <- function(id){
     })
 
     # ---- Summary table ----
+    # Groups the household tool's `revised_survey` by `indicator_code` and
+    # reports the total time (in minutes) each selected indicator
+    # contributes to the questionnaire, based on the `time_seconds` field
+    # on the revised survey rows.
     output$summary_table <- shiny::renderTable({
 
-      sel <- selected()
+      sel_df <- selected_indicators()
 
-      if (length(sel) == 0) {
-        return(data.frame(
-          Sector = c(names(indicators), "Total"),
-          Indicators = 0,
-          Minutes = 0
-        ))
-      }
-
-      sector_summary <- lapply(names(indicators), function(sector) {
-        inds <- indicators[[sector]]
-        count <- sum(sel %in% inds)
-        time <- sum(indicator_times[sel[sel %in% inds]])
-        data.frame(Sector = sector, Indicators = count, Minutes = time)
-      })
-      sector_summary <- do.call(rbind, sector_summary)
-
-      totals <- data.frame(
-        Sector = "Total",
-        Indicators = sum(sector_summary$Indicators),
-        Minutes = sum(sector_summary$Minutes)
+      empty <- data.frame(
+        Indicator = character(0),
+        Minutes   = numeric(0),
+        stringsAsFactors = FALSE
       )
 
-      rbind(sector_summary, totals)
+      if (nrow(sel_df) == 0) return(empty)
+
+      survey <- tool$revised_survey
+      if (is.null(survey) || !is.data.frame(survey) || nrow(survey) == 0 ||
+          !all(c("indicator_code", "time_seconds") %in% names(survey))) {
+        return(empty)
+      }
+
+      seconds_by_code <- tapply(
+        as.numeric(survey$time_seconds),
+        survey$indicator_code,
+        sum,
+        na.rm = TRUE
+      )
+
+      per_indicator <- data.frame(
+        Indicator = sel_df$indicator_name,
+        Minutes   = as.numeric(seconds_by_code[sel_df$indicator_code]) / 60,
+        stringsAsFactors = FALSE
+      )
+      per_indicator$Minutes[is.na(per_indicator$Minutes)] <- 0
+
+      totals <- data.frame(
+        Indicator = "Total",
+        Minutes   = sum(per_indicator$Minutes),
+        stringsAsFactors = FALSE
+      )
+
+      rbind(per_indicator, totals)
     })
 
     # OBSERVES ####
@@ -231,6 +239,95 @@ mod_tools_household_server <- function(id){
       hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
       )
     })
+
+    # Preset: Core
+    observeEvent(input$preset_core, {
+      iphra_try({
+        selected(c(
+          indicators$Demographics,
+          indicators$FSL_Core,
+          indicators$WASH_Core,
+          indicators$Health_Core,
+          indicators$Shelter_Core
+        ))
+        iphra_message(
+          iphra_txt("Core preset applied successfully."),
+          origin = iphra_txt("Household Tool: Preset Core")
+        )
+      },
+      on_error = "warn",
+      origin = iphra_txt("Household Tool: Preset Core"),
+      hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
+      )
+    })
+
+    # ---- Export Tool ----
+    #
+    # The Export button opens a modal that lets the user save an Excel
+    # workbook containing the household tool's `revised_survey`,
+    # `revised_choices` and `revised_settings` data frames as three sheets.
+    # The actual file writing happens through a `downloadHandler` (which
+    # is what shows the browser's native "save as" dialog); the modal is
+    # only used to surface that download link because the UI-side control
+    # is an `actionButton`, not a `downloadButton`.
+    observeEvent(input$export_tool, {
+      iphra_try({
+        if (!isTRUE(protocol$.tool_household_iphra)) {
+          shiny::showModal(shiny::modalDialog(
+            title = iphra_txt("Export Household Tool"),
+            iphra_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
+            footer = shiny::modalButton(iphra_txt("Close")),
+            easyClose = TRUE
+          ))
+          return(NULL)
+        }
+
+        shiny::showModal(shiny::modalDialog(
+          title = iphra_txt("Export Household Tool"),
+          shiny::tagList(
+            shiny::p(iphra_txt("Click below to save the Household tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
+            shiny::downloadButton(ns("download_tool"),
+                                  label = iphra_txt("Download Excel"),
+                                  class = "btn-success")
+          ),
+          footer = shiny::modalButton(iphra_txt("Cancel")),
+          easyClose = TRUE
+        ))
+      },
+      on_error = "warn",
+      origin = iphra_txt("Household Tool: Export"),
+      hint = iphra_txt("Ensure the Household tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
+      )
+    })
+
+    output$download_tool <- shiny::downloadHandler(
+      filename = function() {
+        paste0("tool_household_iphra_v2_",
+               format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
+      },
+      content = function(file) {
+        safe_df <- function(x) {
+          tryCatch({
+            if (is.null(x)) return(data.frame())
+            if (is.data.frame(x)) return(x)
+            as.data.frame(x)
+          }, error = function(e) data.frame())
+        }
+
+        sheets <- list(
+          revised_survey   = safe_df(tool$revised_survey),
+          revised_choices  = safe_df(tool$revised_choices),
+          revised_settings = safe_df(tool$revised_settings)
+        )
+
+        writexl::write_xlsx(sheets, path = file)
+
+        iphra_message(
+          iphra_txt("Household tool exported to Excel."),
+          origin = iphra_txt("Household Tool: Export")
+        )
+      }
+    )
 
   })
 }

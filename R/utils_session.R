@@ -65,6 +65,28 @@
 # ### 4. For Temporary Data (never serialized):
 #   session$userData$temp$cache$preview <- some_data
 #
+# ### 5. For R6 Objects Stored in session$userData$modules (e.g. IPHRAProtocol):
+#   R6 objects are plain mutable environments — assigning to or mutating one
+#   of their fields (e.g. `protocol$add_tools(...)`) does NOT invalidate any
+#   Shiny reactive context. Reading an R6 field directly inside a `reactive()`
+#   / `observe()` / `render*()` block will only ever compute once and then
+#   silently go stale.
+#
+#   To make an R6 object stored under `session$userData$modules` reactive:
+#     1. Register / replace it with `iphra_set_module(name, object, session)`.
+#     2. After ANY call that mutates the object's state, notify dependents by
+#        calling `iphra_touch_module(name, session)`.
+#     3. Never read the object directly for reactive purposes. Instead, use
+#        `iphra_get_module_reactive(name, session)`, which returns a
+#        `shiny::reactive()` that depends on the module's version counter and
+#        yields the current object reference:
+#          protocol_r <- iphra_get_module_reactive("protocol", session)
+#          protocol_r()$tools$tool_household_iphra_v2
+#   This "version counter" is the only reactive signal involved; the R6
+#   object itself remains a plain mutable object. This is the same technique
+#   originally hand-rolled as the `protocol_tools` reactiveVal, generalized so
+#   every R6 module in `session$userData$modules` can follow one convention.
+#
 # ────────────────────────────────────────────────────────────────────────────────
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -114,7 +136,23 @@ IPHRASession <- R6::R6Class(
         ),
         r_version = R.version.string
       )
+      # Reactive version counter, bumped on every `.touch()`. Lets Shiny
+      # reactive contexts depend on changes to this (otherwise non-reactive)
+      # R6 object's state via `get_version_signal()` / `iphra_reactive_state()`.
+      private$.version_signal <- shiny::reactiveVal(0)
       invisible(self)
+    },
+
+    #' @description
+    #' Get the reactive version signal for this session object. Calling the
+    #' returned function inside a Shiny reactive context (`reactive()`,
+    #' `observe()`, `render*()`) creates a dependency that invalidates
+    #' whenever the session state changes (i.e. whenever `set()`/`deserialize()`
+    #' /`clear_module()`/etc. are called).
+    #'
+    #' @return A `shiny::reactiveVal()` function.
+    get_version_signal = function() {
+      private$.version_signal
     },
 
     # ────────────────────────────────────────────────────
@@ -497,10 +535,17 @@ IPHRASession <- R6::R6Class(
     .state = NULL,
     .metadata = NULL,
     .serializable = list(),
+    .version_signal = NULL,
 
-    # Update modification timestamp
+    # Update modification timestamp and bump the reactive version signal so
+    # any Shiny reactive context depending on `get_version_signal()` (e.g.
+    # via `iphra_reactive_state()`) is invalidated and re-evaluates.
     .touch = function() {
       private$.modified_at <- Sys.time()
+      if (is.function(private$.version_signal)) {
+        current <- shiny::isolate(private$.version_signal())
+        private$.version_signal(current + 1)
+      }
     }
   )
 )
@@ -590,6 +635,22 @@ iphra_init_session <- function(session = shiny::getDefaultReactiveDomain(),
     # Store module-specific R6 objects or state here.
     # These are reinitialized on startup or after loading a project.
     session$userData$modules <- list()
+
+    # Reactive "version" signal per module (see `iphra_touch_module()` /
+    # `iphra_get_module_reactive()`). Each entry is a `shiny::reactiveVal()`
+    # counter; the module object itself in `session$userData$modules` stays
+    # a plain, non-reactive object. Bumping the counter is how mutating an
+    # R6 module's state (e.g. `protocol$add_tools()`) notifies dependents.
+    session$userData$modules_version <- list(
+      protocol = shiny::reactiveVal(0)
+    )
+
+    # Backwards-compatible alias: several mod_tools_* modules already read
+    # `session$userData$indicator_bank_version()` to know when the protocol's
+    # indicator bank has changed. Point it at the same reactiveVal used for
+    # the "protocol" module so it is kept in sync automatically whenever
+    # `iphra_touch_module("protocol", session)` is called.
+    session$userData$indicator_bank_version <- session$userData$modules_version[["protocol"]]
 
     #----------------------------------------------------------
     # 6. UI / Interaction state (transient)
@@ -853,6 +914,11 @@ iphra_reactive_state <- function(module_id, key,
                                   session = shiny::getDefaultReactiveDomain()) {
   shiny::reactive({
     iphra_session <- iphra_get_session(session)
+    # Depend on the session's reactive version signal so this reactive
+    # expression re-evaluates whenever `set()` (or any other mutating
+    # method) is called for ANY module, not just when Shiny happens to
+    # re-run this code for unrelated reasons.
+    iphra_session$get_version_signal()()
     iphra_session$get(module_id, key)
   })
 }
@@ -951,6 +1017,11 @@ iphra_get_modules <- function(session = shiny::getDefaultReactiveDomain()) {
 #' @title Set Module Object
 #' @description
 #' Register a module-specific object (R6, reactive, etc.) in the session.
+#' R6 objects are plain mutable environments and are not reactive on their
+#' own, so registering (or replacing) a module here also ensures a reactive
+#' "version" signal exists for it (see `iphra_touch_module()` and
+#' `iphra_get_module_reactive()`), and bumps that signal so any module
+#' reading the object reactively is refreshed to the newly-registered object.
 #'
 #' @param module_name Character string identifying the module.
 #' @param module_object The module object to store.
@@ -963,7 +1034,127 @@ iphra_set_module <- function(module_name, module_object,
     iphra_init_session(session)
   }
   session$userData$modules[[module_name]] <- module_object
+  iphra_touch_module(module_name, session)
   invisible(module_object)
+}
+
+#' @title Touch (Notify) a Module's Reactive Signal
+#' @description
+#' Bump the reactive "version" counter associated with a module stored in
+#' `session$userData$modules`. Call this immediately after mutating an R6
+#' module object's state (e.g. `protocol$add_tools(...)`) so that any Shiny
+#' reactive context created via `iphra_get_module_reactive()` is invalidated
+#' and re-evaluates with the module's latest state.
+#'
+#' @param module_name Character string identifying the module.
+#' @param session Shiny session object.
+#' @return Invisibly returns the new version number.
+#' @export
+#' @examples
+#' \dontrun{
+#' protocol <- iphra_get_modules(session)[["protocol"]]
+#' protocol$add_tools("tool_household_iphra_v2")
+#' iphra_touch_module("protocol", session)
+#' }
+iphra_touch_module <- function(module_name, session = shiny::getDefaultReactiveDomain()) {
+  if (is.null(session$userData$modules_version)) {
+    iphra_init_session(session)
+  }
+  if (is.null(session$userData$modules_version[[module_name]])) {
+    session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
+  }
+  version <- session$userData$modules_version[[module_name]]
+  new_value <- shiny::isolate(version()) + 1
+  version(new_value)
+  invisible(new_value)
+}
+
+#' @title Get a Reactive Accessor for a Module
+#' @description
+#' Returns a `shiny::reactive()` expression that depends on the module's
+#' version counter (bumped by `iphra_set_module()` / `iphra_touch_module()`)
+#' and yields the current module object. Use this instead of reading
+#' `session$userData$modules[[module_name]]` directly whenever the value
+#' needs to stay current inside a `reactive()`, `observe()`, or `render*()`
+#' block.
+#'
+#' @param module_name Character string identifying the module.
+#' @param session Shiny session object.
+#' @return A reactive expression returning the current module object.
+#' @export
+#' @examples
+#' \dontrun{
+#' protocol_r <- iphra_get_module_reactive("protocol", session)
+#' output$tool_present <- shiny::renderText({
+#'   if ("tool_household_iphra_v2" %in% names(protocol_r()$tools)) "true" else "false"
+#' })
+#' }
+iphra_get_module_reactive <- function(module_name, session = shiny::getDefaultReactiveDomain()) {
+  if (is.null(session$userData$modules_version)) {
+    iphra_init_session(session)
+  }
+  if (is.null(session$userData$modules_version[[module_name]])) {
+    session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
+  }
+  version <- session$userData$modules_version[[module_name]]
+
+  shiny::reactive({
+    version()
+    iphra_get_modules(session)[[module_name]]
+  })
+}
+
+#' @title Check if the Protocol Has a Given Tool
+#' @description
+#' Reactively checks whether a given tool is currently present on the
+#' `IPHRAProtocol` object registered as the `"protocol"` module. Depends on
+#' the protocol module's version signal, so it correctly re-evaluates inside
+#' a `reactive()` / `render*()` block whenever tools are added or removed via
+#' `protocol$add_tools()` / `protocol$remove_tools()` (followed by
+#' `iphra_touch_module("protocol", session)`).
+#'
+#' @param tool_name Character string with the tool's identifier
+#'   (e.g. `"tool_household_iphra_v2"`).
+#' @param session Shiny session object.
+#' @return Logical indicating whether the tool is present on the protocol.
+#' @export
+iphra_has_protocol_tool <- function(tool_name, session = shiny::getDefaultReactiveDomain()) {
+  protocol <- iphra_get_module_reactive("protocol", session)()
+  if (is.null(protocol) || is.null(protocol$tools)) {
+    return(FALSE)
+  }
+  tool_name %in% names(protocol$tools)
+}
+
+#' @title Get the Current Indicator Bank
+#' @description
+#' Reactively retrieves the modified indicator bank from the `IPHRAProtocol`
+#' object's `framework`. Depends on the protocol module's version signal, so
+#' it stays current when the protocol / framework changes.
+#'
+#' @param session Shiny session object.
+#' @return A data frame with the current modified indicator bank, or an
+#'   empty data frame with `indicator_code`, `indicator_name`, and `tool`
+#'   columns if the protocol or framework is not yet available.
+#' @export
+iphra_get_indicator_bank <- function(session = shiny::getDefaultReactiveDomain()) {
+  empty_bank <- data.frame(
+    indicator_code = character(0),
+    indicator_name = character(0),
+    tool = character(0),
+    stringsAsFactors = FALSE
+  )
+
+  protocol <- iphra_get_module_reactive("protocol", session)()
+  if (is.null(protocol) || is.null(protocol$framework)) {
+    return(empty_bank)
+  }
+
+  bank <- protocol$framework$modified_indicator_bank
+  if (is.null(bank) || !is.data.frame(bank)) {
+    return(empty_bank)
+  }
+  bank
 }
 
 #' @title Get UI State

@@ -8,9 +8,13 @@
 # row. The buttons drive the IPHRAProtocol object stored in
 # `session$userData$modules$protocol` via helpers in `utils_session.R`.
 #
-# Downstream mod_tools_* modules watch the reactive tools vector
-# (`session$userData$protocol_tools`) to dynamically show / hide their
-# sections.
+# Since the IPHRAProtocol R6 object is not reactive on its own, every
+# mutation (`protocol$add_tools()` / `protocol$remove_tools()`) is followed
+# by `iphra_touch_module("protocol", session)`, which bumps the protocol's
+# reactive version signal. Downstream mod_tools_* modules (and the status
+# badges below) read the protocol reactively via
+# `iphra_get_module_reactive("protocol", session)` / `iphra_has_protocol_tool()`
+# so they re-render whenever a tool is added or removed.
 #
 # ────────────────────────────────────────────────────────────────────────────────
 
@@ -126,6 +130,7 @@ mod_tools_master_server <- function(id){
     ns <- session$ns
 
     protocol  <- session$userData$modules[["protocol"]]
+    protocol_r <- iphra_get_module_reactive("protocol", session)
 
     tools <- iphra_tool_definitions()
 
@@ -162,8 +167,8 @@ mod_tools_master_server <- function(id){
             protocol$add_tools("tool_obs_water_point_iphra_v2")
           }
 
-          # Notify downstream modules that the tool list changed.
-          session$userData$protocol_tools(names(protocol$tools))
+          # Notify downstream modules that the protocol's state changed.
+          iphra_touch_module("protocol", session)
 
         },
         on_error = "warn",
@@ -200,8 +205,8 @@ mod_tools_master_server <- function(id){
             protocol$remove_tools("tool_obs_water_point_iphra_v2")
           }
 
-          # Notify downstream modules that the tool list changed.
-          session$userData$protocol_tools(names(protocol$tools))
+          # Notify downstream modules that the protocol's state changed.
+          iphra_touch_module("protocol", session)
 
         },
         on_error = "warn",
@@ -212,7 +217,7 @@ mod_tools_master_server <- function(id){
       # Small status indicator underneath the buttons.
       output[[paste0("status_tool_household_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_household_iphra) {
+        if(isTRUE(protocol_r()$.tool_household_iphra)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -222,7 +227,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_community_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_community_kii) {
+        if(isTRUE(protocol_r()$.tool_community_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -232,7 +237,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_fsl_service_provider_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_fsl_provider_kii) {
+        if(isTRUE(protocol_r()$.tool_fsl_provider_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -242,7 +247,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_wash_service_provider_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_wash_provider_kii) {
+        if(isTRUE(protocol_r()$.tool_wash_provider_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -252,7 +257,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_markets_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_market_kii) {
+        if(isTRUE(protocol_r()$.tool_market_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -262,7 +267,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_nutrition_service_provider_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_nutrition_facility_kii) {
+        if(isTRUE(protocol_r()$.tool_nutrition_facility_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -272,7 +277,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_kii_health_service_provider_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_health_facility_kii) {
+        if(isTRUE(protocol_r()$.tool_health_facility_kii)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -282,7 +287,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_obs_community_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_community_observation) {
+        if(isTRUE(protocol_r()$.tool_community_observation)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -292,7 +297,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_obs_crop_livestock_iphra_v1")]] <- shiny::renderUI({
 
-        if(protocol$.tool_crops_livestock_observation) {
+        if(isTRUE(protocol_r()$.tool_crops_livestock_observation)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -302,7 +307,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_obs_health_facility_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_health_facility_observation) {
+        if(isTRUE(protocol_r()$.tool_health_facility_observation)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -312,7 +317,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_obs_latrine_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_latrine_observation) {
+        if(isTRUE(protocol_r()$.tool_latrine_observation)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")
@@ -322,7 +327,7 @@ mod_tools_master_server <- function(id){
 
       output[[paste0("status_tool_obs_water_point_iphra_v2")]] <- shiny::renderUI({
 
-        if(protocol$.tool_water_point_observation) {
+        if(isTRUE(protocol_r()$.tool_water_point_observation)) {
           shiny::span(style = "color: #2b8a3e; font-weight: 600;", "Added")
         } else {
           shiny::span(style = "color: #868e96;", "Not added")

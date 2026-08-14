@@ -58,17 +58,18 @@ mod_tools_household_server <- function(id){
     ns <- session$ns
 
     # SETUP ####
-    protocol  <- session$userData$modules[["protocol"]]
-    tool      <- protocol$tools$tool_household_iphra_v2
+    protocol_r <- iphra_get_module_reactive("protocol", session)
+    tool_r     <- shiny::reactive({ protocol_r()$tools$tool_household_iphra_v2 })
 
     #OUTPUTS ####
 
     # ---- Tool presence flag for conditional UI ----
-    # Reads from the `protocol_tools` reactiveVal (updated by mod_tools_master_server
-    # whenever a tool is added or removed) so that this output re-evaluates
-    # reactively and the conditionalPanel shows/hides correctly.
+    # Reads reactively via `iphra_has_protocol_tool()`, which depends on the
+    # protocol module's version signal (bumped by mod_tools_master_server
+    # via `iphra_touch_module()` whenever a tool is added or removed), so
+    # this output re-evaluates and the conditionalPanel shows/hides correctly.
     output$tool_present <- shiny::renderText({
-      if ("tool_household_iphra_v2" %in% session$userData$protocol_tools()) "true" else "false"
+      if (iphra_has_protocol_tool("tool_household_iphra_v2", session)) "true" else "false"
     })
 
 
@@ -77,7 +78,7 @@ mod_tools_household_server <- function(id){
     # REACTIVES ####
 
     all_indicators <- shiny::reactive({
-      fw <- session$userData$modules[["protocol"]]$framework
+      fw <- protocol_r()$framework
       bank <- fw$modified_indicator_bank
       bank[bank$tool == "household", c("indicator_code", "indicator_name")]
     })
@@ -134,7 +135,7 @@ mod_tools_household_server <- function(id){
 
       if (nrow(sel_df) == 0) return(empty)
 
-      survey <- tool$revised_survey
+      survey <- tool_r()$revised_survey
       if (is.null(survey) || !is.data.frame(survey) || nrow(survey) == 0 ||
           !all(c("indicator_code", "time_seconds") %in% names(survey))) {
         return(empty)
@@ -171,7 +172,7 @@ mod_tools_household_server <- function(id){
 
         indicators_selected <- selected_indicators()
 
-        tool$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
+        tool_r()$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
 
         iphra_message(
           paste0(
@@ -273,7 +274,7 @@ mod_tools_household_server <- function(id){
     # is an `actionButton`, not a `downloadButton`.
     observeEvent(input$export_tool, {
       iphra_try({
-        if (!isTRUE(protocol$.tool_household_iphra)) {
+        if (!isTRUE(protocol_r()$.tool_household_iphra)) {
           shiny::showModal(shiny::modalDialog(
             title = iphra_txt("Export Household Tool"),
             iphra_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
@@ -316,9 +317,9 @@ mod_tools_household_server <- function(id){
         }
 
         sheets <- list(
-          revised_survey   = safe_df(tool$revised_survey),
-          revised_choices  = safe_df(tool$revised_choices),
-          revised_settings = safe_df(tool$revised_settings)
+          revised_survey   = safe_df(tool_r()$revised_survey),
+          revised_choices  = safe_df(tool_r()$revised_choices),
+          revised_settings = safe_df(tool_r()$revised_settings)
         )
 
         writexl::write_xlsx(sheets, path = file)

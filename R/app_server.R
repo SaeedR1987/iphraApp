@@ -389,9 +389,13 @@ app_server <- function(input, output, session) {
                                                           month_year = "2026-01-01"
                                                           ))
 
-  # Reactive vector of currently-added tool names.  Downstream mod_tools_*
-  # modules watch this to know when tools have been added or removed.
-  session$userData$protocol_tools <- shiny::reactiveVal(character(0))
+  # NOTE: `iphra_set_module()` above registers the protocol's reactive
+  # "version" signal (`session$userData$modules_version[["protocol"]]`).
+  # Any code that mutates the protocol object (e.g. `protocol$add_tools()`)
+  # must call `iphra_touch_module("protocol", session)` afterwards so
+  # dependent modules re-evaluate. Read the protocol reactively via
+  # `iphra_get_module_reactive("protocol", session)` instead of caching a
+  # one-time snapshot of the object. See `R/utils_session.R` for details.
 
   # iphra_get_log_store(session)
 

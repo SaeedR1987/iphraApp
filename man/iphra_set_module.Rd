@@ -22,4 +22,9 @@ Invisibly returns the module object.
 }
 \description{
 Register a module-specific object (R6, reactive, etc.) in the session.
+R6 objects are plain mutable environments and are not reactive on their
+own, so registering (or replacing) a module here also ensures a reactive
+"version" signal exists for it (see `iphra_touch_module()` and
+`iphra_get_module_reactive()`), and bumps that signal so any module
+reading the object reactively is refreshed to the newly-registered object.
 }

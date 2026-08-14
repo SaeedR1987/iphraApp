@@ -12,6 +12,7 @@ and deserialization (load) of project files.
 \subsection{Public methods}{
   \itemize{
     \item \href{#method-IPHRASession-initialize}{\code{IPHRASession$new()}}
+    \item \href{#method-IPHRASession-get_version_signal}{\code{IPHRASession$get_version_signal()}}
     \item \href{#method-IPHRASession-register_module}{\code{IPHRASession$register_module()}}
     \item \href{#method-IPHRASession-set}{\code{IPHRASession$set()}}
     \item \href{#method-IPHRASession-get}{\code{IPHRASession$get()}}
@@ -52,6 +53,25 @@ and deserialization (load) of project files.
   }
   \subsection{Returns}{
     A new IPHRASession object.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IPHRASession-get_version_signal"></a>}}
+\if{latex}{\out{\hypertarget{method-IPHRASession-get_version_signal}{}}}
+\subsection{\code{IPHRASession$get_version_signal()}}{
+  Get the reactive version signal for this session object. Calling the
+returned function inside a Shiny reactive context (`reactive()`,
+`observe()`, `render*()`) creates a dependency that invalidates
+whenever the session state changes (i.e. whenever `set()`/`deserialize()`
+/`clear_module()`/etc. are called).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{IPHRASession$get_version_signal()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A `shiny::reactiveVal()` function.
   }
 }
 

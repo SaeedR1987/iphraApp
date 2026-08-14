@@ -641,16 +641,20 @@ iphra_init_session <- function(session = shiny::getDefaultReactiveDomain(),
     # counter; the module object itself in `session$userData$modules` stays
     # a plain, non-reactive object. Bumping the counter is how mutating an
     # R6 module's state (e.g. `protocol$add_tools()`) notifies dependents.
-    session$userData$modules_version <- list(
-      protocol = shiny::reactiveVal(0)
-    )
+    # This whole init block only runs once per session (guarded by the
+    # `session_id` check above), but entries are still preserved rather than
+    # clobbered here so that `.iphra_module_version()` remains the single
+    # source of truth for lazily creating counters for any module name.
+    if (is.null(session$userData$modules_version)) {
+      session$userData$modules_version <- list()
+    }
 
     # Backwards-compatible alias: several mod_tools_* modules already read
     # `session$userData$indicator_bank_version()` to know when the protocol's
     # indicator bank has changed. Point it at the same reactiveVal used for
     # the "protocol" module so it is kept in sync automatically whenever
     # `iphra_touch_module("protocol", session)` is called.
-    session$userData$indicator_bank_version <- session$userData$modules_version[["protocol"]]
+    session$userData$indicator_bank_version <- .iphra_module_version("protocol", session)
 
     #----------------------------------------------------------
     # 6. UI / Interaction state (transient)
@@ -1038,6 +1042,28 @@ iphra_set_module <- function(module_name, module_object,
   invisible(module_object)
 }
 
+#' @title Ensure a Module's Reactive Version Counter Exists
+#' @description
+#' Internal helper that lazily creates (if needed) and returns the
+#' `shiny::reactiveVal()` counter backing a module's reactive signal, without
+#' wrapping it in a `shiny::reactive()`. Used by `iphra_touch_module()`,
+#' `iphra_get_module_reactive()`, `iphra_has_protocol_tool()`, and
+#' `iphra_get_indicator_bank()` so they all share one source of truth.
+#'
+#' @param module_name Character string identifying the module.
+#' @param session Shiny session object.
+#' @return The `shiny::reactiveVal()` function for this module.
+#' @keywords internal
+.iphra_module_version <- function(module_name, session) {
+  if (is.null(session$userData$modules_version)) {
+    iphra_init_session(session)
+  }
+  if (is.null(session$userData$modules_version[[module_name]])) {
+    session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
+  }
+  session$userData$modules_version[[module_name]]
+}
+
 #' @title Touch (Notify) a Module's Reactive Signal
 #' @description
 #' Bump the reactive "version" counter associated with a module stored in
@@ -1057,13 +1083,7 @@ iphra_set_module <- function(module_name, module_object,
 #' iphra_touch_module("protocol", session)
 #' }
 iphra_touch_module <- function(module_name, session = shiny::getDefaultReactiveDomain()) {
-  if (is.null(session$userData$modules_version)) {
-    iphra_init_session(session)
-  }
-  if (is.null(session$userData$modules_version[[module_name]])) {
-    session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
-  }
-  version <- session$userData$modules_version[[module_name]]
+  version <- .iphra_module_version(module_name, session)
   new_value <- shiny::isolate(version()) + 1
   version(new_value)
   invisible(new_value)
@@ -1090,13 +1110,7 @@ iphra_touch_module <- function(module_name, session = shiny::getDefaultReactiveD
 #' })
 #' }
 iphra_get_module_reactive <- function(module_name, session = shiny::getDefaultReactiveDomain()) {
-  if (is.null(session$userData$modules_version)) {
-    iphra_init_session(session)
-  }
-  if (is.null(session$userData$modules_version[[module_name]])) {
-    session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
-  }
-  version <- session$userData$modules_version[[module_name]]
+  version <- .iphra_module_version(module_name, session)
 
   shiny::reactive({
     version()
@@ -1113,13 +1127,21 @@ iphra_get_module_reactive <- function(module_name, session = shiny::getDefaultRe
 #' `protocol$add_tools()` / `protocol$remove_tools()` (followed by
 #' `iphra_touch_module("protocol", session)`).
 #'
+#' Must be called from within an active reactive context (e.g. inside
+#' `shiny::reactive()`, `shiny::observe()`, `render*()`, or `shiny::isolate()`)
+#' for the dependency to be established; the version counter is read
+#' directly rather than via a freshly-constructed `shiny::reactive()`.
+#'
 #' @param tool_name Character string with the tool's identifier
 #'   (e.g. `"tool_household_iphra_v2"`).
 #' @param session Shiny session object.
 #' @return Logical indicating whether the tool is present on the protocol.
 #' @export
 iphra_has_protocol_tool <- function(tool_name, session = shiny::getDefaultReactiveDomain()) {
-  protocol <- iphra_get_module_reactive("protocol", session)()
+  version <- .iphra_module_version("protocol", session)
+  version()
+
+  protocol <- iphra_get_modules(session)[["protocol"]]
   if (is.null(protocol) || is.null(protocol$tools)) {
     return(FALSE)
   }
@@ -1131,6 +1153,10 @@ iphra_has_protocol_tool <- function(tool_name, session = shiny::getDefaultReacti
 #' Reactively retrieves the modified indicator bank from the `IPHRAProtocol`
 #' object's `framework`. Depends on the protocol module's version signal, so
 #' it stays current when the protocol / framework changes.
+#'
+#' Must be called from within an active reactive context (see
+#' `iphra_has_protocol_tool()` for details); the version counter is read
+#' directly rather than via a freshly-constructed `shiny::reactive()`.
 #'
 #' @param session Shiny session object.
 #' @return A data frame with the current modified indicator bank, or an
@@ -1145,7 +1171,10 @@ iphra_get_indicator_bank <- function(session = shiny::getDefaultReactiveDomain()
     stringsAsFactors = FALSE
   )
 
-  protocol <- iphra_get_module_reactive("protocol", session)()
+  version <- .iphra_module_version("protocol", session)
+  version()
+
+  protocol <- iphra_get_modules(session)[["protocol"]]
   if (is.null(protocol) || is.null(protocol$framework)) {
     return(empty_bank)
   }

@@ -1,4 +1,4 @@
-#' tools_household UI Function
+#' tools_community UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,72 +7,67 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_tools_household_ui <- function(id, all_indicators) {
+mod_tools_community_kii_ui <- function(id) {
   ns <- NS(id)
+  tagList(
 
-  shiny::tagList(
     shiny::conditionalPanel(
       condition = "output.tool_present == 'true'",
       ns = ns,
       shiny::fluidRow(
-
-        # --- Existing Indicators Preset Box ---
         shinydashboard::box(
-        title = "Household Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core"), "Core"),
-        shiny::actionButton(ns("export_tool"), "Export Household Tool", class = "btn-success")
-      )
-    ),
-
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("sector_filter_ui"))
-        ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("pillar_filter_ui"))
-        ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("subpillar_filter_ui"))
-        ),
-    ),
-
-    shiny::br(),
-
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_ui"))
-      ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
+          title = "Community Key Informant Tool - Presets",
           width = 12,
-          shiny::tableOutput(ns("summary_table"))
+          shiny::actionButton(ns("preset_obj_kii"), "Match Objectives"),
+          shiny::actionButton(ns("preset_core_kii"), "Core KII"),
+          shiny::actionButton(ns("preset_full_kii"), "Full KII"),
+          shiny::actionButton(ns("export_tool_kii"), "Export Community KII Tool", class = "btn-success"),
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("sector_filter_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("pillar_filter_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("subpillar_filter_ui"))
+        ),
+      ),
+      shiny::br(),
+      shiny::fluidRow(
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("available_ui"))
+        ),
+        shiny::column(
+          4,
+          shiny::uiOutput(ns("selected_ui"))
+        ),
+        shiny::column(
+          4,
+          shinydashboard::box(
+            title = "Summary of Selected Indicators",
+            width = 12,
+            shiny::tableOutput(ns("summary_table"))
+          )
         )
       )
     )
-    )  # /conditionalPanel
+
   )
 }
 
-#' tools_household Server Functions
+#' tools_community Server Functions
 #'
 #' @noRd
-mod_tools_household_server <- function(id){
+mod_tools_community_kii_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-
-    # SETUP ####
 
     protocol_r <- phr_get_module_reactive("protocol", session)
 
@@ -127,22 +122,15 @@ mod_tools_household_server <- function(id){
 
     })
 
-    # tool_r     <- shiny::reactive({ protocol_r()$tools$tool_household_iphra_v2 })
-
     #OUTPUTS ####
 
     # ---- Tool presence flag for conditional UI ----
-    # Reads reactively via `iphra_has_protocol_tool()`, which depends on the
-    # protocol module's version signal (bumped by mod_tools_master_server
-    # via `phr_touch_module()` whenever a tool is added or removed), so
-    # this output re-evaluates and the conditionalPanel shows/hides correctly.
+
     output$tool_present <- shiny::renderText({
-      if (isTRUE(protocol_r()$.tool_household_iphra)) "true" else "false"
+      if (isTRUE(protocol_r()$.tool_community_kii)) "true" else "false"
     })
 
     shiny::outputOptions(output, "tool_present", suspendWhenHidden = FALSE)
-
-    # REACTIVES ####
 
     all_indicators <- shiny::reactive({
 
@@ -154,7 +142,7 @@ mod_tools_household_server <- function(id){
       ]
 
       bank <- protocol_r()$framework$modified_indicator_bank[
-        protocol_r()$framework$modified_indicator_bank$tool == "household",
+        protocol_r()$framework$modified_indicator_bank$tool == "kii_community",
         c("objective_code", "indicator_code", "indicator_name")
       ]
 
@@ -171,8 +159,6 @@ mod_tools_household_server <- function(id){
 
       inds[inds$indicator_name %in% sel, ]
     })
-
-    # OUTPUTS ####
 
     output$sector_filter_ui <- renderUI({
 
@@ -234,11 +220,6 @@ mod_tools_household_server <- function(id){
       )
     })
 
-    # ---- Summary table ----
-    # Groups the household tool's `revised_survey` by `indicator_code` and
-    # reports the total time (in minutes) each selected indicator
-    # contributes to the questionnaire, based on the `time_seconds` field
-    # on the revised survey rows.
     output$summary_table <- shiny::renderTable({
 
       sel_df <- selected_indicators()
@@ -251,7 +232,7 @@ mod_tools_household_server <- function(id){
 
       if (nrow(sel_df) == 0) return(empty)
 
-      survey <- protocol_r()$tools$tool_household_iphra_v2$revised_survey
+      survey <- protocol_r()$tools$tool_kii_community_iphra_v2$revised_survey
       if (is.null(survey) || !is.data.frame(survey) || nrow(survey) == 0 ||
           !all(c("indicator_code", "time_seconds") %in% names(survey))) {
         return(empty)
@@ -299,7 +280,7 @@ mod_tools_household_server <- function(id){
           return(NULL)
         }
 
-        protocol_r()$tools$tool_household_iphra_v2$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
+        protocol_r()$tools$tool_kii_community_iphra_v2$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
 
         phr_touch_module("protocol")
 
@@ -308,34 +289,161 @@ mod_tools_household_server <- function(id){
             iphra_txt("Selection synchronized with: "),
             paste(input$selected, collapse = ", ")
           ),
-          origin = iphra_txt("Household Tool: Selection Sync")
+          origin = iphra_txt("Community KII Tool: Selection Sync")
         )
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Selection Sync"),
+      origin = iphra_txt("Community KII Tool: Selection Sync"),
       hint = iphra_txt("Ensure the drag-and-drop or selection input is properly bound.")
       )
     })
-
-    # ---- Presets ----
+    # ---- Presets (KII)
 
     # Preset: Objectives
-    observeEvent(input$preset_obj, {
+    observeEvent(input$preset_obj_kii, {
       iphra_try({
 
+        # 1️⃣ VALIDATION & PRECONDITIONS
+
         result <- iphra_try_step({
-          selected(c(
-          indicators$Demographics,
-          indicators$FSL_Core,
-          indicators$WASH_Core,
-          indicators$Health_Core,
-          indicators$Shelter_Core
+
+        iphra_message(
+          iphra_txt("Validation checks passed (dummy mode)."),
+          origin = iphra_txt("KII Tool: Preset Objectives")
+        )
+
+
+        }, step = "mod_tools_community_server/observeEvent_preset_obj_kii/Validation")
+        if (iphra_failed(result)) return(result)
+
+
+        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
+
+        result <- iphra_try_step({
+
+        selected_kii(c(
+          indicators_kii$Demographics,
+          indicators_kii$FSL_Core,
+          indicators_kii$WASH_Core,
+          indicators_kii$Health_Core,
+          indicators_kii$Shelter_Core
         ))
         iphra_message(
-          iphra_txt("Objectives preset applied successfully."),
-          origin = iphra_txt("Household Tool: Preset Objectives")
+          iphra_txt("KII objectives preset applied successfully."),
+          origin = iphra_txt("KII Tool: Preset Objectives")
         )
-        }, step = "mod_tools_household_server/observeEvent_preset_obj/Core Logic")
+
+        # --- Future: update project session state for KII objectives ---
+        # session$userData$project$set_selection("kii", selected_kii())
+
+
+        }, step = "mod_tools_community_server/observeEvent_preset_obj_kii/Core Logic")
+        if (iphra_failed(result)) return(result)
+
+
+        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
+
+        result <- iphra_try_step({
+
+        iphra_message(
+          iphra_txt("KII objectives preset selection completed."),
+          origin = iphra_txt("KII Tool: Preset Objectives")
+        )
+        }, step = "mod_tools_community_server/observeEvent_preset_obj_kii/Result Handling")
+        if (iphra_failed(result)) return(result)
+
+},
+      on_error = "warn",
+      origin = iphra_txt("KII Tool: Preset Objectives"),
+      hint = iphra_txt("Verify that indicators_kii object is correctly defined and accessible.")
+      )
+    })
+
+    # Preset: Core
+    observeEvent(input$preset_core_kii, {
+      iphra_try({
+
+
+
+        # 1️⃣ VALIDATION
+
+        result <- iphra_try_step({
+          iphra_message(
+          iphra_txt("Validation checks passed (dummy mode)."),
+          origin = iphra_txt("KII Tool: Preset Core")
+        )
+        }, step = "mod_tools_community_server/observeEvent_preset_core_kii/Validation")
+        if (iphra_failed(result)) return(result)
+
+
+        # 2️⃣ CORE LOGIC
+
+        result <- iphra_try_step({
+          selected_kii(c(
+          indicators_kii$FSL_Core,
+          indicators_kii$WASH_Core,
+          indicators_kii$Health_Core,
+          indicators_kii$Nutrition_Core,
+          indicators_kii$Shelter_Core
+        ))
+        iphra_message(
+          iphra_txt("KII core preset applied successfully."),
+          origin = iphra_txt("KII Tool: Preset Core")
+        )
+
+        # --- Future: propagate selection to session for KII core indicators ---
+        # session$userData$project$set_selection("kii_core", selected_kii())
+        }, step = "mod_tools_community_server/observeEvent_preset_core_kii/Core Logic")
+        if (iphra_failed(result)) return(result)
+
+
+        # 3️⃣ RESULT HANDLING
+
+        result <- iphra_try_step({
+          iphra_message(
+          iphra_txt("KII core preset selection completed."),
+          origin = iphra_txt("KII Tool: Preset Core")
+        )
+        }, step = "mod_tools_community_server/observeEvent_preset_core_kii/Result Handling")
+        if (iphra_failed(result)) return(result)
+
+},
+      on_error = "warn",
+      origin = iphra_txt("KII Tool: Preset Core"),
+      hint = iphra_txt("Check that indicators_kii core components exist and are populated.")
+      )
+    })
+
+
+    # Preset: Full
+    observeEvent(input$preset_full_kii, {
+      iphra_try({
+
+
+
+        # 1️⃣ VALIDATION
+
+        result <- iphra_try_step({
+          iphra_message(
+          iphra_txt("Validation checks passed (dummy mode)."),
+          origin = iphra_txt("KII Tool: Preset Full")
+        )
+        }, step = "mod_tools_community_server/observeEvent_preset_full_kii/Validation")
+        if (iphra_failed(result)) return(result)
+
+
+        # 2️⃣ CORE LOGIC
+
+        result <- iphra_try_step({
+          selected_kii(all_indicators_kii())
+        iphra_message(
+          iphra_txt("Full KII preset applied successfully."),
+          origin = iphra_txt("KII Tool: Preset Full")
+        )
+
+        # --- Future: sync with project session-level KII data ---
+        # session$userData$project$set_selection("kii_full", selected_kii())
+        }, step = "mod_tools_community_server/observeEvent_preset_full_kii/Core Logic")
         if (iphra_failed(result)) return(result)
 
 
@@ -343,37 +451,16 @@ mod_tools_household_server <- function(id){
 
         result <- iphra_try_step({
           iphra_message(
-          iphra_txt("Preset Objectives selection completed."),
-          origin = iphra_txt("Household Tool: Preset Objectives")
+          iphra_txt("Full KII preset selection completed."),
+          origin = iphra_txt("KII Tool: Preset Full")
         )
-        }, step = "mod_tools_household_server/observeEvent_preset_obj/Result Handling")
+        }, step = "mod_tools_community_server/observeEvent_preset_full_kii/Result Handling")
         if (iphra_failed(result)) return(result)
 
-      },
+},
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Preset Objectives"),
-      hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
-      )
-    })
-
-    # Preset: Core
-    observeEvent(input$preset_core, {
-      iphra_try({
-        selected(c(
-          indicators$Demographics,
-          indicators$FSL_Core,
-          indicators$WASH_Core,
-          indicators$Health_Core,
-          indicators$Shelter_Core
-        ))
-        iphra_message(
-          iphra_txt("Core preset applied successfully."),
-          origin = iphra_txt("Household Tool: Preset Core")
-        )
-      },
-      on_error = "warn",
-      origin = iphra_txt("Household Tool: Preset Core"),
-      hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
+      origin = iphra_txt("KII Tool: Preset Full"),
+      hint = iphra_txt("Ensure all_indicators_kii object is properly defined in the environment.")
       )
     })
 
@@ -388,10 +475,10 @@ mod_tools_household_server <- function(id){
     # is an `actionButton`, not a `downloadButton`.
     observeEvent(input$export_tool, {
       iphra_try({
-        if (!isTRUE(protocol_r()$.tool_household_iphra)) {
+        if (!isTRUE(protocol_r()$.tool_community_kii)) {
           shiny::showModal(shiny::modalDialog(
-            title = iphra_txt("Export Household Tool"),
-            iphra_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
+            title = iphra_txt("Export Community KII Tool"),
+            iphra_txt("The Community Key Informant tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
             footer = shiny::modalButton(iphra_txt("Close")),
             easyClose = TRUE
           ))
@@ -399,9 +486,9 @@ mod_tools_household_server <- function(id){
         }
 
         shiny::showModal(shiny::modalDialog(
-          title = iphra_txt("Export Household Tool"),
+          title = iphra_txt("Export Community KII Tool"),
           shiny::tagList(
-            shiny::p(iphra_txt("Click below to save the Household tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
+            shiny::p(iphra_txt("Click below to save the Community Key Informant tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
             shiny::downloadButton(ns("download_tool"),
                                   label = iphra_txt("Download Excel"),
                                   class = "btn-success")
@@ -411,14 +498,14 @@ mod_tools_household_server <- function(id){
         ))
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Export"),
-      hint = iphra_txt("Ensure the Household tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
+      origin = iphra_txt("Community KII Tool: Export"),
+      hint = iphra_txt("Ensure the Community Key Informant tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
       )
     })
 
     output$download_tool <- shiny::downloadHandler(
       filename = function() {
-        paste0("tool_household_iphra_v2_",
+        paste0("tool_kii_community_iphra_v2",
                format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
       },
       content = function(file) {
@@ -431,25 +518,27 @@ mod_tools_household_server <- function(id){
         }
 
         sheets <- list(
-          survey   = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_survey),
-          choices  = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_choices),
-          settings = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_settings)
+          survey   = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_survey),
+          choices  = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_choices),
+          settings = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_settings)
         )
 
         writexl::write_xlsx(sheets, path = file)
 
         iphra_message(
-          iphra_txt("Household tool exported to Excel."),
-          origin = iphra_txt("Household Tool: Export")
+          iphra_txt("Community Key Informant tool exported to Excel."),
+          origin = iphra_txt("Community KII Tool: Export")
         )
       }
     )
 
+
   })
+
 }
 
 ## To be copied in the UI
-# mod_tools_household_ui("tools_household_1")
+# mod_tools_community_ui("tools_community_1")
 
 ## To be copied in the server
-# mod_tools_household_server("tools_household_1")
+# mod_tools_community_server("tools_community_1")

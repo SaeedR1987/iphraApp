@@ -10,10 +10,10 @@
 #
 # Since the IPHRAProtocol R6 object is not reactive on its own, every
 # mutation (`protocol$add_tools()` / `protocol$remove_tools()`) is followed
-# by `iphra_touch_module("protocol", session)`, which bumps the protocol's
+# by `phr_touch_module("protocol", session)`, which bumps the protocol's
 # reactive version signal. Downstream mod_tools_* modules (and the status
 # badges below) read the protocol reactively via
-# `iphra_get_module_reactive("protocol", session)` / `iphra_has_protocol_tool()`
+# `phr_get_module_reactive("protocol", session)` / `iphra_has_protocol_tool()`
 # so they re-render whenever a tool is added or removed.
 #
 # ────────────────────────────────────────────────────────────────────────────────
@@ -25,16 +25,17 @@ iphra_tool_definitions <- function() {
   list(
     list(name = "tool_household_iphra_v2",                     label = "Household"),
     list(name = "tool_kii_community_iphra_v2",                 label = "Community KII"),
-    list(name = "tool_kii_fsl_service_provider_iphra_v2",      label = "FSL Service Provider KII"),
-    list(name = "tool_kii_wash_service_provider_iphra_v2",     label = "WASH Service Provider KII"),
-    list(name = "tool_kii_markets_iphra_v2",                   label = "Markets KII"),
-    list(name = "tool_kii_nutrition_service_provider_iphra_v2",label = "Nutrition Service Provider KII"),
-    list(name = "tool_kii_health_service_provider_iphra_v2",   label = "Health Service Provider KII"),
     list(name = "tool_obs_community_iphra_v2",                 label = "Community Observation"),
+    list(name = "tool_kii_fsl_service_provider_iphra_v2",      label = "FSL Service Provider KII"),
+    list(name = "tool_kii_markets_iphra_v2",                   label = "Markets KII"),
     list(name = "tool_obs_crop_livestock_iphra_v1",            label = "Crop & Livestock Observation"),
+    list(name = "tool_kii_health_service_provider_iphra_v2",   label = "Health Service Provider KII"),
     list(name = "tool_obs_health_facility_iphra_v2",           label = "Health Facility Observation"),
-    list(name = "tool_obs_latrine_iphra_v2",                   label = "Latrine Observation"),
-    list(name = "tool_obs_water_point_iphra_v2",               label = "Water Point Observation")
+    list(name = "tool_kii_nutrition_service_provider_iphra_v2",label = "Nutrition Service Provider KII"),
+    list(name = "tool_kii_wash_service_provider_iphra_v2",     label = "WASH Service Provider KII"),
+    list(name = "tool_obs_water_point_iphra_v2",               label = "Water Point Observation"),
+    list(name = "tool_obs_latrine_iphra_v2",                   label = "Latrine Observation")
+
   )
 }
 
@@ -60,9 +61,10 @@ mod_tools_master_ui <- function(id) {
         display: inline-flex;
         flex-direction: column;
         align-items: stretch;
-        min-width: 170px;
+        min-width: 100px;
+        max-width: 130px;
         margin: 4px 6px;
-        padding: 8px 10px;
+        padding: 6px 8px;
         border: 1px solid #d0d5db;
         border-radius: 6px;
         background-color: #f8f9fa;
@@ -70,7 +72,7 @@ mod_tools_master_ui <- function(id) {
         box-shadow: 0 1px 2px rgba(0,0,0,0.04);
       ",
       shiny::div(
-        style = "font-weight: 600; font-size: 13px; text-align: center;
+        style = "font-weight: 600; font-size: 11px; text-align: center;
                  margin-bottom: 8px; line-height: 1.25em;",
         t$label
       ),
@@ -108,7 +110,7 @@ mod_tools_master_ui <- function(id) {
         shiny::h4("Tools"),
         shiny::div(
           style = "
-            white-space: nowrap;
+            white-space: normal;
             overflow-x: auto;
             padding: 6px 2px 12px 2px;
             border-top: 1px solid #eee;
@@ -129,8 +131,7 @@ mod_tools_master_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    protocol  <- session$userData$modules[["protocol"]]
-    protocol_r <- iphra_get_module_reactive("protocol", session)
+    protocol_r <- phr_get_module_reactive("protocol", session)
 
     tools <- iphra_tool_definitions()
 
@@ -142,33 +143,33 @@ mod_tools_master_server <- function(id){
         iphra_try({
 
           if(tool_name == "tool_household_iphra_v2") {
-            protocol$add_tools("tool_household_iphra_v2")
+            protocol_r()$add_tools("tool_household_iphra_v2")
           } else if(tool_name == "tool_kii_community_iphra_v2") {
-            protocol$add_tools("tool_kii_community_iphra_v2")
+            protocol_r()$add_tools("tool_kii_community_iphra_v2")
           } else if(tool_name == "tool_kii_fsl_service_provider_iphra_v2") {
-            protocol$add_tools("tool_kii_fsl_service_provider_iphra_v2")
+            protocol_r()$add_tools("tool_kii_fsl_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_wash_service_provider_iphra_v2") {
-            protocol$add_tools("tool_kii_wash_service_provider_iphra_v2")
+            protocol_r()$add_tools("tool_kii_wash_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_markets_iphra_v2") {
-            protocol$add_tools("tool_kii_markets_iphra_v2")
+            protocol_r()$add_tools("tool_kii_markets_iphra_v2")
           } else if(tool_name == "tool_kii_nutrition_service_provider_iphra_v2") {
-            protocol$add_tools("tool_kii_nutrition_service_provider_iphra_v2")
+            protocol_r()$add_tools("tool_kii_nutrition_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_health_service_provider_iphra_v2") {
-            protocol$add_tools("tool_kii_health_service_provider_iphra_v2")
+            protocol_r()$add_tools("tool_kii_health_service_provider_iphra_v2")
           } else if(tool_name == "tool_obs_community_iphra_v2") {
-            protocol$add_tools("tool_obs_community_iphra_v2")
+            protocol_r()$add_tools("tool_obs_community_iphra_v2")
           } else if(tool_name == "tool_obs_crop_livestock_iphra_v1") {
-            protocol$add_tools("tool_obs_crop_livestock_iphra_v1")
+            protocol_r()$add_tools("tool_obs_crop_livestock_iphra_v1")
           } else if(tool_name == "tool_obs_health_facility_iphra_v2") {
-            protocol$add_tools("tool_obs_health_facility_iphra_v2")
+            protocol_r()$add_tools("tool_obs_health_facility_iphra_v2")
           } else if(tool_name == "tool_obs_latrine_iphra_v2") {
-            protocol$add_tools("tool_obs_latrine_iphra_v2")
+            protocol_r()$add_tools("tool_obs_latrine_iphra_v2")
           } else if(tool_name == "tool_obs_water_point_iphra_v2") {
-            protocol$add_tools("tool_obs_water_point_iphra_v2")
+            protocol_r()$add_tools("tool_obs_water_point_iphra_v2")
           }
 
           # Notify downstream modules that the protocol's state changed.
-          iphra_touch_module("protocol", session)
+          phr_touch_module("protocol", session)
 
         },
         on_error = "warn",
@@ -180,33 +181,33 @@ mod_tools_master_server <- function(id){
         iphra_try({
 
           if(tool_name == "tool_household_iphra_v2") {
-            protocol$remove_tools("tool_household_iphra_v2")
+            protocol_r()$remove_tools("tool_household_iphra_v2")
           } else if(tool_name == "tool_kii_community_iphra_v2") {
-            protocol$remove_tools("tool_kii_community_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_community_iphra_v2")
           } else if(tool_name == "tool_kii_fsl_service_provider_iphra_v2") {
-            protocol$remove_tools("tool_kii_fsl_service_provider_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_fsl_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_wash_service_provider_iphra_v2") {
-            protocol$remove_tools("tool_kii_wash_service_provider_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_wash_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_markets_iphra_v2") {
-            protocol$remove_tools("tool_kii_markets_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_markets_iphra_v2")
           } else if(tool_name == "tool_kii_nutrition_service_provider_iphra_v2") {
-            protocol$remove_tools("tool_kii_nutrition_service_provider_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_nutrition_service_provider_iphra_v2")
           } else if(tool_name == "tool_kii_health_service_provider_iphra_v2") {
-            protocol$remove_tools("tool_kii_health_service_provider_iphra_v2")
+            protocol_r()$remove_tools("tool_kii_health_service_provider_iphra_v2")
           } else if(tool_name == "tool_obs_community_iphra_v2") {
-            protocol$remove_tools("tool_obs_community_iphra_v2")
+            protocol_r()$remove_tools("tool_obs_community_iphra_v2")
           } else if(tool_name == "tool_obs_crop_livestock_iphra_v1") {
-            protocol$remove_tools("tool_obs_crop_livestock_iphra_v1")
+            protocol_r()$remove_tools("tool_obs_crop_livestock_iphra_v1")
           } else if(tool_name == "tool_obs_health_facility_iphra_v2") {
-            protocol$remove_tools("tool_obs_health_facility_iphra_v2")
+            protocol_r()$remove_tools("tool_obs_health_facility_iphra_v2")
           } else if(tool_name == "tool_obs_latrine_iphra_v2") {
-            protocol$remove_tools("tool_obs_latrine_iphra_v2")
+            protocol_r()$remove_tools("tool_obs_latrine_iphra_v2")
           } else if(tool_name == "tool_obs_water_point_iphra_v2") {
-            protocol$remove_tools("tool_obs_water_point_iphra_v2")
+            protocol_r()$remove_tools("tool_obs_water_point_iphra_v2")
           }
 
           # Notify downstream modules that the protocol's state changed.
-          iphra_touch_module("protocol", session)
+          phr_touch_module("protocol", session)
 
         },
         on_error = "warn",

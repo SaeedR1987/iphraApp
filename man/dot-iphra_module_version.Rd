@@ -17,7 +17,7 @@ The `shiny::reactiveVal()` function for this module.
 \description{
 Internal helper that lazily creates (if needed) and returns the
 `shiny::reactiveVal()` counter backing a module's reactive signal, without
-wrapping it in a `shiny::reactive()`. Used by `iphra_touch_module()`,
+wrapping it in a `shiny::reactive()`. Used by `phr_touch_module()`,
 `iphra_get_module_reactive()`, `iphra_has_protocol_tool()`, and
 `iphra_get_indicator_bank()` so they all share one source of truth.
 }

@@ -21,7 +21,7 @@ Reactively checks whether a given tool is currently present on the
 the protocol module's version signal, so it correctly re-evaluates inside
 a `reactive()` / `render*()` block whenever tools are added or removed via
 `protocol$add_tools()` / `protocol$remove_tools()` (followed by
-`iphra_touch_module("protocol", session)`).
+`phr_touch_module("protocol", session)`).
 
 Must be called from within an active reactive context (e.g. inside
 `shiny::reactive()`, `shiny::observe()`, `render*()`, or `shiny::isolate()`)

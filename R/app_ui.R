@@ -791,13 +791,25 @@ app_ui <- function(request) {
 
                  mod_tools_master_ui("tools_master"),
 
-                 tabsetPanel(
-                   tabPanel(iphra_txt("Core Household Tool"), mod_tools_household_ui("tools_household")),
-                   tabPanel(iphra_txt("Core Community Tools"), mod_tools_community_ui("tools_community")),
-                   tabPanel(iphra_txt("Health and Nutrition Tools"), mod_tools_health_ui("tools_health")),
-                   tabPanel(iphra_txt("FSL Tools"), mod_tools_fsl_ui("tools_fsl")),
-                   tabPanel(iphra_txt("WASH Tools"), mod_tools_wash_ui("tools_wash")),
-                 )
+                 uiOutput("tool_tabs"),
+
+                 # tabsetPanel(
+                 #   tabPanel(iphra_txt("Household Survey"), mod_tools_household_ui("tools_household")),
+                 #   tabPanel(iphra_txt("Community Key Informant"), mod_tools_community_kii_ui("tools_community_kii")),
+                 #   tabPanel(iphra_txt("Community Observation"), mod_tools_community_obs_ui("tools_community_obs")),
+                 #
+                 #   tabPanel(iphra_txt("FSL Provider Key Informant"), mod_tools_fsl_kii_ui("tools_fsl_kii")),
+                 #   tabPanel(iphra_txt("Market Vender Key Informant"), mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")),
+                 #   tabPanel(iphra_txt("Crop and Livestock Observation"), mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")),
+                 #
+                 #   tabPanel(iphra_txt("Health Facility Key Informant"), mod_tools_health_kii_ui("tools_health_kii")),
+                 #   tabPanel(iphra_txt("Health Facility Observation"), mod_tools_health_obs_ui("tools_health_obs")),
+                 #   tabPanel(iphra_txt("Nutrition Facility Key Informant"), mod_tools_nutrition_kii_ui("tools_nutrition_kii")),
+                 #
+                 #   tabPanel(iphra_txt("WASH Provider Key Informant"), mod_tools_wash_kii_ui("tools_wash_kii")),
+                 #   tabPanel(iphra_txt("Water Point Observation"), mod_tools_water_point_obs_ui("tools_water_point_obs")),
+                 #   tabPanel(iphra_txt("Latrine Observation"), mod_tools_latrine_obs_ui("tools_latrine_obs"))
+                 # )
         ),
 
         # ── 3. Sample Size and Planning ─────────────────────────────────────────────────

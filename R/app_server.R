@@ -381,15 +381,19 @@ app_server <- function(input, output, session) {
   # GLOBAL ####
 
   # ---- Initialize Session State ----
-  iphra_session <- iphra_init_session(session)
+  iphra_session <- init_session(session, project_name = "IPHRA")
 
-  iphra_set_module(module_name = "protocol",
-                   module_object = phr::IPHRAProtocol$new(assessment_title = "IPHRA",
-                                                          country_name = "TBD",
-                                                          month_year = "2026-01-01"
-                                                          ))
+  set_module(module_name = "protocol",
+             module_object = phr::IPHRAProtocol$new(
+               assessment_title = "IPHRA",
+               country_name = "TBD",
+               month_year = "2026-01-01"
+               ),
+             session = session)
 
-  # NOTE: `iphra_set_module()` above registers the protocol's reactive
+  protocol_r <- phr_get_module_reactive("protocol", session)
+
+  # NOTE: `set_module()` above registers the protocol's reactive
   # "version" signal (`session$userData$modules_version[["protocol"]]`).
   # Any code that mutates the protocol object (e.g. `protocol$add_tools()`)
   # must call `iphra_touch_module("protocol", session)` afterwards so
@@ -455,17 +459,196 @@ app_server <- function(input, output, session) {
 
   mod_tools_household_server("tools_household")
 
-  mod_tools_community_server("tools_community")
+  mod_tools_community_kii_server("tools_community_kii")
+  mod_tools_community_obs_server("tools_community_obs")
 
-  mod_tools_health_server("tools_health")
+  mod_tools_fsl_kii_server("tools_fsl_kii")
+  mod_tools_market_vendor_kii_server("tools_market_vendor_kii")
+  mod_tools_crop_livestock_obs_server("tools_crop_livestock_obs")
 
-  mod_tools_fsl_server("tools_fsl")
+  mod_tools_health_kii_server("tools_health")
+  mod_tools_health_obs_server("tools_health")
+  mod_tools_nutrition_kii_server("tools_nutrition_kii")
 
-  mod_tools_wash_server("tools_wash")
+  mod_tools_wash_kii_server("tools_wash_kii")
+  mod_tools_water_point_obs_server("tools_water_point_obs")
+  mod_tools_latrine_obs_server("tools_latrine_obs")
+
+
+
+
 
   # PLANNING ####
 
   mod_planning_sample_size_server("planning_sample_size")
+
+  # TOOLs TAB ####
+
+  output$tool_tabs <- renderUI({
+
+    protocol <- protocol_r()
+
+    tabs <- list()
+
+    if (isTRUE(protocol$.tool_household_iphra)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Household Survey"),
+            mod_tools_household_ui("tools_household")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_community_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Community Key Informant"),
+            mod_tools_community_kii_ui("tools_community_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_community_observation)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Community Observation"),
+            mod_tools_community_obs_ui("tools_community_obs")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_fsl_provider_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("FSL Provider Key Informant"),
+            mod_tools_fsl_kii_ui("tools_fsl_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_market_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Market Vendor Key Informant"),
+            mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_crops_livestock_observation)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Crop and Livestock Observation"),
+            mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_health_facility_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Health Facility Key Informant"),
+            mod_tools_health_kii_ui("tools_health_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_health_facility_observation)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Health Facility Observation"),
+            mod_tools_health_obs_ui("tools_health_obs")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_nutrition_facility_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Nutrition Facility Key Informant"),
+            mod_tools_nutrition_kii_ui("tools_nutrition_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_wash_provider_kii)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("WASH Provider Key Informant"),
+            mod_tools_wash_kii_ui("tools_wash_kii")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_water_point_observation)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Water Point Observation"),
+            mod_tools_water_point_obs_ui("tools_water_point_obs")
+          )
+        )
+      )
+    }
+
+    if (isTRUE(protocol$.tool_latrine_observation)) {
+      tabs <- c(
+        tabs,
+        list(
+          tabPanel(
+            iphra_txt("Latrine Observation"),
+            mod_tools_latrine_obs_ui("tools_latrine_obs")
+          )
+        )
+      )
+    }
+
+    do.call(
+      tabsetPanel,
+      c(
+        list(id = "tool_tabs", selected = selected_tool_tab()),
+        tabs
+      )
+    )
+
+  })
+
+  selected_tool_tab <- reactiveVal(NULL)
+
+  observeEvent(input$tool_tabs, {
+    selected_tool_tab(input$tool_tabs)
+  })
 
   # PROJECT FILE MANAGEMENT ####
 

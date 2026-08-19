@@ -14,31 +14,15 @@ mod_planning_sample_size_ui <- function(id) {
     shinyjs::useShinyjs(),
     br(),
 
-    # ────────────────────────────────────────────────
+
     # MAIN SPLIT LAYOUT
-    # ────────────────────────────────────────────────
+
     fluidRow(
 
       # ───────────────────────────────
       # LEFT SIDE (3/4 WIDTH): Tabset
       # ───────────────────────────────
       column(width = 9,
-
-             # ───────────────────────────────
-             # COMPLETION CHECKBOXES (placed above tabsetPanel)
-             # ───────────────────────────────
-             fluidRow(
-               style = "margin-bottom:10px;",
-               column(
-                 width = 12,
-                 div(
-                   style = "display:flex; gap:30px; align-items:center;",
-                   checkboxInput(ns("sample_size_complete"), "Sample Size Complete", value = FALSE, width = "auto"),
-                   checkboxInput(ns("survey_teams_complete"), "Survey Teams Complete", value = FALSE, width = "auto"),
-                   checkboxInput(ns("sampling_complete"), "Sampling Complete", value = FALSE, width = "auto")
-                 )
-               )
-             ),
 
              tabsetPanel(
                id = ns("sample_tabs"),
@@ -59,17 +43,38 @@ mod_planning_sample_size_ui <- function(id) {
                    ),
                    column(2,
                           numericInput(ns("total_households"), "Total Households:",
-                                       value = 1000, min = 1, width = "100%")
-                   ),
-                   column(2,
+                                       value = 1000, min = 1, width = "100%"),
                           numericInput(ns("total_population"), "Total Population:",
                                        value = 5000, min = 1, width = "100%")
                    ),
                    column(2,
-                          radioButtons(ns("sampling_method"), "Sampling Method:",
-                                       choices = c("Simple Random" = "srs",
-                                                   "Cluster Sampling" = "cluster"),
-                                       inline = FALSE)
+                          numericInput(ns("n_sites"), "Number of Sites to Sample (Non-Cluster sampling):",
+                                       value = 100, min = 1, width = "100%")
+
+                   ),
+                   column(2,
+                          br(), br(),
+                          radioButtons(
+                            ns("sampling_method_site"),
+                            "Site/Cluster Sampling Method:",
+                            choices = c(
+                              "Simple Random Sampling (SRS)" = "simple_random",
+                              "Proportional" = "proportional",
+                              "Cluster (Probability Proportional to Size (PPS) w/replacement)" = "cluster",
+                              "Systematic" = "systematic"
+                            ),
+                            inline = FALSE
+                          ),
+                          radioButtons(
+                            ns("sampling_method_hh"),
+                            "Household Sampling Method:",
+                            choices = c(
+                              "Simple Random Sampling (SRS)" = "simple_random",
+                              "Systematic" = "systematic",
+                              "Random Location Clusters (RLC)" = "rlc"
+                            ),
+                            inline = FALSE
+                          ),
                    ),
                    column(
                      4,
@@ -83,7 +88,8 @@ mod_planning_sample_size_ui <- function(id) {
                              choices = c(
                                "Household" = "household",
                                "Individual" = "individual",
-                               "Mortality Rate" = "rate"
+                               "Rate" = "rate",
+                               "Plan" = "plan"
                              ),
                              selected = "household",
                              inline = TRUE
@@ -99,15 +105,6 @@ mod_planning_sample_size_ui <- function(id) {
                              class = "btn-primary btn-sm",
                              width = "100%"
                            )
-                         ),
-                         column(
-                           6,
-                           actionButton(
-                             ns("remove_sample"),
-                             "Remove Row",
-                             class = "btn-danger btn-sm",
-                             width = "100%"
-                           )
                          )
                        )
                      )
@@ -116,11 +113,11 @@ mod_planning_sample_size_ui <- function(id) {
 
                  hr(),
 
-                 # Three sample calculators
+                 # Four planning calculators
                  fluidRow(
 
                    # Household-level
-                   column(width = 4, style = "min-width: 300px;",
+                   column(width = 3, style = "min-width: 300px;",
                           wellPanel(
                             style = "padding: 10px; font-size: 12px;",
                             h4("Household-level Sample Size", style = "font-size:14px;"),
@@ -135,14 +132,15 @@ mod_planning_sample_size_ui <- function(id) {
                             numericInput(ns("pop_design_effect"), "Design Effect:",
                                          value = 1, min = 1),
                             checkboxInput(ns("pop_fpc"), "Apply FPC?", value = FALSE),
-                            numericInput(ns("pop_result_dummy"), "Sample Size Result (Dummy):",
-                                         value = 120, min = 1),
-                            actionButton(ns("pop_calculate"), "Calculate")
+                            actionButton(ns("pop_calculate"), "Calculate"),
+                            h5("Result", style = "margin-top:10px;"),
+                            verbatimTextOutput(ns("pop_result"))
+
                           )
                    ),
 
                    # Individual-level
-                   column(width = 4, style = "min-width: 300px;",
+                   column(width = 3, style = "min-width: 300px;",
                           wellPanel(
                             style = "padding: 10px; font-size: 12px;",
                             h4("Individual-level Sample Size", style = "font-size:14px;"),
@@ -161,121 +159,136 @@ mod_planning_sample_size_ui <- function(id) {
                             numericInput(ns("ind_subpop_prop"),
                                          "Proportion of Sub-population (%):", value = 100, min = 0, max = 100),
                             checkboxInput(ns("ind_fpc"), "Apply FPC?", value = FALSE),
-                            numericInput(ns("ind_result_dummy"), "Sample Size Result (Dummy):",
-                                         value = 220, min = 1),
-                            actionButton(ns("ind_calculate"), "Calculate")
+                            actionButton(ns("ind_calculate"), "Calculate"),
+                            h5("Result", style = "margin-top:10px;"),
+                            verbatimTextOutput(ns("ind_result"))
                           )
                    ),
 
-                   # Mortality-level
-                   column(width = 4, style = "min-width: 300px;",
+                   # Rate-level
+                   column(width = 3, style = "min-width: 300px;",
                           wellPanel(
                             style = "padding: 10px; font-size: 12px;",
-                            h4("Mortality Rate Sample Size", style = "font-size:14px;"),
-                            selectInput(ns("mort_indicator"), "Select Indicator:",
-                                        choices = c("General", "Crude Death Rate")),
-                            numericInput(ns("mort_expected_death_rate"),
+                            h4("Rate Sample Size", style = "font-size:14px;"),
+                            selectInput(ns("rate_indicator"), "Select Indicator:",
+                                        choices = c("Crude Death Rate")),
+                            numericInput(ns("rate_expected_rate"),
                                          "Expected Death Rate:", value = 0.5, min = 0, max = 100),
-                            numericInput(ns("mort_precision"),
+                            numericInput(ns("rate_precision"),
                                          "Desired Precision:", value = 0.1, min = 0.01, max = 50),
-                            numericInput(ns("mort_nonresponse"),
+                            numericInput(ns("rate_nonresponse"),
                                          "Non-response Rate (%):", value = 10, min = 0, max = 100),
-                            numericInput(ns("mort_design_effect"),
+                            numericInput(ns("rate_design_effect"),
                                          "Design Effect:", value = 1, min = 1),
-                            numericInput(ns("mort_recall_days"),
+                            numericInput(ns("rate_recall_days"),
                                          "Number of Recall Days:", value = 30, min = 1),
-                            numericInput(ns("mort_avg_hh_size"),
+                            numericInput(ns("rate_avg_hh_size"),
                                          "Average Household Size:", value = 5, min = 1),
-                            checkboxInput(ns("mort_fpc"), "Apply FPC?", value = FALSE),
-                            numericInput(ns("mort_result_dummy"),
-                                         "Sample Size Result (Dummy):", value = 50, min = 1),
-                            actionButton(ns("mort_calculate"), "Calculate")
+                            checkboxInput(ns("rate_fpc"), "Apply FPC?", value = FALSE),
+                            actionButton(ns("rate_calculate"), "Calculate"),
+                            h5("Result", style = "margin-top:10px;"),
+                            verbatimTextOutput(ns("rate_result"))
                           )
-                   )
-                 )
-               ),
-
-               # ───────────────────────────────
-               # TAB 2: SURVEY TEAMS
-               # ───────────────────────────────
-               tabPanel(
-                 title = "Survey Teams",
-
-                 br(), br(),
-
-                 # ---- Part A: Summary Outputs ----
-                 fluidRow(
-                   style = "background-color:#f9f9f9; border-radius:8px; padding:15px; margin-bottom:10px;
-                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);",
-
-                   column(
-                     3,
-                     div(style = "text-align:center;",
-                         h5("Estimated Number of Days", style = "font-weight:600; color:#333;"),
-                         verbatimTextOutput(ns("days_result"), placeholder = TRUE)
-                     )
                    ),
+                   # Plan level
                    column(
-                     3,
-                     div(style = "text-align:center;",
-                         h5("Recommended Cluster Size", style = "font-weight:600; color:#333;"),
-                         verbatimTextOutput(ns("cluster_size_result"), placeholder = TRUE)
-                     )
-                   ),
-                   column(
-                     3,
-                     div(style = "text-align:center;",
-                         h5("Number of Recommended Clusters", style = "font-weight:600; color:#333;"),
-                         verbatimTextOutput(ns("n_clusters_result"), placeholder = TRUE)
-                     )
-                   ),
-                   column(
-                     3,
-                     div(style = "text-align:center; padding-top:12px;",
-                         actionButton(
-                           ns("update_population"),
-                           "Update Selected Population",
-                           class = "btn-primary btn-sm",
-                           style = "width:100%; font-weight:500; letter-spacing:0.2px;"
-                         )
-                     )
-                   )
-                 ),
+                     width = 3,
+                     style = "min-width: 300px;",
 
-                 br(), hr(),
-
-                 # ---- Part B: Data Collection Planning ----
-                 fluidRow(
-                   column(
-                     12,
                      wellPanel(
-                       h4("Data Collection Planning", style = "font-size:14px;"),
-                       fluidRow(
-                         column(
-                           4,
-                           numericInput(ns("n_teams"), "Number of Teams", value = 2, min = 1, width = "100%"),
-                           numericInput(ns("n_enum"), "Enumerators per Team", value = 3, min = 1, width = "100%"),
-                           textInput(ns("start_time"), "Start Time (HH:MM)", value = "08:00", width = "100%"),
-                           textInput(ns("end_time"), "End Time (HH:MM)", value = "17:00", width = "100%")
-                         ),
-                         column(
-                           4,
-                           numericInput(ns("interview_time"), "Avg Interview Time (minutes)", value = 30, min = 1, width = "100%"),
-                           numericInput(ns("rest_time"), "Avg Daily Rest Time (minutes)", value = 60, min = 0, width = "100%"),
-                           numericInput(ns("travel_time"), "Avg Travel Time (minutes)", value = 30, min = 0, width = "100%")
-                         ),
-                         column(
-                           4,
-                           numericInput(ns("clusters_per_day"), "Clusters per Day (per team)", value = 2, min = 1, width = "100%"),
-                           br(),
-                           actionButton(ns("calc_days"), "Calculate Plan", class = "btn-success btn-sm", width = "100%")
-                         )
-                       )
+                       style = "padding: 10px; font-size: 12px;",
+
+                       h4(
+                         "Data Collection Planning",
+                         style = "font-size:14px;"
+                       ),
+
+                       numericInput(
+                         ns("sample_size_plan"),
+                         "Total Sample Size",
+                         value = 1,
+                         min = 1
+                       ),
+
+                       numericInput(
+                         ns("n_teams"),
+                         "Number of Teams",
+                         value = 2,
+                         min = 1
+                       ),
+
+                       numericInput(
+                         ns("n_enum"),
+                         "Enumerators per Team",
+                         value = 3,
+                         min = 1
+                       ),
+
+                       numericInput(
+                         ns("clusters_per_day"),
+                         "Clusters per Day",
+                         value = 2,
+                         min = 1
+                       ),
+
+                       numericInput(
+                         ns("interview_time"),
+                         "Interview Time (minutes)",
+                         value = 30,
+                         min = 1
+                       ),
+
+                       numericInput(
+                         ns("travel_time"),
+                         "Travel Time (minutes)",
+                         value = 30,
+                         min = 0
+                       ),
+
+                       numericInput(
+                         ns("rest_time"),
+                         "Rest Time (minutes)",
+                         value = 60,
+                         min = 0
+                       ),
+
+                       textInput(
+                         ns("start_time"),
+                         "Start Time",
+                         value = "08:00"
+                       ),
+
+                       textInput(
+                         ns("end_time"),
+                         "End Time",
+                         value = "17:00"
+                       ),
+
+                       actionButton(
+                         ns("calc_plan"),
+                         "Calculate"
+                       ),
+
+                       h5(
+                         "Result",
+                         style = "margin-top:10px;"
+                       ),
+
+                       tags$b("Interviews / Enumerator / Day"),
+                       verbatimTextOutput(ns("num_interview_per_enumday_result")),
+
+                       tags$b("Estimated Days"),
+                       verbatimTextOutput(ns("num_days_dc_result")),
+
+                       tags$b("Recommended Cluster Size"),
+                       verbatimTextOutput(ns("psu_size_result")),
+
+                       tags$b("Recommended Clusters"),
+                       verbatimTextOutput(ns("num_psu_needed_result"))
                      )
                    )
-                 ),
 
-                 br()
+                 )
                ),
 
                # ───────────────────────────────
@@ -304,19 +317,15 @@ mod_planning_sample_size_ui <- function(id) {
                    div(
                      style = "flex: 0 0 25%; min-width: 260px; box-sizing: border-box;",
                      h4("Sampling Controls", style = "font-size:14px; font-weight:600; margin-bottom:10px;"),
-                     actionButton(ns("import_frame"), "Import Sampling Frame", class = "btn-primary", width = "100%"),
-                     br(), br(),
-                     radioButtons(
-                       ns("sampling_method_ext"),
-                       "Sampling Method:",
-                       choices = c(
-                         "Simple Random Sampling (SRS)" = "srs",
-                         "Proportional" = "proportional",
-                         "Probability Proportional to Size (PPS)" = "pps",
-                         "Random Location Clusters (RLC)" = "rlc",
-                         "Systematic" = "systematic"
+                     fileInput(
+                       ns("import_frame"),
+                       "Import Sampling Frame",
+                       accept = c(
+                         ".csv",
+                         ".xlsx",
+                         ".xls"
                        ),
-                       inline = FALSE
+                       width = "100%"
                      ),
                      wellPanel(
                        style = "padding:10px; margin-top:10px;",
@@ -374,15 +383,31 @@ mod_planning_sample_size_ui <- function(id) {
       column(width = 3, style = "min-width: 300px;",
              h4("Sample Table", style = "font-size:14px;"),
 
-             selectInput(
-               ns("remove_target"),
-               "Select Population:",
-               choices = NULL,
-               width = "100%"
+             fluidRow(
+               column(
+                 6,
+                 selectInput(
+                   ns("remove_target"),
+                   "Select Population:",
+                   choices = NULL,
+                   width = "100%"
+                 )
+               ),
+               column(
+                 6,
+                 br(),
+                 actionButton(
+                   ns("remove_sample"),
+                   "Remove Row",
+                   class = "btn-danger btn-sm",
+                   width = "100%"
+                 )
+               )
              ),
 
-             div(style = "max-height: 800px; overflow-y: auto;",
-                 rhandsontable::rHandsontableOutput(ns("samples_table"))
+             div(
+               style = "max-height: 800px; overflow-y: auto;",
+               rhandsontable::rHandsontableOutput(ns("samples_table"))
              )
       )
     )
@@ -396,90 +421,104 @@ mod_planning_sample_size_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    iphra_message("Initializing Sample Module server...", origin = "Sample Module")
+    protocol_r <- phr_get_module_reactive("protocol", session)
 
-    # ────────────────────────────────────────────────
+
+
+
+
     # INITIALIZATION
-    # ────────────────────────────────────────────────
+
     updating_dropdown <- reactiveVal(FALSE)  # new flag to prevent re-entry loops
 
     # Initialize master data frame with all fields
-    samples <- reactiveVal(
-      data.frame(
-        Population_Name = "Population A",
-        Total_Households = 1000,
-        Total_Population = 5000,
-        Sampling_Method = "srs",
-        pop_indicator = "General",
-        pop_expected_prevalence = 10,
-        pop_precision = 5,
-        pop_nonresponse = 10,
-        pop_design_effect = 1,
-        pop_fpc = FALSE,
-        pop_result_dummy = 120,
-        ind_indicator = "General",
-        ind_expected_prevalence = 10,
-        ind_precision = 5,
-        ind_nonresponse = 10,
-        ind_design_effect = 1,
-        ind_avg_hh_size = 5,
-        ind_subpop_prop = 100,
-        ind_fpc = FALSE,
-        ind_result_dummy = 220,
-        mort_indicator = "General",
-        mort_expected_death_rate = 0.5,
-        mort_precision = 0.1,
-        mort_nonresponse = 10,
-        mort_design_effect = 1,
-        mort_recall_days = 30,
-        mort_avg_hh_size = 5,
-        mort_fpc = FALSE,
-        mort_result_dummy = 50,
-        teams = 5,
-        avg_interview_time = 30,
-        clusters_per_day = 4,
-        enumerators_per_team = 3,
-        avg_rest_time = 60,
-        avg_travel_time = 45,
-        start_time = "08:00",
-        end_time = "17:00",
-        stringsAsFactors = FALSE
-      )
-    )
 
-    sampling_frame_data <- reactiveVal(
-      data.frame(
-        ClusterID = 1:10,
-        Stratum = rep(c("Urban", "Rural"), each = 5),
-        Households = sample(80:150, 10),
-        stringsAsFactors = FALSE
-      )
-    )
+    samples <- reactive({
+      protocol_r()$sample_object$sample_table
+    })
 
-    sample_results_data <- reactiveVal(
-      data.frame(
-        SampleID = 1:5,
-        ClusterID = sample(1:10, 5),
-        HouseholdID = sample(1001:2000, 5),
-        stringsAsFactors = FALSE
-      )
-    )
+    sampling_frame_data <- reactive({
+      protocol_r()$sampling_frame$log_df
+    })
 
-    # ────────────────────────────────────────────────
+    sample_results_data <- reactive({
+      protocol_r()$sampling_frame$drawn_sample_full
+    })
+
+    pop_sample_size <- reactiveVal(NULL)
+
+    ind_sample_size <- reactiveVal(NULL)
+
+    rate_sample_size <- reactiveVal(NULL)
+
+    num_interview_per_enumday <- reactiveVal(NULL)
+    num_days_dc <- reactiveVal(NULL)
+    num_psu_needed <- reactiveVal(NULL)
+    psu_size <- reactiveVal(NULL)
+
     # RENDER filtered table for display
-    # ────────────────────────────────────────────────
-    output$samples_table <- rhandsontable::renderRHandsontable({
-      tbl <- samples()
-      display_tbl <- tbl[, c("Population_Name", "Total_Households", "Total_Population",
-                             "Sampling_Method", "pop_result_dummy", "ind_result_dummy", "mort_result_dummy")]
-      names(display_tbl) <- c("Population Name", "Total HH", "Total Pop", "Method",
-                              "Household Sample Size", "Individual Sample Size", "Mortality Sample Size")
 
-      rhandsontable::rhandsontable(display_tbl, readOnly = TRUE, rowHeaders = NULL)
+    output$samples_table <- rhandsontable::renderRHandsontable({
+
+      tbl <- samples()
+
+      req(tbl, nrow(tbl) > 0)
+
+      # Use stratum_id as column names
+      stratum_names <- tbl$stratum_id
+
+      # Remove stratum_id from data
+      tbl_t <- tbl[, setdiff(names(tbl), "stratum_id"), drop = FALSE]
+
+      # Transpose
+      tbl_t <- as.data.frame(t(tbl_t), stringsAsFactors = FALSE)
+
+      # Set column names from stratum_id
+      colnames(tbl_t) <- stratum_names
+
+      rhandsontable::rhandsontable(
+        tbl_t,
+        readOnly = TRUE,
+        rowHeaders = rownames(tbl_t), rowHeaderWidth = 120
+      )
+
+    })
+
+    output$pop_result <- renderText({
+      req(pop_sample_size())
+      format(pop_sample_size(), big.mark = ",")
+    })
+
+    output$ind_result <- renderText({
+      req(ind_sample_size())
+      format(ind_sample_size(), big.mark = ",")
+    })
+
+    output$rate_result <- renderText({
+      req(rate_sample_size())
+      format(rate_sample_size(), big.mark = ",")
+    })
+
+    output$num_interview_per_enumday_result <- renderText({
+      req(num_interview_per_enumday())
+      format(num_interview_per_enumday(), big.mark = ",")
+    })
+    output$num_days_dc_result <- renderText({
+      req(num_days_dc())
+      format(num_days_dc(), big.mark = ",")
+    })
+    output$num_psu_needed_result <- renderText({
+      req(num_psu_needed())
+      format(num_psu_needed(), big.mark = ",")
+    })
+    output$psu_size_result <- renderText({
+      req(psu_size())
+      format(psu_size(), big.mark = ",")
     })
 
     # ---- Sampling Frame Table ----
     output$sampling_frame <- rhandsontable::renderRHandsontable({
+
       df <- sampling_frame_data()
       if (is.null(df)) return(NULL)
 
@@ -488,7 +527,7 @@ mod_planning_sample_size_server <- function(id) {
         rowHeaders = NULL,
         width = "100%",
         height = 500
-      ) %>%
+      ) |>
         rhandsontable::hot_cols(
           columnSorting = TRUE,
           stretchH = "all"
@@ -506,87 +545,99 @@ mod_planning_sample_size_server <- function(id) {
         width = "100%",
         height = 500,
         readOnly = TRUE   # ← prevents direct editing by user
-      ) %>%
+      ) |>
         rhandsontable::hot_cols(
           columnSorting = TRUE,
           stretchH = "all"
         )
     })
 
-    # ────────────────────────────────────────────────
+
     # ▶️ ADD SAMPLE
-    # ────────────────────────────────────────────────
+
     observeEvent(input$add_sample, {
       iphra_try({
 
-        # 1️⃣ VALIDATION ----
-        if (is.null(input$sample_to_add) || !("household" %in% input$sample_to_add)) {
-          iphra_error("Household must always be included.", origin = "Sample Module: Add Sample")
-          return(NULL)
-        }
+        protocol_r()$sample_object$add_stratum(
+          # field = "sample_object",
+          # member = "add_stratum",
 
-        # 2️⃣ CORE LOGIC ----
-        new_entry <- data.frame(
-          Population_Name = input$population_name,
-          Total_Households = input$total_households,
-          Total_Population = input$total_population,
-          Sampling_Method = input$sampling_method,
-          pop_indicator = input$pop_indicator,
-          pop_expected_prevalence = input$pop_expected_prevalence,
-          pop_precision = input$pop_precision,
-          pop_nonresponse = input$pop_nonresponse,
-          pop_design_effect = input$pop_design_effect,
-          pop_fpc = input$pop_fpc,
-          pop_result_dummy = input$pop_result_dummy,
-          ind_indicator = input$ind_indicator,
-          ind_expected_prevalence = input$ind_expected_prevalence,
-          ind_precision = input$ind_precision,
-          ind_nonresponse = input$ind_nonresponse,
-          ind_design_effect = input$ind_design_effect,
-          ind_avg_hh_size = input$ind_avg_hh_size,
-          ind_subpop_prop = input$ind_subpop_prop,
-          ind_fpc = input$ind_fpc,
-          ind_result_dummy = input$ind_result_dummy,
-          mort_indicator = input$mort_indicator,
-          mort_expected_death_rate = input$mort_expected_death_rate,
-          mort_precision = input$mort_precision,
-          mort_nonresponse = input$mort_nonresponse,
-          mort_design_effect = input$mort_design_effect,
-          mort_recall_days = input$mort_recall_days,
-          mort_avg_hh_size = input$mort_avg_hh_size,
-          mort_fpc = input$mort_fpc,
-          mort_result_dummy = input$mort_result_dummy,
-          teams = 5,
-          avg_interview_time = 30,
-          clusters_per_day = 4,
-          enumerators_per_team = 3,
-          avg_rest_time = 60,
-          avg_travel_time = 45,
-          start_time = "08:00",
-          end_time = "17:00",
-          stringsAsFactors = FALSE
+          # Core stratum information
+          stratum_id = input$population_name,
+          stratum_name = input$population_name,
+          population_size = input$total_population,
+          total_households = input$total_households,
+
+          # Sampling design
+          sampling_method_site = input$sampling_method_site,
+          sampling_method_hh = input$sampling_method_hh,
+
+          # n_psu = NA_real_,
+          # cluster_size = NA_real_,
+          n_sites = input$n_sites,
+
+          # Survey planning
+          teams = if ("plan" %in% input$sample_to_add) input$n_teams else NA_real_,
+          avg_interview_time = if ("plan" %in% input$sample_to_add) input$interview_time else NA_real_,
+          clusters_per_day = if ("plan" %in% input$sample_to_add) input$clusters_per_day else NA_real_,
+          enumerators_per_team = if ("plan" %in% input$sample_to_add) input$n_enum else NA_real_,
+          avg_rest_time = if ("plan" %in% input$sample_to_add) input$rest_time else NA_real_,
+          avg_travel_time = if ("plan" %in% input$sample_to_add) input$travel_time else NA_real_,
+          start_time = if ("plan" %in% input$sample_to_add) input$start_time else NA_character_,
+          end_time = if ("plan" %in% input$sample_to_add) input$end_time else NA_character_,
+
+          # # Household sample size inputs
+          pop_indicator = if ("household" %in% input$sample_to_add) input$pop_indicator else "General",
+          pop_expected_prevalence = if ("household" %in% input$sample_to_add) input$pop_expected_prevalence else NA_real_,
+          pop_precision = if ("household" %in% input$sample_to_add) input$pop_precision else NA_real_,
+          pop_nonresponse = if ("household" %in% input$sample_to_add) input$pop_nonresponse else NA_real_,
+          pop_design_effect = if ("household" %in% input$sample_to_add) input$pop_design_effect else NA_real_,
+          pop_fpc = if ("household" %in% input$sample_to_add) input$pop_fpc else FALSE,
+
+          # Individual sample size inputs
+          ind_indicator = if ("individual" %in% input$sample_to_add) input$ind_indicator else NA_character_,
+          ind_expected_prevalence = if ("individual" %in% input$sample_to_add) input$ind_expected_prevalence else NA_real_,
+          ind_precision = if ("individual" %in% input$sample_to_add) input$ind_precision else NA_real_,
+          ind_nonresponse = if ("individual" %in% input$sample_to_add) input$ind_nonresponse else NA_real_,
+          ind_design_effect = if ("individual" %in% input$sample_to_add) input$ind_design_effect else NA_real_,
+          ind_avg_hh_size = if ("individual" %in% input$sample_to_add) input$ind_avg_hh_size else NA_real_,
+          ind_subpop_prop = if ("individual" %in% input$sample_to_add) input$ind_subpop_prop else NA_real_,
+          ind_fpc = if ("individual" %in% input$sample_to_add) input$ind_fpc else FALSE,
+
+          # # Rate sample size inputs
+          rate_indicator = if ("rate" %in% input$sample_to_add) input$rate_indicator else NA_character_,
+          rate_expected_rate = if ("rate" %in% input$sample_to_add) input$rate_expected_rate else NA_real_,
+          rate_precision = if ("rate" %in% input$sample_to_add) input$rate_precision else NA_real_,
+          rate_nonresponse = if ("rate" %in% input$sample_to_add) input$rate_nonresponse else NA_real_,
+          rate_design_effect = if ("rate" %in% input$sample_to_add) input$rate_design_effect else NA_real_,
+          rate_recall_days = if ("rate" %in% input$sample_to_add) input$rate_recall_days else NA_real_,
+          rate_avg_hh_size = if ("rate" %in% input$sample_to_add) input$rate_avg_hh_size else NA_real_,
+          rate_fpc = if ("rate" %in% input$sample_to_add) input$rate_fpc else FALSE
         )
 
-        updated <- rbind(samples(), new_entry)
-        rownames(updated) <- NULL
-        samples(updated)
+        protocol_r()$access_nested(
+          field = "sample_object",
+          member = "calculate_sample_sizes"
+        )
+
+        phr_touch_module(module_name = "protocol", session = session)
 
         iphra_message("New sample added successfully.", origin = "Sample Module: Add Sample")
 
       }, on_error = "warn")
     })
 
-    # ────────────────────────────────────────────────
+
     # ▶️ UPDATE POPULATION DROPDOWN (safe version)
-    # ────────────────────────────────────────────────
-    # ---- Sync remove_target dropdown with samples() ----
+
+    # ---- Sync remove_target dropdown with samples()
     observeEvent(samples(), {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
+
+
         # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
           if (isTRUE(updating_dropdown())) return()
         updating_dropdown(TRUE)
@@ -597,11 +648,11 @@ mod_planning_sample_size_server <- function(id) {
         }, step = "mod_planning_sample_size_server/unknown/Validation")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
+
         # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          choices <- unique(tbl$Population_Name)
+          choices <- unique(tbl$stratum_id)
         sel <- input$remove_target
         if (!sel %in% choices) sel <- tail(choices, 1)
 
@@ -614,9 +665,9 @@ mod_planning_sample_size_server <- function(id) {
         }, step = "mod_planning_sample_size_server/unknown/Core Logic")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
+
         # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
           iphra_message(
           paste0(
@@ -639,16 +690,14 @@ mod_planning_sample_size_server <- function(id) {
     },
     ignoreInit = FALSE)
 
-    # ────────────────────────────────────────────────
+
     # ▶️ REMOVE SAMPLE (by dropdown exact match)
-    # ────────────────────────────────────────────────
+
     observeEvent(input$remove_sample, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
         # 1️⃣ VALIDATION ----
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
           current <- samples()
         if (is.null(current) || !nrow(current)) {
@@ -668,154 +717,125 @@ mod_planning_sample_size_server <- function(id) {
         }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Validation")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
         # 2️⃣ CORE LOGIC ----
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          idx <- match(target, current$Population_Name, nomatch = NA_integer_)
-        if (is.na(idx)) {
-          iphra_warning(
-            paste0("Selected population not found: '", target, "'."),
-            origin = "Sample Module: Remove Sample",
-            hint = "Refresh the dropdown; the row may have already been removed."
+
+          protocol_r()$access_nested(
+            field = "sample_object",
+            member = "remove_stratum",
+            strata_name = input$remove_target
           )
-          return(NULL)
-        }
 
-        updated <- current[-idx, , drop = FALSE]
-        rownames(updated) <- NULL
-        samples(updated)
+          phr_touch_module(module_name = "protocol", session = session)
 
-        # Prevent dropdown re-trigger
-        updating_dropdown(TRUE)
-        on.exit(updating_dropdown(FALSE), add = TRUE)
-
-        updateSelectInput(session, "remove_target",
-                          choices = unique(updated$Population_Name),
-                          selected = tail(unique(updated$Population_Name), 1))
         }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Core Logic")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING ----
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(paste("Removed population:", target),
-                      origin = "Sample Module: Remove Sample")
-        }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+      },
       on_error = "warn",
       origin = iphra_txt("Sample Module: Remove Sample"),
       hint   = iphra_txt("Check reactive sample frame or dropdown value if this fails.")
       )
     })
 
-    # ────────────────────────────────────────────────
+
     # ▶️ SAMPLING METHOD CHANGE (no change)
-    # ────────────────────────────────────────────────
+
     # ---- Update Design Effect Field State based on Sampling Method ----
-    observeEvent(input$sampling_method, {
+    observeEvent(input$sampling_method_site, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (is.null(input$sampling_method)) {
-          iphra_warning(
-            iphra_txt("Sampling method input is NULL — skipping update."),
-            origin = iphra_txt("Sample Module: Sampling Method Change")
-          )
-          return(NULL)
-        }
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_method/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
         # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          if (input$sampling_method == "cluster") {
+          if (input$sampling_method_site == "cluster") {
           shinyjs::enable(ns("pop_design_effect"))
           shinyjs::enable(ns("ind_design_effect"))
-          shinyjs::enable(ns("mort_design_effect"))
+          shinyjs::enable(ns("rate_design_effect"))
           shinyjs::runjs(sprintf(
             "$('#%s, #%s, #%s').prop('readonly', false);",
             ns('pop_design_effect'),
             ns('ind_design_effect'),
-            ns('mort_design_effect')
+            ns('rate_design_effect')
           ))
 
-        } else if (input$sampling_method == "srs") {
+        } else if (input$sampling_method_site == "simple_random" |
+                   input$sampling_method_site == "systematic" |
+                   input$sampling_method_site == "proportional" |
+                   input$sampling_method_site == "purposive") {
           shinyjs::disable(ns("pop_design_effect"))
           shinyjs::disable(ns("ind_design_effect"))
-          shinyjs::disable(ns("mort_design_effect"))
+          shinyjs::disable(ns("rate_design_effect"))
           shinyjs::runjs(sprintf(
             "$('#%s, #%s, #%s').prop('readonly', true);",
             ns('pop_design_effect'),
             ns('ind_design_effect'),
-            ns('mort_design_effect')
+            ns('rate_design_effect')
           ))
         }
         }, step = "mod_planning_sample_size_server/observeEvent_sampling_method/Core Logic")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Design Effect fields updated successfully."),
-          origin = iphra_txt("Sample Module: Sampling Method Change")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_method/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+      },
       on_error = "warn",
       origin = iphra_txt("Sample Module: Sampling Method Change"),
       hint = iphra_txt("Verify shinyjs bindings or ns() IDs if this fails.")
       )
     })
 
+    observeEvent(input$calculate_all, {
+
+      protocol_r()$access_nested(
+        field = "sample_object",
+        member = "calculate_sample_sizes"
+      )
+
+      phr_touch_module(module_name = "protocol", session = session)
+
+    })
+
     # ---- Household Sample Size: Calculate ----
     observeEvent(input$pop_calculate, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validating inputs for household sample calculation..."),
-          origin = iphra_txt("Planning: Household Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
         # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
-          # --- Dummy calculation placeholder ---
-        # Future: sample <- iphra_calc_household_sample(input$pop_expected_prevalence, ...)
-        iphra_message(
-          iphra_txt("Dummy calculation performed for household sample size."),
-          origin = iphra_txt("Planning: Household Sample")
-        )
+
+          if(input$sampling_method_site == "simple_random" |
+             input$sampling_method_site == "systematic" |
+             input$sampling_method_site == "purposive" |
+             input$sampling_method_site == "proportional" ) {
+            sample_design <- "simple_random"
+          } else if(input$sampling_method_site == "cluster") {
+            sample_design <- "cluster"
+          } else {
+            phrutils::phr_warning(message = "Inappropriate sampling design chosen. Stopping operation")
+          }
+
+          sample_n <- phr::calculate_sample_size_general(
+            expected_proportion = input$pop_expected_prevalence,
+            desired_precision = input$pop_precision,
+            non_response_rate = input$pop_nonresponse,
+            design = sample_design,
+            design_effect = input$pop_design_effect,
+            fpc = input$pop_fpc,
+            total_population = input$total_population,
+            number_clusters = NULL,
+            confidence_level = 0.95
+          )
+
+          pop_sample_size(sample_n)
 
         # --- Future: Store result in session state ---
         # session$userData$project$sample$household <- sample
         }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Core Logic")
         if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
+
         # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
+
         result <- iphra_try_step({
           iphra_message(
           iphra_txt("Household sample size calculation completed successfully."),
@@ -824,7 +844,7 @@ mod_planning_sample_size_server <- function(id) {
         }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Result Handling")
         if (iphra_failed(result)) return(result)
 
-}, on_error = "warn",
+      }, on_error = "warn",
       origin = iphra_txt("Planning: Household Sample"),
       hint = iphra_txt("Check numeric inputs or missing data fields if this fails.")
       )
@@ -835,43 +855,34 @@ mod_planning_sample_size_server <- function(id) {
     observeEvent(input$ind_calculate, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validating inputs for individual sample calculation..."),
-          origin = iphra_txt("Planning: Individual Sample")
+        if(input$sampling_method_site == "simple_random" |
+           input$sampling_method_site == "systematic" |
+           input$sampling_method_site == "purposive" |
+           input$sampling_method_site == "proportional" ) {
+          sample_design <- "simple_random"
+        } else if(input$sampling_method_site == "cluster") {
+          sample_design <- "cluster"
+        } else {
+          phrutils::phr_warning(message = "Inappropriate sampling design chosen. Stopping operation")
+        }
+
+        sample_n <- phr::calculate_sample_size_individual(
+          expected_proportion = input$ind_expected_prevalence,
+          desired_precision = input$ind_precision,
+          non_response_rate = input$ind_nonresponse,
+          design = sample_design,
+          design_effect = input$ind_design_effect,
+          fpc = input$ind_fpc,
+          average_household_size = input$ind_avg_hh_size,
+          sub_population_percent = input$ind_subpop_prop,
+          total_population = input$total_population,
+          num_clusters = NULL,
+          confidence_level = 0.95
         )
-        }, step = "mod_planning_sample_size_server/observeEvent_ind_calculate/Validation")
-        if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Dummy calculation performed for individual sample size."),
-          origin = iphra_txt("Planning: Individual Sample")
-        )
+        ind_sample_size(sample_n)
 
-        # --- Future: session$userData$project$sample$individual <- result ---
-        }, step = "mod_planning_sample_size_server/observeEvent_ind_calculate/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Individual sample size calculation completed successfully."),
-          origin = iphra_txt("Planning: Individual Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_ind_calculate/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-}, on_error = "warn",
+      }, on_error = "warn",
       origin = iphra_txt("Planning: Individual Sample"),
       hint = iphra_txt("Check numeric inputs or missing data fields if this fails.")
       )
@@ -879,44 +890,36 @@ mod_planning_sample_size_server <- function(id) {
 
 
     # ---- Mortality Sample Size: Calculate ----
-    observeEvent(input$mort_calculate, {
+    observeEvent(input$rate_calculate, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validating inputs for mortality sample calculation..."),
-          origin = iphra_txt("Planning: Mortality Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_mort_calculate/Validation")
-        if (iphra_failed(result)) return(result)
+        if(input$sampling_method_site == "simple_random" |
+           input$sampling_method_site == "systematic" |
+           input$sampling_method_site == "purposive" |
+           input$sampling_method_site == "proportional" ) {
+          sample_design <- "simple_random"
+        } else if(input$sampling_method_site == "cluster") {
+          sample_design <- "cluster"
+        } else {
+          phrutils::phr_warning(message = "Inappropriate sampling design chosen. Stopping operation")
+        }
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Dummy calculation performed for mortality sample size."),
-          origin = iphra_txt("Planning: Mortality Sample")
+        sample_n <- phr::calculate_sample_size_rate(
+          expected_rate = input$rate_expected_rate,
+          desired_precision = input$rate_precision,
+          non_response_rate = input$rate_nonresponse,
+          design = sample_design,
+          design_effect = input$rate_design_effect,
+          number_clusters = NULL,
+          recall_days = input$rate_recall_days,
+          average_household_size = input$rate_avg_hh_size,
+          fpc = input$rate_fpc,
+          total_population = input$total_population,
+          confidence_level = 0.95,
+          multiplier = 10000
         )
 
-        # --- Future: session$userData$project$sample$mortality <- result ---
-        }, step = "mod_planning_sample_size_server/observeEvent_mort_calculate/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Mortality sample size calculation completed successfully."),
-          origin = iphra_txt("Planning: Mortality Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_mort_calculate/Result Handling")
-        if (iphra_failed(result)) return(result)
+        rate_sample_size(sample_n)
 
 }, on_error = "warn",
       origin = iphra_txt("Planning: Mortality Sample"),
@@ -926,44 +929,40 @@ mod_planning_sample_size_server <- function(id) {
 
 
     # ---- Survey Days: Calculate Plan ----
-    observeEvent(input$calc_days, {
+    observeEvent(input$calc_plan, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validating inputs for survey days calculation..."),
-          origin = iphra_txt("Planning: Survey Days")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_calc_days/Validation")
-        if (iphra_failed(result)) return(result)
+        if(input$sampling_method_site == "simple_random" |
+           input$sampling_method_site == "systematic" |
+           input$sampling_method_site == "purposive" |
+           input$sampling_method_site == "proportional" ) {
+          sample_design <- "simple_random"
+        } else if(input$sampling_method_site == "cluster") {
+          sample_design <- "cluster"
+        } else {
+          phrutils::phr_warning(message = "Inappropriate sampling design chosen. Stopping operation")
+        }
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Dummy survey plan calculation performed."),
-          origin = iphra_txt("Planning: Survey Days")
+        plan_result <- phr::estimate_field_plan(
+          sample_design = sample_design,
+          number_of_teams = input$n_teams,
+          enumerators_per_team = input$n_enum,
+          number_of_psu_per_team_per_day = input$clusters_per_day,
+          start_time = input$start_time,
+          end_time = input$end_time,
+          average_interview_time = input$interview_time,
+          average_travel_time = input$travel_time,
+          average_rest_time = input$rest_time,
+          total_sample_size = NULL
         )
 
-        # --- Future: session$userData$project$planning$survey_days <- days ---
-        }, step = "mod_planning_sample_size_server/observeEvent_calc_days/Core Logic")
-        if (iphra_failed(result)) return(result)
+        num_interview_per_enumday(plan_result[["num_interview_per_enum_per_day"]])
+        num_days_dc(plan_result[["num_days"]])
 
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Survey plan calculation completed successfully."),
-          origin = iphra_txt("Planning: Survey Days")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_calc_days/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if(sample_design == "cluster") {
+          num_psu_needed(plan_result[["num_psu_needed"]])
+          psu_size(plan_result[["psu_size"]])
+        }
 
 }, on_error = "warn",
       origin = iphra_txt("Planning: Survey Days"),
@@ -976,694 +975,110 @@ mod_planning_sample_size_server <- function(id) {
     observeEvent(input$update_population, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Validating selected population update..."),
-          origin = iphra_txt("Planning: Update Population")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_update_population/Validation")
-        if (iphra_failed(result)) return(result)
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Dummy population update performed."),
-          origin = iphra_txt("Planning: Update Population")
-        )
-
-        # --- Future: session$userData$project$populations$update(selected_population) ---
-        }, step = "mod_planning_sample_size_server/observeEvent_update_population/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Population update processed successfully."),
-          origin = iphra_txt("Planning: Update Population")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_update_population/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-}, on_error = "warn",
+      }, on_error = "warn",
       origin = iphra_txt("Planning: Update Population"),
       hint = iphra_txt("Check if population table or selection binding failed.")
       )
     })
 
-    # ────────────────────────────────────────────────
+
     # ▶️ IMPORT SAMPLING FRAME
-    # ────────────────────────────────────────────────
+
     observeEvent(input$import_frame, {
+
       iphra_try({
 
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$import_frame)) {
-          iphra_message(
-            iphra_txt("Import Sampling Frame button event is NULL — skipping action."),
-            origin = iphra_txt("Sample Module: Import Sampling Frame")
-          )
-          return(NULL)
-        }
+        req(input$import_frame)
 
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_import_frame/Validation")
-        if (iphra_failed(result)) return(result)
+        file_path <- input$import_frame$datapath
+        file_ext  <- tolower(tools::file_ext(input$import_frame$name))
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sampling frame import initiated."),
-          origin = iphra_txt("Sample Module: Import Sampling Frame")
+        imported_df <- switch(
+
+          file_ext,
+
+          csv = read.csv(
+            file_path,
+            stringsAsFactors = FALSE
+          ),
+
+          xlsx = as.data.frame(
+            readxl::read_excel(file_path)
+          ),
+
+          xls = as.data.frame(
+            readxl::read_excel(file_path)
+          ),
+
+          stop("Unsupported file type.")
         )
 
-        # --- Future logic (e.g., open file dialog, read sampling frame, validate data) ---
-        # session$userData$project$sampling_frame <- iphra_import_sampling_frame()
+        # Store ONLY the dataframe in the protocol object
+        protocol_r()$sampling_frame$log_df <- imported_df
 
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_import_frame/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sampling frame import completed successfully."),
-          origin = iphra_txt("Sample Module: Import Sampling Frame")
+        phr_touch_module(
+          module_name = "protocol",
+          session = session
         )
-        }, step = "mod_planning_sample_size_server/observeEvent_import_frame/Result Handling")
-        if (iphra_failed(result)) return(result)
 
-},
+        iphra_message(
+          paste0(
+            "Imported sampling frame with ",
+            nrow(imported_df),
+            " rows."
+          ),
+          origin = "Sample Module: Import Sampling Frame"
+        )
+
+      },
       on_error = "warn",
-      origin = iphra_txt("Sample Module: Import Sampling Frame"),
-      hint   = iphra_txt("Check file import bindings or future sampling frame logic if this fails.")
+      origin = "Sample Module: Import Sampling Frame",
+      hint = "Verify file format and sampling frame structure."
       )
+
     })
 
 
-    # ────────────────────────────────────────────────
+
     # ▶️ DRAW SAMPLE
-    # ────────────────────────────────────────────────
+
     observeEvent(input$draw_sample, {
       iphra_try({
 
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$draw_sample)) {
-          iphra_message(
-            iphra_txt("Draw Sample button event is NULL — skipping action."),
-            origin = iphra_txt("Sample Module: Draw Sample")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_draw_sample/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sample drawing initiated."),
-          origin = iphra_txt("Sample Module: Draw Sample")
+        protocol_r()$access_nested(
+          field = "sampling_frame",
+          member = "draw_sample",
+          strata_table = protocol_r()$get_sample_table(),
+          seed = 987
         )
 
-        # --- Future logic (e.g., stratified random sampling from frame, save drawn list) ---
-        # session$userData$project$sample_store$draw_sample()
-        #  sample_results_data(new_results) # make sure to update the sample_results table
+        phr_touch_module(module_name = "protocol", session = session)
 
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_draw_sample/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sample drawing process completed successfully."),
-          origin = iphra_txt("Sample Module: Draw Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_draw_sample/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+      },
       on_error = "warn",
       origin = iphra_txt("Sample Module: Draw Sample"),
       hint   = iphra_txt("Verify sampling frame availability and randomization logic if this fails.")
       )
     })
 
-    # ────────────────────────────────────────────────
-    # ▶️ SAMPLING METHOD (EXTERNAL)
-    # ────────────────────────────────────────────────
-    observeEvent(input$sampling_method_ext, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$sampling_method_ext)) {
-          iphra_message(
-            iphra_txt("Sampling method (external) input is NULL — no action taken."),
-            origin = iphra_txt("Sample Module: Sampling Method (External)")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_method_ext/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt(paste("Sampling method changed to:", input$sampling_method_ext)),
-          origin = iphra_txt("Sample Module: Sampling Method (External)")
-        )
-
-        # --- Future logic (e.g., adjust selection UI, update frame filtering, or enable method-specific inputs) ---
-        # session$userData$project$sampling_method <- input$sampling_method_ext
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_method_ext/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sampling method update processed successfully."),
-          origin = iphra_txt("Sample Module: Sampling Method (External)")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_method_ext/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Sample Module: Sampling Method (External)"),
-      hint   = iphra_txt("Verify that sampling method reactive logic and downstream filters are properly linked.")
-      )
-    })
-
-
-    # ────────────────────────────────────────────────
-    # ▶️ INCLUDE RESERVE CLUSTERS TOGGLE
-    # ────────────────────────────────────────────────
-    observeEvent(input$include_reserves, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$include_reserves)) {
-          iphra_message(
-            iphra_txt("Include reserves checkbox event is NULL — skipping action."),
-            origin = iphra_txt("Sample Module: Include Reserves")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_include_reserves/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        status <- if (isTRUE(input$include_reserves)) "enabled" else "disabled"
-        iphra_message(
-          iphra_txt(paste("Reserve clusters option has been", status)),
-          origin = iphra_txt("Sample Module: Include Reserves")
-        )
-
-        # --- Future logic (e.g., enable/disable numeric input or trigger recalculation) ---
-        # shinyjs::toggleState(ns("n_reserves"), condition = input$include_reserves)
-        # session$userData$project$reserve_clusters$active <- input$include_reserves
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_include_reserves/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Reserve clusters toggle processed successfully."),
-          origin = iphra_txt("Sample Module: Include Reserves")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_include_reserves/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Sample Module: Include Reserves"),
-      hint   = iphra_txt("Check UI toggle binding or downstream reserve cluster logic if this fails.")
-      )
-    })
-
-
-    # ────────────────────────────────────────────────
-    # ▶️ NUMBER OF RESERVE CLUSTERS
-    # ────────────────────────────────────────────────
-    observeEvent(input$n_reserves, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$n_reserves)) {
-          iphra_message(
-            iphra_txt("Number of reserves input is NULL — skipping action."),
-            origin = iphra_txt("Sample Module: Number of Reserves")
-          )
-          return(NULL)
-        }
-
-        if (!is.numeric(input$n_reserves) || input$n_reserves < 0) {
-          iphra_warning(
-            message = "Invalid number of reserves specified.",
-            origin  = "Sample Module: Number of Reserves",
-            hint    = "Ensure value is a non-negative numeric."
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_n_reserves/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt(paste("Number of reserve clusters set to:", input$n_reserves)),
-          origin = iphra_txt("Sample Module: Number of Reserves")
-        )
-
-        # --- Future logic (e.g., update reserve cluster allocation) ---
-        # session$userData$project$reserve_clusters$count <- input$n_reserves
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_n_reserves/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Reserve cluster number updated successfully."),
-          origin = iphra_txt("Sample Module: Number of Reserves")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_n_reserves/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Sample Module: Number of Reserves"),
-      hint   = iphra_txt("Ensure numeric input is valid and linked to sampling reserve logic.")
-      )
-    })
-
-    # ────────────────────────────────────────────────
     # ▶️ SAMPLING FRAME EDIT DETECTION
-    # ────────────────────────────────────────────────
+
     observeEvent(input$sampling_frame, {
       iphra_try({
 
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS ----
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          if (is.null(input$sampling_frame)) return(NULL)
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_frame/Validation")
-        if (iphra_failed(result)) return(result)
+        updated_frame <- rhandsontable::hot_to_r(input$sampling_frame)
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC ----
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          updated_frame <- rhandsontable::hot_to_r(input$sampling_frame)
+        protocol_r()$sampling_frame$log_df <- updated_frame
 
-        iphra_message(
-          iphra_txt(paste("Sampling frame manually updated —", nrow(updated_frame), "rows now present.")),
-          origin = iphra_txt("Sample Module: Sampling Frame Update")
-        )
-
-        # --- Future logic (e.g., store updated frame, re-run checks, re-calc sample) ---
-        # session$userData$project$sampling_frame <- updated_frame
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_frame/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING ----
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Sampling frame changes registered successfully."),
-          origin = iphra_txt("Sample Module: Sampling Frame Update")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_frame/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
+        phr_touch_module(
+          module_name = "protocol",
+          session = session
+          )
+        },
       on_error = "warn",
       origin = iphra_txt("Sample Module: Sampling Frame Update"),
       hint   = iphra_txt("Ensure rhandsontable input is correctly bound or re-rendered if updates fail.")
-      )
-    })
-
-    observeEvent(input$pop_fpc, {
-      iphra_try({
-        # ── Validation ─────────────────────────────────────
-        if (is.null(input$pop_fpc)) return(NULL)
-
-        # ── Core Logic ─────────────────────────────────────
-        if (isTRUE(input$pop_fpc)) {
-          iphra_message("Finite population correction (Household) enabled.", origin = "Sample Module: pop_fpc")
-          # Future logic: session$userData$sample_settings$pop_fpc <- TRUE
-        } else {
-          iphra_message("Finite population correction (Household) disabled.", origin = "Sample Module: pop_fpc")
-          # Future logic: session$userData$sample_settings$pop_fpc <- FALSE
-        }
-
-        # ── Result Handling ────────────────────────────────
-        # (placeholder for any recalculation triggers)
-
-      }, on_error = "warn")
-    })
-
-    observeEvent(input$ind_fpc, {
-      iphra_try({
-        # ── Validation ─────────────────────────────────────
-        if (is.null(input$ind_fpc)) return(NULL)
-
-        # ── Core Logic ─────────────────────────────────────
-        if (isTRUE(input$ind_fpc)) {
-          iphra_message("Finite population correction (Individual) enabled.", origin = "Sample Module: ind_fpc")
-          # Future logic: session$userData$sample_settings$ind_fpc <- TRUE
-        } else {
-          iphra_message("Finite population correction (Individual) disabled.", origin = "Sample Module: ind_fpc")
-          # Future logic: session$userData$sample_settings$ind_fpc <- FALSE
-        }
-
-        # ── Result Handling ────────────────────────────────
-        # (placeholder for any recalculation triggers)
-
-      }, on_error = "warn")
-    })
-
-    observeEvent(input$mort_fpc, {
-      iphra_try({
-        # ── Validation ─────────────────────────────────────
-        if (is.null(input$mort_fpc)) return(NULL)
-
-        # ── Core Logic ─────────────────────────────────────
-        if (isTRUE(input$mort_fpc)) {
-          iphra_message("Finite population correction (Mortality) enabled.", origin = "Sample Module: mort_fpc")
-          # Future logic: session$userData$sample_settings$mort_fpc <- TRUE
-        } else {
-          iphra_message("Finite population correction (Mortality) disabled.", origin = "Sample Module: mort_fpc")
-          # Future logic: session$userData$sample_settings$mort_fpc <- FALSE
-        }
-
-        # ── Result Handling ────────────────────────────────
-        # (placeholder for any recalculation or UI update triggers)
-
-      }, on_error = "warn")
-    })
-
-    # ────────────────────────────────────────────────
-    # ▶️ TOGGLE: Sample Size Complete
-    # ────────────────────────────────────────────────
-    observeEvent(input$sample_size_complete, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$sample_size_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("Sample Size: Completion Toggle")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sample_size_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (isTRUE(input$sample_size_complete)) {
-          iphra_message(
-            iphra_txt("Sample Size section marked as complete ✅"),
-            origin = iphra_txt("Sample Size: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., save completion status, update session/project) ---
-          # session$userData$project$set_stage_completed("sample_size", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Sample Size section marked as incomplete ❌"),
-            origin = iphra_txt("Sample Size: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., reset completion flag) ---
-          # session$userData$project$set_stage_completed("sample_size", FALSE)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sample_size_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sample Size completion status updated successfully."),
-          origin = iphra_txt("Sample Size: Completion Toggle")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_sample_size_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Sample Size: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and completion state logic if this fails.")
-      )
-    })
-
-
-
-    # ────────────────────────────────────────────────
-    # ▶️ TOGGLE: Survey Teams Complete
-    # ────────────────────────────────────────────────
-    observeEvent(input$survey_teams_complete, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$survey_teams_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("Survey Teams: Completion Toggle")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_survey_teams_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (isTRUE(input$survey_teams_complete)) {
-          iphra_message(
-            iphra_txt("Survey Teams section marked as complete ✅"),
-            origin = iphra_txt("Survey Teams: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., save completion status, update session/project) ---
-          # session$userData$project$set_stage_completed("survey_teams", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Survey Teams section marked as incomplete ❌"),
-            origin = iphra_txt("Survey Teams: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., reset completion flag) ---
-          # session$userData$project$set_stage_completed("survey_teams", FALSE)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_survey_teams_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Survey Teams completion status updated successfully."),
-          origin = iphra_txt("Survey Teams: Completion Toggle")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_survey_teams_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Survey Teams: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and completion state logic if this fails.")
-      )
-    })
-
-
-
-    # ────────────────────────────────────────────────
-    # ▶️ TOGGLE: Sampling Complete
-    # ────────────────────────────────────────────────
-    observeEvent(input$sampling_complete, {
-      iphra_try({
-
-        # ────────────────────────────────────────────────
-        
-        # ────────────────────────────────────────────────
-        # 1️⃣ VALIDATION & PRECONDITIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (is.null(input$sampling_complete)) {
-          iphra_message(
-            iphra_txt("Checkbox state is NULL — skipping update."),
-            origin = iphra_txt("Sampling: Completion Toggle")
-          )
-          return(NULL)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_complete/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        if (isTRUE(input$sampling_complete)) {
-          iphra_message(
-            iphra_txt("Sampling section marked as complete ✅"),
-            origin = iphra_txt("Sampling: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., save completion status, update session/project) ---
-          # session$userData$project$set_stage_completed("sampling", TRUE)
-
-        } else {
-          iphra_message(
-            iphra_txt("Sampling section marked as incomplete ❌"),
-            origin = iphra_txt("Sampling: Completion Toggle")
-          )
-
-          # --- Future logic (e.g., reset completion flag) ---
-          # session$userData$project$set_stage_completed("sampling", FALSE)
-        }
-
-        # ────────────────────────────────────────────────
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_complete/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-        # ────────────────────────────────────────────────
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-        # ────────────────────────────────────────────────
-        result <- iphra_try_step({
-          # ────────────────────────────────────────────────
-        iphra_message(
-          iphra_txt("Sampling completion status updated successfully."),
-          origin = iphra_txt("Sampling: Completion Toggle")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_sampling_complete/Result Handling")
-        if (iphra_failed(result)) return(result)
-
-},
-      on_error = "warn",
-      origin = iphra_txt("Sampling: Completion Toggle"),
-      hint = iphra_txt("Verify checkbox binding and completion state logic if this fails.")
       )
     })
 

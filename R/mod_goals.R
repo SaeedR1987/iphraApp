@@ -1,3 +1,19 @@
+# x_col_row <- function(...) {
+#   inputs <- list(...)
+#
+#   shiny::fluidRow(
+#     lapply(inputs, function(x) {
+#       shiny::column(width = 12 / length(inputs), x)
+#     })
+#   )
+# }
+
+# Shared choices for select-multiple inputs
+.output_choices        <- c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable")
+.dissemination_choices <- c("In-Person", "Email", "Remote Presentation", "Not Applicable")
+.access_choices        <- c("Public", "Bilateral", "Restricted")
+.visibility_choices    <- c("Public", "Restricted", "Not Applicable")
+
 #' goals UI Function
 #'
 #' @description A shiny Module.
@@ -10,11 +26,7 @@
 mod_goals_ui <- function(id) {
   ns <- NS(id)
 
-  # Shared choices for select-multiple inputs
-  .output_choices        <- c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable")
-  .dissemination_choices <- c("In-Person", "Email", "Remote Presentation", "Not Applicable")
-  .access_choices        <- c("Public", "Bilateral", "Restricted")
-  .visibility_choices    <- c("Public", "Restricted", "Not Applicable")
+
 
   tagList(
     shiny::fluidRow(
@@ -27,159 +39,441 @@ mod_goals_ui <- function(id) {
           # ---- Assessment Info Tab ----
           shiny::tabPanel(
             title = iphra_txt("Assessment Info"),
+            br(),
 
             # Group 1
-            shinydashboard::box(
-              title = iphra_txt("General Information"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::textInput(ns("country_name"),   iphra_txt("Country Name")),
-              shiny::textInput(ns("country"),        iphra_txt("Country Code")),
-              shiny::textInput(ns("month_year"),     iphra_txt("Month/Year")),
-              shiny::textInput(ns("research_cycle_id"), iphra_txt("Research Cycle ID")),
-              shiny::textInput(ns("assessment_title"),  iphra_txt("Assessment Title")),
-              shiny::textInput(ns("type_emergency"), iphra_txt("Type of Emergency")),
-              shiny::textInput(ns("type_crisis"),    iphra_txt("Type of Crisis")),
-              shiny::textInput(ns("population"),     iphra_txt("Population")),
-              shiny::textInput(ns("rationale"),      iphra_txt("Rationale")),
-              shiny::textInput(ns("geographic_coverage"), iphra_txt("Geographic Coverage")),
-              shiny::textInput(ns("stratification"), iphra_txt("Stratification")),
-              shiny::dateInput(ns("release_date"),   iphra_txt("Release Date"), value = NA),
-              shiny::numericInput(ns("version_number"), iphra_txt("Version Number"), value = NA, min = 0, step = 1),
-              shiny::textInput(ns("mandating_body"), iphra_txt("Mandating Body")),
-              shiny::textInput(ns("project_code"),   iphra_txt("Project Code"))
-            ),
+            shinyBS::bsCollapse(
+              id = ns("assessment_info_collapse"),
+              multiple = TRUE,
+              open = NULL,
 
-            # Group 2
-            shinydashboard::box(
-              title = iphra_txt("Timelines & Milestones"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::dateInput(ns("overall_timeframe"),              iphra_txt("Overall Timeframe"), value = NA),
-              shiny::dateInput(ns("date_pilot_training"),            iphra_txt("Date: Pilot Training"), value = NA),
-              shiny::dateInput(ns("date_data_collection_start"),     iphra_txt("Date: Data Collection Start"), value = NA),
-              shiny::dateInput(ns("date_data_collection_end"),       iphra_txt("Date: Data Collection End"), value = NA),
-              shiny::dateInput(ns("date_data_analysis"),             iphra_txt("Date: Data Analysis"), value = NA),
-              shiny::dateInput(ns("date_data_validation"),           iphra_txt("Date: Data Validation"), value = NA),
-              shiny::dateInput(ns("date_preliminary_presentation"),  iphra_txt("Date: Preliminary Presentation"), value = NA),
-              shiny::dateInput(ns("date_outputs_validation"),        iphra_txt("Date: Outputs Validation"), value = NA),
-              shiny::dateInput(ns("date_outputs_publication"),       iphra_txt("Date: Outputs Publication"), value = NA),
-              shiny::dateInput(ns("date_final_presentation"),        iphra_txt("Date: Final Presentation"), value = NA),
-              shiny::dateInput(ns("date_milestone_donor"),           iphra_txt("Date: Milestone Donor"), value = NA),
-              shiny::dateInput(ns("date_milestone_intercluster"),    iphra_txt("Date: Milestone Intercluster"), value = NA),
-              shiny::dateInput(ns("date_milestone_cluster"),         iphra_txt("Date: Milestone Cluster"), value = NA),
-              shiny::dateInput(ns("date_milestone_ngo_platform"),    iphra_txt("Date: Milestone NGO Platform"), value = NA),
-              shiny::dateInput(ns("date_milestone_other"),           iphra_txt("Date: Milestone Other"), value = NA)
-            ),
+              shinyBS::bsCollapsePanel(
+                title = iphra_txt("General Information"),
+                style = "primary",
 
-            # Group 3
-            shinydashboard::box(
-              title = iphra_txt("Audiences & Expected Outputs"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::textInput(ns("audience_type_cluster"), iphra_txt("Audience Type (Cluster)")),
-              shiny::selectInput(ns("expected_output_cluster"),
-                label = iphra_txt("Expected Output (Cluster)"),
-                choices = .output_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("expected_output_donor"),
-                label = iphra_txt("Expected Output (Donor)"),
-                choices = .output_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("expected_output_operational_actor"),
-                label = iphra_txt("Expected Output (Operational Actor)"),
-                choices = .output_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("expected_output_other"),
-                label = iphra_txt("Expected Output (Other)"),
-                choices = .output_choices,
-                multiple = TRUE, selected = NULL)
-            ),
+                div(
+                  style = "overflow-x:auto;",
 
-            # Group 4
-            shinydashboard::box(
-              title = iphra_txt("Dissemination Strategy"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::selectInput(ns("dissemination_strategy_cluster"),
-                label = iphra_txt("Dissemination Strategy (Cluster)"),
-                choices = .dissemination_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("dissemination_strategy_donor"),
-                label = iphra_txt("Dissemination Strategy (Donor)"),
-                choices = .dissemination_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("dissemination_strategy_operational_actor"),
-                label = iphra_txt("Dissemination Strategy (Operational Actor)"),
-                choices = .dissemination_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("dissemination_strategy_other"),
-                label = iphra_txt("Dissemination Strategy (Other)"),
-                choices = .dissemination_choices,
-                multiple = TRUE, selected = NULL)
-            ),
+                  tags$table(
+                    class = "table table-bordered",
+                    style = "width:100%;",
 
-            # Group 5
-            shinydashboard::box(
-              title = iphra_txt("Access"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::selectInput(ns("access_cluster"),
-                label = iphra_txt("Access (Cluster)"),
-                choices = .access_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("access_donor"),
-                label = iphra_txt("Access (Donor)"),
-                choices = .access_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("access_operational_actor"),
-                label = iphra_txt("Access (Operational Actor)"),
-                choices = .access_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("access_other"),
-                label = iphra_txt("Access (Other)"),
-                choices = .access_choices,
-                multiple = TRUE, selected = NULL)
-            ),
+                    tags$tr(
+                      tags$th(colspan = 4,
+                              style = "background-color:#f5f5f5;",
+                              iphra_txt("Assessment Metadata")
+                      )
+                    ),
 
-            # Group 6
-            shinydashboard::box(
-              title = iphra_txt("Visibility"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::selectInput(ns("visibility_cluster"),
-                label = iphra_txt("Visibility (Cluster)"),
-                choices = .visibility_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("visibility_donor"),
-                label = iphra_txt("Visibility (Donor)"),
-                choices = .visibility_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("visibility_operational_actor"),
-                label = iphra_txt("Visibility (Operational Actor)"),
-                choices = .visibility_choices,
-                multiple = TRUE, selected = NULL),
-              shiny::selectInput(ns("visibility_other"),
-                label = iphra_txt("Visibility (Other)"),
-                choices = .visibility_choices,
-                multiple = TRUE, selected = NULL)
-            ),
+                    tags$tr(
+                      tags$th(style = "width:20%;", iphra_txt("Assessment Title")),
+                      tags$td(style = "width:30%;",
+                              textInput(
+                                ns("assessment_title"),
+                                label = NULL,
+                                width = "100%"
+                              )
+                      ),
 
-            # Group 7
-            shinydashboard::box(
-              title = iphra_txt("Output Counts"),
-              width = 12,
-              collapsible = TRUE,
-              shiny::numericInput(ns("num_report"),               iphra_txt("# Reports"),               value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_profile"),              iphra_txt("# Profiles"),              value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_prelim_presentation"),  iphra_txt("# Preliminary Presentations"), value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_final_presentation"),   iphra_txt("# Final Presentations"),   value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_factsheet"),            iphra_txt("# Factsheets"),            value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_dashboard"),            iphra_txt("# Dashboards"),            value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_webmap"),               iphra_txt("# Webmaps"),               value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_map"),                  iphra_txt("# Maps"),                  value = NA, min = 0, step = 1),
-              shiny::numericInput(ns("num_output_other"),         iphra_txt("# Other Outputs"),         value = NA, min = 0, step = 1)
+                      tags$th(style = "width:20%;", iphra_txt("Country Name")),
+                      tags$td(style = "width:30%;",
+                              textInput(
+                                ns("country_name"),
+                                label = NULL,
+                                width = "100%"
+                              )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(iphra_txt("Month/Year")),
+                      tags$td(
+                        textInput(
+                          ns("month_year"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      ),
+
+                      tags$th(iphra_txt("Research Cycle ID")),
+                      tags$td(
+                        textInput(
+                          ns("research_cycle_id"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(iphra_txt("Project Code")),
+                      tags$td(
+                        textInput(
+                          ns("project_code"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      ),
+
+                      tags$th(iphra_txt("Mandating Body")),
+                      tags$td(
+                        textInput(
+                          ns("mandating_body"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(iphra_txt("Version Number")),
+                      tags$td(
+                        numericInput(
+                          ns("version_number"),
+                          label = NULL,
+                          value = NA,
+                          min = 0,
+                          step = 1,
+                          width = "100%"
+                        )
+                      ),
+
+                      tags$th(iphra_txt("Release Date")),
+                      tags$td(
+                        dateInput(
+                          ns("release_date"),
+                          label = NULL,
+                          value = NA,
+                          width = "100%"
+                        )
+                      )
+                    )
+                  )
+                )
+
+
+
+
+
+              ),
+              shinyBS::bsCollapsePanel(
+                title = iphra_txt("Rationale, Population and Geographic Scope"),
+                style = "primary",
+
+                div(
+                  style = "overflow-x:auto;",
+
+                  tags$table(
+                    class = "table table-bordered",
+                    style = "width:100%;",
+
+                    tags$tr(
+                      tags$th(
+                        colspan = 2,
+                        style = "background-color:#f5f5f5;",
+                        iphra_txt("Rationale for Assessment")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$td(
+                        colspan = 2,
+                        shiny::tagAppendAttributes(
+                          textAreaInput(
+                            ns("rationale"),
+                            label = NULL,
+                            rows = 3,
+                            width = "100%"
+                          ),
+                          maxlength = 200
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(
+                        colspan = 2,
+                        style = "background-color:#f5f5f5;",
+                        iphra_txt("Geographic Scope")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$td(
+                        colspan = 2,
+                        shiny::tagAppendAttributes(
+                          textAreaInput(
+                            ns("geographic_coverage"),
+                            label = NULL,
+                            rows = 3,
+                            width = "100%"
+                          ),
+                          maxlength = 200
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(
+                        colspan = 2,
+                        style = "background-color:#f5f5f5;",
+                        iphra_txt("Population and Stratification Plan")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(
+                        style = "width:25%;",
+                        iphra_txt("Type of Emergency")
+                      ),
+
+                      tags$th(
+                        style = "width:25%;",
+                        iphra_txt("Type of Crisis")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$td(
+                        textInput(
+                          ns("type_emergency"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      ),
+
+                      tags$td(
+                        textInput(
+                          ns("type_crisis"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(
+                        iphra_txt("Population")
+                      ),
+
+                      tags$th(
+                        iphra_txt("Stratification")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$td(
+                        textInput(
+                          ns("population"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      ),
+
+                      tags$td(
+                        textInput(
+                          ns("stratification"),
+                          label = NULL,
+                          width = "100%"
+                        )
+                      )
+                    )
+                  )
+                )
+
+
+              ),
+              shinyBS::bsCollapsePanel(
+                title = iphra_txt("Timelines and Milestones"),
+                style = "primary",
+
+                div(
+                  style = "width:100%;",
+
+                  tags$table(
+                    class = "table table-bordered table-striped",
+                    style = "width:100%;",
+
+                    tags$thead(
+                      tags$tr(
+                        tags$th(
+                          style = "width:20%;",
+                          iphra_txt("Phase")
+                        ),
+                        tags$th(
+                          style = "width:35%;",
+                          iphra_txt("Milestone")
+                        ),
+                        tags$th(
+                          style = "width:45%;",
+                          iphra_txt("Date")
+                        )
+                      )
+                    ),
+
+                    tags$tbody(
+
+                      # ------------------------------
+                      # Data Collection
+                      # ------------------------------
+                      tags$tr(
+                        tags$td(
+                          rowspan = 3,
+                          strong(iphra_txt("Data Collection"))
+                        ),
+                        tags$td(iphra_txt("Pilot Training")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_pilot_training"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Data Collection Start")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_data_collection_start"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Data Collection End")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_data_collection_end"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      # ------------------------------
+                      # Data Analysis
+                      # ------------------------------
+                      tags$tr(
+                        tags$td(
+                          rowspan = 2,
+                          strong(iphra_txt("Data Analysis"))
+                        ),
+                        tags$td(iphra_txt("Data Analysis")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_data_analysis"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Data Validation")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_data_validation"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      # ------------------------------
+                      # Output Production
+                      # ------------------------------
+                      tags$tr(
+                        tags$td(
+                          rowspan = 4,
+                          strong(iphra_txt("Output Production"))
+                        ),
+                        tags$td(iphra_txt("Preliminary Presentation")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_preliminary_presentation"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Outputs Validation")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_outputs_validation"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Outputs Publication")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_outputs_publication"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      ),
+
+                      tags$tr(
+                        tags$td(iphra_txt("Final Presentation")),
+                        tags$td(
+                          shiny::dateInput(
+                            ns("date_final_presentation"),
+                            label = NULL,
+                            value = NA,
+                            width = "100%"
+                          )
+                        )
+                      )
+
+                    )
+                  )
+                )
+              ),
+              shinyBS::bsCollapsePanel(
+                title = iphra_txt("Audience, Outputs, Dissemination Plan"),
+                style = "primary",
+
+                fluidRow(
+                  column(
+                    6,
+                    actionButton(
+                      ns("add_audience"),
+                      iphra_txt("Add Audience")
+                    )
+                  ),
+                  column(
+                    6,
+                    actionButton(
+                      ns("remove_audience"),
+                      iphra_txt("Remove Audience")
+                    )
+                  )
+                ),
+
+                br(),
+
+                shiny::uiOutput(ns("audience_table"))
+
+              )
             )
+
           ),
 
           # ---- Primary Tab ----
@@ -321,6 +615,26 @@ mod_goals_server <- function(id){
     # --- SVG with individual block IDs ---
 
     # Initializing Reactive Values ####
+
+    audience_n <- reactiveVal(1)
+
+    audience_table_data <- reactive({
+
+      lapply(seq_len(audience_n()), function(i) {
+
+        list(
+          audience_type = input[[paste0("audience_category_", i)]],
+          audience_name = input[[paste0("audience_name_", i)]],
+          outputs = input[[paste0("expected_output_", i)]],
+          dissemination = input[[paste0("dissemination_", i)]],
+          access = input[[paste0("access_", i)]],
+          visibility = input[[paste0("visibility_", i)]]
+        )
+
+      })
+
+    })
+
     selected <- shiny::reactiveVal(character(0))
     selected_sdr <- shiny::reactiveVal(character(0))
 
@@ -460,12 +774,150 @@ mod_goals_server <- function(id){
       }
     })
 
+    output$audience_table <- renderUI({
+
+      rows <- lapply(seq_len(audience_n()), function(i) {
+
+        tags$tr(
+
+          # Audience Name
+          tags$td(
+            textInput(
+              ns(paste0("audience_name_", i)),
+              label = NULL,
+              width = "100%"
+            )
+          ),
+
+          # Audience Type
+          tags$td(
+            selectInput(
+              ns(paste0("audience_category_", i)),
+              label = NULL,
+              choices = c(
+                "Strategic",
+                "Coordination/Cluster",
+                "Government Agency",
+                "Donor",
+                "Operational Actor",
+                "Community",
+                "Other"
+              ),
+              width = "100%"
+            )
+          ),
+
+          # Outputs
+          tags$td(
+            selectInput(
+              ns(paste0("expected_output_", i)),
+              label = NULL,
+              choices = .output_choices,
+              multiple = TRUE,
+              width = "100%"
+            )
+          ),
+
+          # Outputs counts
+          tags$td(
+            numericInput(
+              ns(paste0("expected_output_count_", i)),
+              label = NULL,
+              value = NA, min = 0, step = 1,
+              width = "100%"
+            )
+          ),
+
+          # Dissemination
+          tags$td(
+            selectInput(
+              ns(paste0("dissemination_", i)),
+              label = NULL,
+              choices = .dissemination_choices,
+              multiple = TRUE,
+              width = "100%"
+            )
+          ),
+
+          # Access
+          tags$td(
+            selectInput(
+              ns(paste0("access_", i)),
+              label = NULL,
+              choices = .access_choices,
+              multiple = TRUE,
+              width = "100%"
+            )
+          ),
+
+          # Visibility
+          tags$td(
+            selectInput(
+              ns(paste0("visibility_", i)),
+              label = NULL,
+              choices = .visibility_choices,
+              multiple = TRUE,
+              width = "100%"
+            )
+          )
+        )
+
+      })
+
+      div(
+        style = "overflow-x:auto;",
+
+        tags$table(
+          class = "table table-bordered table-striped",
+          style = "width:100%; table-layout:fixed;",
+
+          tags$thead(
+            tags$tr(
+              tags$th("Audience Type"),
+              tags$th("Audience"),
+              tags$th("Expected Outputs"),
+              tags$th("Output Counts"),
+              tags$th("Dissemination"),
+              tags$th("Access"),
+              tags$th("Visibility")
+            )
+          ),
+
+          tags$tbody(rows)
+        )
+      )
+
+    })
+
+
     # --- Render the initial SVG ---
     output$framework_svg <- renderUI({
       HTML(protocol_r()$framework$adjusted_svg)
     })
 
     # Observes ####
+
+    observeEvent(input$add_audience, {
+      audience_n(audience_n() + 1)
+    })
+
+    observeEvent(input$remove_audience, {
+
+      if (audience_n() > 1) {
+        audience_n(audience_n() - 1)
+      }
+
+    })
+
+    observe({
+
+      protocol_r()$set(
+        field = "metadata",
+        role = "audience_matrix",
+        value = audience_table_data()
+      )
+
+    })
 
     # ---- Assessment Info metadata observers
     # Character fields (groups 1 & 3)
@@ -480,7 +932,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$metadata[[f]] <- input[[f]]
+            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -503,7 +955,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$metadata[[f]] <- input[[f]]
+            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -525,7 +977,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$metadata[[f]] <- input[[f]]
+            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -544,7 +996,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$metadata[[f]] <- input[[f]]
+            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })

@@ -17,6 +17,15 @@ app_ui <- function(request) {
       transform-origin: top left;
     }
   ")),
+      # Hide all Shiny notifications
+      tags$style(HTML("
+      .shiny-notification {
+      display: none !important;
+      }
+      .shiny-output-error-validation {
+      display: none !important;
+      }
+                      ")),
       tags$script(HTML("
       Shiny.addCustomMessageHandler('highlightBlock', function(message) {
         var el = document.getElementById(message.id);
@@ -402,9 +411,11 @@ app_ui <- function(request) {
                                                         " ", iphra_txt("Documents"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
-                                                         tags$li(tags$a(href = "#",
-                                                                        onclick = "Shiny.setInputValue('export_doc', 'tor');",
-                                                                        iphra_txt("REACH Terms of Reference"))),
+                                                         tags$li(tags$a(
+                                                           href = "#",
+                                                           onclick = "Shiny.setInputValue('export_doc_tor', Date.now(), {priority: 'event'});",
+                                                           iphra_txt("REACH Terms of Reference")
+                                                         )),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_doc', 'protocol');",
                                                                         iphra_txt("Technical Protocol"))),

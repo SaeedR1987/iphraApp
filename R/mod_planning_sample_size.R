@@ -19,18 +19,17 @@ mod_planning_sample_size_ui <- function(id) {
 
     fluidRow(
 
-      # ───────────────────────────────
+
       # LEFT SIDE (3/4 WIDTH): Tabset
-      # ───────────────────────────────
+
       column(width = 9,
 
              tabsetPanel(
                id = ns("sample_tabs"),
                type = "tabs",
 
-               # ───────────────────────────────
                # TAB 1: SAMPLE SIZE
-               # ───────────────────────────────
+
                tabPanel(
                  title = "Sample Size",
                  br(),
@@ -161,7 +160,12 @@ mod_planning_sample_size_ui <- function(id) {
                             checkboxInput(ns("ind_fpc"), "Apply FPC?", value = FALSE),
                             actionButton(ns("ind_calculate"), "Calculate"),
                             h5("Result", style = "margin-top:10px;"),
-                            verbatimTextOutput(ns("ind_result"))
+
+                            tags$b("Total People"),
+                            verbatimTextOutput(ns("ind_total_people")),
+
+                            tags$b("Total Households"),
+                            verbatimTextOutput(ns("ind_total_households"))
                           )
                    ),
 
@@ -187,7 +191,15 @@ mod_planning_sample_size_ui <- function(id) {
                             checkboxInput(ns("rate_fpc"), "Apply FPC?", value = FALSE),
                             actionButton(ns("rate_calculate"), "Calculate"),
                             h5("Result", style = "margin-top:10px;"),
-                            verbatimTextOutput(ns("rate_result"))
+
+                            tags$b("Total Households"),
+                            verbatimTextOutput(ns("rate_total_households")),
+
+                            tags$b("Total People"),
+                            verbatimTextOutput(ns("rate_total_people")),
+
+                            tags$b("Total Person-Time"),
+                            verbatimTextOutput(ns("rate_total_person_time"))
                           )
                    ),
                    # Plan level
@@ -291,9 +303,9 @@ mod_planning_sample_size_ui <- function(id) {
                  )
                ),
 
-               # ───────────────────────────────
+
                # TAB 3: SAMPLING
-               # ───────────────────────────────
+
                tabPanel(
                  title = "Sampling",
                  br(), br(), br(),
@@ -377,9 +389,9 @@ mod_planning_sample_size_ui <- function(id) {
              )
       ),
 
-      # ───────────────────────────────
+
       # RIGHT SIDE (1/4 WIDTH): Always Visible Table
-      # ───────────────────────────────
+
       column(width = 3, style = "min-width: 300px;",
              h4("Sample Table", style = "font-size:14px;"),
 
@@ -438,11 +450,31 @@ mod_planning_sample_size_server <- function(id) {
     })
 
     sampling_frame_data <- reactive({
-      protocol_r()$sampling_frame$log_df
+      protocol_r()$sampling_frame$get(field = "log_df")
+    })
+
+    observe({
+      print("sampling_frame_data updated")
+      print(dim(sampling_frame_data()))
     })
 
     sample_results_data <- reactive({
       protocol_r()$sampling_frame$drawn_sample_full
+    })
+
+    observe({
+
+      x <- sample_results_data()
+
+      cat("\n*** sample_results_data invalidated ***\n")
+
+      if (is.null(x)) {
+        cat("Current value: NULL\n")
+      } else {
+        cat("Rows:", nrow(x), "\n")
+        cat("Cols:", ncol(x), "\n")
+      }
+
     })
 
     pop_sample_size <- reactiveVal(NULL)
@@ -489,14 +521,44 @@ mod_planning_sample_size_server <- function(id) {
       format(pop_sample_size(), big.mark = ",")
     })
 
-    output$ind_result <- renderText({
+    # output$ind_result <- renderText({
+    #   req(ind_sample_size())
+    #   format(ind_sample_size(), big.mark = ",")
+    # })
+    #
+    # output$rate_result <- renderText({
+    #   req(rate_sample_size())
+    #   format(rate_sample_size(), big.mark = ",")
+    # })
+
+    output$ind_total_people <- renderText({
       req(ind_sample_size())
-      format(ind_sample_size(), big.mark = ",")
+
+      format(ind_sample_size()[1], big.mark = ",")
     })
 
-    output$rate_result <- renderText({
+    output$ind_total_households <- renderText({
+      req(ind_sample_size())
+
+      format(ind_sample_size()[2], big.mark = ",")
+    })
+
+    output$rate_total_households <- renderText({
       req(rate_sample_size())
-      format(rate_sample_size(), big.mark = ",")
+
+      format(rate_sample_size()[1], big.mark = ",")
+    })
+
+    output$rate_total_people <- renderText({
+      req(rate_sample_size())
+
+      format(rate_sample_size()[2], big.mark = ",")
+    })
+
+    output$rate_total_person_time <- renderText({
+      req(rate_sample_size())
+
+      format(rate_sample_size()[3], big.mark = ",")
     })
 
     output$num_interview_per_enumday_result <- renderText({
@@ -516,7 +578,7 @@ mod_planning_sample_size_server <- function(id) {
       format(psu_size(), big.mark = ",")
     })
 
-    # ---- Sampling Frame Table ----
+    # ▶️ OUTPUT - SAMPLING FRAME ####
     output$sampling_frame <- rhandsontable::renderRHandsontable({
 
       df <- sampling_frame_data()
@@ -534,10 +596,18 @@ mod_planning_sample_size_server <- function(id) {
         )
     })
 
-    # ---- Sample Results Table ----
+    # ▶️ OUTPUT - SAMPLE STRATUM TABLE ####
     output$sample_results <- rhandsontable::renderRHandsontable({
+
+      cat("\nRendering sample_results\n")
+
       df <- sample_results_data()
-      if (is.null(df)) return(NULL)
+      if (is.null(df)) {
+        cat("sample_results received NULL\n")
+        return(NULL)
+      }
+
+      print(dim(df))
 
       rhandsontable::rhandsontable(
         df,
@@ -552,8 +622,18 @@ mod_planning_sample_size_server <- function(id) {
         )
     })
 
+    observe({
+      cat("log_df changed\n")
+      print(dim(protocol_r()$sampling_frame$get("log_df")))
+    })
 
-    # ▶️ ADD SAMPLE
+    observe({
+      cat("drawn_sample_full changed\n")
+      print(dim(protocol_r()$sampling_frame$drawn_sample_full))
+    })
+
+
+    # ▶️ OBSERVE - ADD SAMPLE BUTTON ####
 
     observeEvent(input$add_sample, {
       iphra_try({
@@ -628,7 +708,7 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ▶️ UPDATE POPULATION DROPDOWN (safe version)
+    # ▶️ OBSERVE - UPDATE POPULATION DROPDOWN ####
 
     # ---- Sync remove_target dropdown with samples()
     observeEvent(samples(), {
@@ -691,7 +771,7 @@ mod_planning_sample_size_server <- function(id) {
     ignoreInit = FALSE)
 
 
-    # ▶️ REMOVE SAMPLE (by dropdown exact match)
+    # ▶️ OBSERVE - REMOVE SAMPLE BUTTON ####
 
     observeEvent(input$remove_sample, {
       iphra_try({
@@ -717,7 +797,7 @@ mod_planning_sample_size_server <- function(id) {
         }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Validation")
         if (iphra_failed(result)) return(result)
 
-        # 2️⃣ CORE LOGIC ----
+        # 2️⃣ CORE LOGIC####
 
         result <- iphra_try_step({
 
@@ -740,9 +820,9 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ▶️ SAMPLING METHOD CHANGE (no change)
+    # ▶️ OBSERVE - DESIGN EFFECT BLOCK ####
 
-    # ---- Update Design Effect Field State based on Sampling Method ----
+    # ---- Update Design Effect Field State based on Sampling Method
     observeEvent(input$sampling_method_site, {
       iphra_try({
 
@@ -795,7 +875,7 @@ mod_planning_sample_size_server <- function(id) {
 
     })
 
-    # ---- Household Sample Size: Calculate ----
+    # ▶️ OBSERVE - CALCULATE HOUSEHOLD SAMPLE ####
     observeEvent(input$pop_calculate, {
       iphra_try({
 
@@ -851,7 +931,7 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ---- Individual Sample Size: Calculate ----
+    # ▶️ OBSERVE - CALCULATE INDIVIDUAL SAMPLE ####
     observeEvent(input$ind_calculate, {
       iphra_try({
 
@@ -889,7 +969,7 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ---- Mortality Sample Size: Calculate ----
+    # ▶️ OBSERVE - CALCULATE RATE SAMPLE ####
     observeEvent(input$rate_calculate, {
       iphra_try({
 
@@ -928,7 +1008,7 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ---- Survey Days: Calculate Plan ----
+    # ▶️ OBSERVE - CALCULATE PLAN ####
     observeEvent(input$calc_plan, {
       iphra_try({
 
@@ -971,7 +1051,7 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ---- Update Selected Population ----
+    # ---- Update Selected Population
     observeEvent(input$update_population, {
       iphra_try({
 
@@ -983,7 +1063,12 @@ mod_planning_sample_size_server <- function(id) {
     })
 
 
-    # ▶️ IMPORT SAMPLING FRAME
+    # ▶️ OBSERVE - IMPORT SAMPLING FRAME ####
+
+    observe({
+      print("drawn sample updated")
+      print(protocol_r()$sampling_frame$drawn_sample_full)
+    })
 
     observeEvent(input$import_frame, {
 
@@ -995,40 +1080,101 @@ mod_planning_sample_size_server <- function(id) {
         file_ext  <- tolower(tools::file_ext(input$import_frame$name))
 
         imported_df <- switch(
-
           file_ext,
-
           csv = read.csv(
             file_path,
             stringsAsFactors = FALSE
           ),
-
           xlsx = as.data.frame(
             readxl::read_excel(file_path)
           ),
-
           xls = as.data.frame(
             readxl::read_excel(file_path)
           ),
-
           stop("Unsupported file type.")
+        ) |>
+          dplyr::mutate(
+            inclusion = ifelse(inclusion == "False", FALSE, TRUE))
+
+        # Check required columns
+        required_cols <- c(
+          "stratum",
+          "psu",
+          "population_size",
+          "inclusion"
         )
 
-        # Store ONLY the dataframe in the protocol object
-        protocol_r()$sampling_frame$log_df <- imported_df
+        missing_cols <- setdiff(required_cols, names(imported_df))
+
+        if (length(missing_cols) > 0) {
+          phrutils::phr_warning(
+            sprintf(
+              "Missing required columns: %s",
+              paste(missing_cols, collapse = ", ")
+            )
+          )
+          return()
+        }
+
+        # Optional columns must be NA_real_ if present
+        for (col in c("sampled_psu", "allocated_sample")) {
+          if (col %in% names(imported_df)) {
+            imported_df[[col]] <- NA_real_
+          }
+        }
+
+        # ---- Coerce required column types
+
+        imported_df$stratum <- as.character(imported_df$stratum)
+        imported_df$psu <- as.character(imported_df$psu)
+
+        imported_df$population_size <- suppressWarnings(
+          as.numeric(imported_df$population_size)
+        )
+
+        imported_df$inclusion <- dplyr::case_when(
+          imported_df$inclusion %in% c(TRUE, "TRUE", "true", 1, "1") ~ TRUE,
+          imported_df$inclusion %in% c(FALSE, "FALSE", "false", 0, "0") ~ FALSE,
+          TRUE ~ NA
+        )
+
+        # if (any(is.na(imported_df$inclusion))) {
+        #   phrutils::phr_warning(
+        #     "Some values in 'inclusion' could not be converted to logical (TRUE/FALSE)."
+        #   )
+        #   return()
+        # }
+
+        # ---- Validate coercion results
+
+        bad_population_size <- !is.na(imported_df$population_size) &
+          !is.finite(imported_df$population_size)
+
+        if (any(bad_population_size)) {
+          phrutils::phr_warning(
+            "Invalid values detected in 'population_size'. Values could not be converted to numeric."
+          )
+          return()
+        }
+
+        bad_inclusion <- !is.na(imported_df$inclusion) &
+          !imported_df$inclusion %in% c(TRUE, FALSE)
+
+        if (any(bad_inclusion)) {
+          phrutils::phr_warning(
+            "Invalid values detected in 'inclusion'. Values must be coercible to TRUE/FALSE."
+          )
+          return()
+        }
+
+        protocol_r()$sampling_frame$set(
+          field = "log_df",
+          value = imported_df
+        )
 
         phr_touch_module(
           module_name = "protocol",
           session = session
-        )
-
-        iphra_message(
-          paste0(
-            "Imported sampling frame with ",
-            nrow(imported_df),
-            " rows."
-          ),
-          origin = "Sample Module: Import Sampling Frame"
         )
 
       },
@@ -1041,10 +1187,12 @@ mod_planning_sample_size_server <- function(id) {
 
 
 
-    # ▶️ DRAW SAMPLE
-
+    # ▶️ OBSERVE - DRAW SAMPLE ####
     observeEvent(input$draw_sample, {
-      iphra_try({
+
+      cat("BEFORE draw_sample\n")
+
+      result <- tryCatch({
 
         protocol_r()$access_nested(
           field = "sampling_frame",
@@ -1053,23 +1201,73 @@ mod_planning_sample_size_server <- function(id) {
           seed = 987
         )
 
-        phr_touch_module(module_name = "protocol", session = session)
+        "SUCCESS"
 
-      },
-      on_error = "warn",
-      origin = iphra_txt("Sample Module: Draw Sample"),
-      hint   = iphra_txt("Verify sampling frame availability and randomization logic if this fails.")
-      )
+      }, error = function(e) {
+
+        cat("ERROR INSIDE DRAW SAMPLE:\n")
+        print(e)
+
+        e
+
+      })
+
+      cat("AFTER draw_sample\n")
+      print(result)
+
     })
 
-    # ▶️ SAMPLING FRAME EDIT DETECTION
+    observeEvent(input$draw_sample, {
+
+      cat("\n====================\n")
+      cat("DRAW SAMPLE CLICKED\n")
+      cat("====================\n")
+      cat("Frame rows: ",
+          nrow(protocol_r()$sampling_frame$get("log_df")),
+          "\n")
+      cat("Sample table rows: ",
+          nrow(protocol_r()$get_sample_table()),
+          "\n")
+
+      # iphra_try({
+
+        cat("Calling draw_sample()...\n")
+
+        protocol_r()$sampling_frame$draw_sample(
+          strata_table = protocol_r()$get_sample_table(),
+          seed = 987
+        )
+
+        cat("Returned from draw_sample()\n")
+
+        result <- protocol_r()$sampling_frame$drawn_sample_full
+
+        cat("drawn_sample_full class:\n")
+        print(class(result))
+
+        cat("drawn_sample_full dimensions:\n")
+        print(dim(result))
+
+        cat("drawn_sample_full preview:\n")
+        print(utils::head(result))
+
+        phr_touch_module(module_name = "protocol", session = session)
+
+      # },
+      # on_error = "warn",
+      # origin = iphra_txt("Sample Module: Draw Sample"),
+      # hint   = iphra_txt("Verify sampling frame availability and randomization logic if this fails.")
+      # )
+    })
+
+    # ▶️ OBSERVE - SAMPLING FRAME EDIT DETECTION ####
 
     observeEvent(input$sampling_frame, {
       iphra_try({
 
         updated_frame <- rhandsontable::hot_to_r(input$sampling_frame)
 
-        protocol_r()$sampling_frame$log_df <- updated_frame
+        protocol_r()$sampling_frame$set(field = "log_df", value = updated_frame)
 
         phr_touch_module(
           module_name = "protocol",

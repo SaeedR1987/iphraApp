@@ -1259,7 +1259,7 @@ mod_goals_server <- function(id){
       origin = iphra_txt("Secondary Data Sources: Edit"),
       hint = iphra_txt("Ensure rhandsontable input is correctly bound if this fails.")
       )
-    })
+    }, ignoreInit = TRUE)
 
     # ---- Single observer: update the schema, then the SVG, then the display.
     # Both operations depend on selected()/selected_sdr(); keeping them in one

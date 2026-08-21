@@ -500,6 +500,23 @@ mod_goals_ui <- function(id) {
           # ---- Secondary Tab ----
           shiny::tabPanel(
             title = iphra_txt("Secondary"),
+            shinyBS::bsCollapse(
+              id = ns("secondary_data_sources_collapse"),
+              shinyBS::bsCollapsePanel(
+                title = iphra_txt("Secondary Data Sources"),
+                style = "primary",
+
+                shiny::actionButton(
+                  ns("refresh_secondary_sources"),
+                  iphra_txt("Refresh")
+                ),
+
+                shiny::br(),
+                shiny::br(),
+
+                rhandsontable::rHandsontableOutput(ns("secondary_sources_table"))
+              )
+            ),
             shinydashboard::box(
               title = iphra_txt("Objectives Presets"),
               width = 12,
@@ -612,6 +629,15 @@ mod_goals_server <- function(id){
       )
     })
 
+    code_to_text_r <- reactive({
+      uo <- unique_objectives_r()
+
+      setNames(
+        as.character(uo$text_objective),
+        as.character(uo$objective_code)
+      )
+    })
+
     # --- SVG with individual block IDs ---
 
     # Initializing Reactive Values ####
@@ -637,6 +663,15 @@ mod_goals_server <- function(id){
 
     selected <- shiny::reactiveVal(character(0))
     selected_sdr <- shiny::reactiveVal(character(0))
+
+    secondary_sources_data <- shiny::reactiveVal(
+      data.frame(
+        Objective = character(0),
+        Source = character(0),
+        Purpose = character(0),
+        stringsAsFactors = FALSE
+      )
+    )
 
     # Primary Objective Selection
 
@@ -746,6 +781,22 @@ mod_goals_server <- function(id){
         input_id = ns("selected_sdr"),
         options = sortable::sortable_options(group = "all_objectives")
       )
+    })
+
+    # ---- Table of secondary data sources
+    output$secondary_sources_table <- rhandsontable::renderRHandsontable({
+
+      df <- secondary_sources_data()
+
+      rhandsontable::rhandsontable(
+        df,
+        rowHeaders = NULL,
+        stretchH = "all"
+      ) |>
+        rhandsontable::hot_col("Objective", readOnly = TRUE) |>
+        rhandsontable::hot_col("Source", readOnly = FALSE) |>
+        rhandsontable::hot_col("Purpose", readOnly = FALSE)
+
     })
 
     # for full text objectives preview
@@ -1113,6 +1164,102 @@ mod_goals_server <- function(id){
     observeEvent(input$clear_sdr_objectives, {
       selected_sdr(character(0))
     })
+
+    # ---- Sync the secondary data sources table onto the stored protocol
+    # object. Because Framework only exposes row-level add/remove methods,
+    # every existing row is removed and every current row (with a non-blank
+    # Source) is re-added, one access_nested() call per row.
+    sync_secondary_sources_to_protocol <- function(new_df) {
+      iphra_try({
+
+        existing_df <- protocol_r()$framework$secondary_data_sources
+
+        if (!is.null(existing_df) && nrow(existing_df) > 0) {
+          for (i in seq_len(nrow(existing_df))) {
+            protocol_r()$access_nested(
+              field = "framework",
+              member = "remove_secondary_data_source",
+              objective = existing_df$objective[i],
+              source = existing_df$source[i]
+            )
+          }
+        }
+
+        if (!is.null(new_df) && nrow(new_df) > 0) {
+          for (i in seq_len(nrow(new_df))) {
+            source_val <- trimws(new_df$Source[i] %||% "")
+            if (source_val == "") next
+
+            protocol_r()$access_nested(
+              field = "framework",
+              member = "add_secondary_data_source",
+              objective = new_df$Objective[i],
+              source = new_df$Source[i],
+              purpose = new_df$Purpose[i] %||% NA_character_
+            )
+          }
+        }
+
+        phr_touch_module("protocol", session)
+
+      },
+      on_error = "warn",
+      origin = iphra_txt("Secondary Data Sources: Sync"),
+      hint = iphra_txt("Check Framework$secondary_data_sources access_nested calls if this fails.")
+      )
+    }
+
+    # ---- Refresh button: rebuild the Objective column from the selected
+    # secondary objectives, preserving any Source/Purpose already entered
+    # for objectives that remain selected.
+    observeEvent(input$refresh_secondary_sources, {
+      iphra_try({
+
+        target_labels <- unname(code_to_text_r()[as.character(selected_sdr())])
+        target_labels <- target_labels[!is.na(target_labels)]
+
+        old_df <- secondary_sources_data()
+
+        new_df <- data.frame(
+          Objective = target_labels,
+          Source = NA_character_,
+          Purpose = NA_character_,
+          stringsAsFactors = FALSE
+        )
+
+        if (nrow(new_df) > 0 && nrow(old_df) > 0) {
+          match_idx <- match(new_df$Objective, old_df$Objective)
+          keep <- !is.na(match_idx)
+          new_df$Source[keep] <- old_df$Source[match_idx[keep]]
+          new_df$Purpose[keep] <- old_df$Purpose[match_idx[keep]]
+        }
+
+        secondary_sources_data(new_df)
+        sync_secondary_sources_to_protocol(new_df)
+
+      },
+      on_error = "warn",
+      origin = iphra_txt("Secondary Data Sources: Refresh"),
+      hint = iphra_txt("Check selected secondary objectives if this fails.")
+      )
+    })
+
+    # ---- Keep secondary_sources_data() and the protocol object in sync with
+    # manual edits made directly in the rhandsontable widget.
+    observeEvent(input$secondary_sources_table, {
+      iphra_try({
+
+        new_df <- rhandsontable::hot_to_r(input$secondary_sources_table)
+
+        secondary_sources_data(new_df)
+        sync_secondary_sources_to_protocol(new_df)
+
+      },
+      on_error = "warn",
+      origin = iphra_txt("Secondary Data Sources: Edit"),
+      hint = iphra_txt("Ensure rhandsontable input is correctly bound if this fails.")
+      )
+    }, ignoreInit = TRUE)
 
     # ---- Single observer: update the schema, then the SVG, then the display.
     # Both operations depend on selected()/selected_sdr(); keeping them in one

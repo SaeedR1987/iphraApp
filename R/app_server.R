@@ -458,11 +458,12 @@ app_server <- function(input, output, session) {
       # so the user knows the export is running.
       withProgress(
         message = iphra_txt("Generating REACH Terms of Reference..."),
-        value = 0.5,
+        value = 0.1,
         {
           protocol$generate_quarto_doc(
             output_file = outfile
           )
+          setProgress(value = 1)
         }
       )
 

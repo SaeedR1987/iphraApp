@@ -161,7 +161,7 @@ app_ui <- function(request) {
                                              shiny::fileInput(
                                                "load_project_file",
                                                label = NULL,
-                                               accept = c(".rds", ".json"),
+                                               accept = c(".iphra"),
                                                buttonLabel = iphra_txt("Open Project"),
                                                placeholder = iphra_txt("No file selected")
                                              )
@@ -182,22 +182,29 @@ app_ui <- function(request) {
                                                  )
                                          ),
                                          tags$li(class = "divider"),
-                                         # Save Project
+                                         # Save Project — programmatically
+                                         # opens the hidden shinyFiles save
+                                         # dialog (id = "save_project"), which
+                                         # writes a `.iphra` file. See the
+                                         # input$save_project observer in
+                                         # app_server.R.
                                          tags$li(
                                            tags$a(
                                              href = "#",
                                              id = "save_project_btn",
-                                             onclick = "Shiny.setInputValue('save_project_btn', Date.now());",
+                                             onclick = "document.getElementById('save_project').click();",
                                              tags$span(class = "glyphicon glyphicon-floppy-disk"),
                                              " ", iphra_txt("Save Project")
                                            )
                                          ),
-                                         # Save Project As
+                                         # Save Project As — uses the same
+                                         # hidden shinyFiles save dialog so
+                                         # the user can pick a new destination.
                                          tags$li(
                                            tags$a(
                                              href = "#",
                                              id = "save_project_as_btn",
-                                             onclick = "Shiny.setInputValue('save_project_as_btn', Date.now());",
+                                             onclick = "document.getElementById('save_project').click();",
                                              tags$span(class = "glyphicon glyphicon-floppy-save"),
                                              " ", iphra_txt("Save Project As...")
                                            )
@@ -848,6 +855,22 @@ app_ui <- function(request) {
         title = "Save REACH Terms of Reference",
         filename = "REACH_Terms_of_Reference",
         filetype = list(docx = "docx")
+      )
+    ),
+
+    # Hidden shinyFiles save button used by the "Save Project" / "Save
+    # Project As..." menu items. Their onclick handlers click this button
+    # programmatically so the shinyFiles save dialog opens directly and the
+    # user can choose where the `.iphra` project file is written. See the
+    # input$save_project observer in app_server.R.
+    tags$div(
+      style = "display: none;",
+      shinyFiles::shinySaveButton(
+        id = "save_project",
+        label = "Save Project",
+        title = "Save IPHRA Project",
+        filename = "IPHRA_Project",
+        filetype = list(iphra = "iphra")
       )
     )
   )

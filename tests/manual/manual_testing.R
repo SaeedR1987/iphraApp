@@ -190,6 +190,7 @@ test_protocol$access_nested(
   purpose = "To provide context on population movements and displacement trends."
 )
 
+# test_protocol <- phr::IPHRAProtocol$new()
 test_protocol$generate_quarto_doc()
 
 

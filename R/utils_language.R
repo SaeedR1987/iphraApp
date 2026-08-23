@@ -6,15 +6,16 @@
 #' Load translation dictionaries from JSON files in inst/app/www/i18n/
 #' @noRd
 iphra_load_translations <- function() {
+
   translations <- list()
 
-  # Try to load from installed package location first, then development location
   i18n_paths <- c(
-    system.file("app/www/i18n", package = "iphRa"),
-    file.path(getwd(), "inst/app/www/i18n")
+    file.path(getwd(), "inst", "app", "www", "i18n"),
+    file.path(getwd(), "app", "www", "i18n")
   )
 
   i18n_dir <- NULL
+
   for (path in i18n_paths) {
     if (dir.exists(path)) {
       i18n_dir <- path
@@ -38,26 +39,31 @@ iphra_load_translations <- function() {
     ))
   }
 
-  # Load each language file
-  json_files <- list.files(i18n_dir, pattern = "\\.json$", full.names = TRUE)
+  json_files <- list.files(
+    i18n_dir,
+    pattern = "\\.json$",
+    full.names = TRUE
+  )
+
   for (json_file in json_files) {
     lang_code <- tools::file_path_sans_ext(basename(json_file))
+
     tryCatch({
-      translations[[lang_code]] <- jsonlite::fromJSON(json_file, simplifyVector = FALSE)
+      translations[[lang_code]] <-
+        jsonlite::fromJSON(json_file, simplifyVector = FALSE)
     }, error = function(e) {
-      warning(paste("Failed to load translation file:", json_file, "-", e$message))
+      warning(
+        paste(
+          "Failed to load translation file:",
+          json_file,
+          "-",
+          e$message
+        )
+      )
     })
   }
 
-  if (length(translations) == 0) {
-    warning("No translation files loaded. Using fallback translations.")
-    return(list(
-      en = list(validation_passed = "Validation checks passed (dummy mode)."),
-      fr = list(validation_passed = "Verifications terminees avec succes (mode fictif).")
-    ))
-  }
-
-  return(translations)
+  translations
 }
 
 # Load translations at package load time

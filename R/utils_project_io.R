@@ -119,12 +119,6 @@ iphra_save_project_file <- function(path,
     stop("[IPHRA::Error] path must be a single non-empty character string.")
   }
 
-  # Ensure the destination directory exists.
-  dir_path <- dirname(path)
-  if (!dir.exists(dir_path) && dir_path != ".") {
-    dir.create(dir_path, recursive = TRUE)
-  }
-
   # Ensure canonical `.iphra` extension.
   if (!grepl(paste0("\\.", .IPHRA_FILE_EXT, "$"), tolower(path))) {
     path <- paste0(path, ".", .IPHRA_FILE_EXT)
@@ -180,7 +174,9 @@ iphra_load_project_file <- function(path,
     error = function(e) {
       stop(paste0(
         "[IPHRA::Error] Could not read '", path,
-        "' as an .iphra project file: ", conditionMessage(e)
+        "' as an .iphra project file: ", conditionMessage(e),
+        ". If the error mentions an unknown class (e.g. IPHRAProtocol), ",
+        "make sure the 'phr' package that defined it is installed and loaded."
       ))
     }
   )

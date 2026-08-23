@@ -51,6 +51,50 @@ app_server <- function(input, output, session) {
     # a no-op and only exists to swallow any legacy click events.
   })
 
+  # ---- Quick Save Handler ----
+  # The "Save Project" menu item sets `input$save_project_btn` on click. If
+  # the project has already been saved to a known path (recorded in
+  # `session$userData$project$path`), we quick-save silently to that path
+  # without prompting. Otherwise we open the shinyFiles save dialog exactly
+  # as "Save Project As..." would, so the user can pick a destination.
+  observeEvent(input$save_project_btn, {
+    iphra_try({
+      current_path <- shiny::isolate(session$userData$project$path)
+
+      is_writable_dir <- function(p) {
+        d <- dirname(p)
+        dir.exists(d) && file.access(d, mode = 2) == 0
+      }
+
+      if (is.character(current_path) &&
+          length(current_path) == 1 &&
+          nzchar(current_path) &&
+          is_writable_dir(current_path)) {
+
+        written_path <- iphra_save_project_file(current_path, session = session)
+
+        iphra_message(
+          paste(iphra_txt("Project saved to:"), written_path),
+          origin = iphra_txt("Project File Manager")
+        )
+
+        showNotification(
+          paste(iphra_txt("Project saved to:"), written_path),
+          type = "message",
+          duration = 6
+        )
+      } else {
+        # No known path yet — fall back to opening the shinyFiles save
+        # dialog by clicking the hidden shinySaveButton client-side.
+        session$sendCustomMessage("iphra_click_element", "save_project")
+      }
+    },
+    on_error = "warn",
+    origin = iphra_txt("Project File Manager: Save"),
+    hint = iphra_txt("Check file permissions and session state if save fails.")
+    )
+  })
+
   observeEvent(input$import_data_type, {
     iphra_try({
       # TODO: Implement data import dialogs

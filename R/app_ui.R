@@ -182,24 +182,25 @@ app_ui <- function(request) {
                                                  )
                                          ),
                                          tags$li(class = "divider"),
-                                         # Save Project — programmatically
-                                         # opens the hidden shinyFiles save
-                                         # dialog (id = "save_project"), which
-                                         # writes a `.iphra` file. See the
-                                         # input$save_project observer in
-                                         # app_server.R.
+                                         # Save Project — performs a quick
+                                         # save to the previously used path if
+                                         # one exists (see the server-side
+                                         # observer). Falls back to opening
+                                         # the shinyFiles save dialog when the
+                                         # project has never been saved.
                                          tags$li(
                                            tags$a(
                                              href = "#",
                                              id = "save_project_btn",
-                                             onclick = "document.getElementById('save_project').click();",
+                                             onclick = "Shiny.setInputValue('save_project_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-floppy-disk"),
                                              " ", iphra_txt("Save Project")
                                            )
                                          ),
-                                         # Save Project As — uses the same
-                                         # hidden shinyFiles save dialog so
-                                         # the user can pick a new destination.
+                                         # Save Project As — always opens the
+                                         # hidden shinyFiles save dialog
+                                         # (id = "save_project") so the user
+                                         # can pick a new destination.
                                          tags$li(
                                            tags$a(
                                              href = "#",
@@ -872,7 +873,15 @@ app_ui <- function(request) {
         filename = "IPHRA_Project",
         filetype = list(iphra = "iphra")
       )
-    )
+    ),
+
+    # Custom message handler used by the server-side "Save Project"
+    # observer to programmatically open the hidden shinyFiles save dialog
+    # (id = "save_project") when the current project has no known path yet,
+    # falling back to a "Save Project As..." style flow.
+    tags$script(HTML(
+      "Shiny.addCustomMessageHandler('iphra_click_element', function(id) { var el = document.getElementById(id); if (el) { el.click(); } });"
+    ))
   )
 }
 

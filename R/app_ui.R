@@ -413,7 +413,10 @@ app_ui <- function(request) {
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(
                                                            href = "#",
-                                                           onclick = "Shiny.setInputValue('export_doc_tor', Date.now(), {priority: 'event'});",
+                                                           # Programmatically click the hidden shinySaveButton
+                                                           # (id = "save_tor") so the shinyFiles save dialog
+                                                           # opens directly, without an intermediate modalDialog.
+                                                           onclick = "document.getElementById('save_tor').click();",
                                                            iphra_txt("REACH Terms of Reference")
                                                          )),
                                                          tags$li(tags$a(href = "#",
@@ -828,6 +831,23 @@ app_ui <- function(request) {
         tabPanel(iphra_txt("Planning and Sampling"), mod_planning_sample_size_ui("planning_sample_size")
         )
 
+      )
+    ),
+
+    # Hidden shinyFiles save button used by the "REACH Terms of Reference"
+    # export menu item. The menu item's onclick handler clicks this button
+    # programmatically so the shinyFiles save dialog opens directly — this
+    # avoids nesting the dialog inside a modalDialog, which prevented the
+    # save from completing (and therefore prevented generate_quarto_doc()
+    # from running). See the input$save_tor observer in app_server.R.
+    tags$div(
+      style = "display: none;",
+      shinyFiles::shinySaveButton(
+        id = "save_tor",
+        label = "Save REACH Terms of Reference",
+        title = "Save REACH Terms of Reference",
+        filename = "REACH_Terms_of_Reference",
+        filetype = list(docx = "docx")
       )
     )
   )

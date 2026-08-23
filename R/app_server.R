@@ -410,103 +410,74 @@ app_server <- function(input, output, session) {
   protocol_r <- phr_get_module_reactive("protocol", session)
 
 
-  observeEvent(input$export_doc_tor, {
-
-    showModal(
-      modalDialog(
-        title = "Export REACH Terms of Reference",
-
-        shinyFiles::shinySaveButton(
-          id = "save_tor",
-          label = "Choose Save Location",
-          title = "Save REACH Terms of Reference",
-          filetype = list(docx = "docx")
-        ),
-
-        easyClose = TRUE,
-        footer = tagList(
-          modalButton("Close")
-        )
-      )
-    )
-
-  })
+  # ────────────────────────────────────────────────────────────────────────────
+  # REACH Terms of Reference — Export via generate_quarto_doc()
+  # ────────────────────────────────────────────────────────────────────────────
+  # The "REACH Terms of Reference" menu item in the Export dropdown (see
+  # app_ui.R) clicks a hidden shinyFiles::shinySaveButton with id = "save_tor"
+  # directly. That opens the shinyFiles save dialog. When the user confirms
+  # a save location, `input$save_tor` transitions to a completed state and
+  # this observer runs generate_quarto_doc() writing to that location.
+  #
+  # NOTE: previously this was wrapped in a modalDialog containing the
+  # shinySaveButton. Nesting the shinyFiles dialog inside another modalDialog
+  # caused z-index / focus conflicts that prevented the "Save" click from
+  # committing the selection, so parseSavePath() always returned 0 rows and
+  # generate_quarto_doc() was never called.
 
   observeEvent(input$save_tor, {
 
-    req(input$save_tor)
+    iphra_try({
 
-    save_path <- shinyFiles::parseSavePath(
-      volumes,
-      input$save_tor
-    )
+      save_path <- shinyFiles::parseSavePath(
+        volumes,
+        input$save_tor
+      )
 
-    req(nrow(save_path) > 0)
+      # Ignore the initial / "select" state emitted by shinySaveButton before
+      # the user has actually confirmed a filename in the save dialog.
+      req(nrow(save_path) > 0)
 
-    outfile <- save_path$datapath[1]
+      outfile <- save_path$datapath[1]
 
-    # protocol_r()$metadata$research_cycle_id <- "RC-2025-001"
-    # protocol_r()$metadata$country <- "Switzerland"
-    # protocol_r()$metadata$release_date <- Sys.Date()
-    # protocol_r()$metadata$version_number <- "1.1"
-    # protocol_r()$metadata$type_emergency <- "Protracted"
-    # protocol_r()$metadata$type_crisis <- "Conflict"
-    # protocol_r()$metadata$population <- "Internally Displaced Persons"
-    # protocol_r()$metadata$rationale <- "Recent population movements from conflict area, populations not served."
-    # protocol_r()$metadata$date_pilot_training <- "2025-04-15"
-    # protocol_r()$metadata$date_data_collection_start <- "2025-05-01"
-    # protocol_r()$metadata$date_data_collection_end <- "2025-05-15"
-    # protocol_r()$metadata$date_data_analysis <- "2025-05-20"
-    # protocol_r()$metadata$date_data_validation <- "2025-05-18"
-    # protocol_r()$metadata$date_preliminary_presentation <- "2025-05-25"
-    # protocol_r()$metadata$date_outputs_validation <- "2025-05-30"
-    # protocol_r()$metadata$date_outputs_publication <- "2025-06-05"
-    # protocol_r()$metadata$date_final_presentation <- "2025-06-10"
-    # protocol_r()$metadata$audience_type_cluster <- "Life-Saving Clusters"
-    # protocol_r()$metadata$expected_output_cluster <- "Preliminary Presentation, Technical Report"
-    # protocol_r()$metadata$expected_output_donor <- "Brief"
-    # protocol_r()$metadata$expected_output_operational_actor <- "Technical Report, Factsheet"
-    # protocol_r()$metadata$expected_output_other <- "Not applicable"
-    # protocol_r()$metadata$dissemination_strategy_cluster <- "In-Person, Email"
-    # protocol_r()$metadata$dissemination_strategy_donor <- "Email"
-    # protocol_r()$metadata$dissemination_strategy_operational_actor <- "Remote, Email"
-    # protocol_r()$metadata$dissemination_strategy_other <- "Not applicable"
-    # protocol_r()$metadata$access_cluster <- "Public"
-    # protocol_r()$metadata$access_donor <- "Bilateral, Restricted"
-    # protocol_r()$metadata$access_operational_actor <- "Restricted"
-    # protocol_r()$metadata$access_other <- "Not applicable"
-    # protocol_r()$metadata$visibility_cluster <- "Public"
-    # protocol_r()$metadata$visibility_donor <- "Restricted"
-    # protocol_r()$metadata$visibility_operational_actor <- "Restricted"
-    # protocol_r()$metadata$visibility_other <- "Not applicable"
-    #
-    # protocol_r()$metadata$month_year <- "June 2025"
-    # protocol_r()$metadata$country_name <- "Switzerland"
-    # protocol_r()$metadata$assessment_title <- "Integrated Public Health Rapid Assessment - Switzerland"
-    # protocol_r()$metadata$protocol_version <- "1.0"
-    # protocol_r()$metadata$version <- 1L
-    # # Text metadata fields
-    # protocol_r()$metadata$mandating_body <- "IMPACT Initiatives"
-    # protocol_r()$metadata$project_code <- "98BSY"
-    #
-    # # Secondary data sources
-    # protocol_r()$access_nested(
-    #   field = "framework",
-    #   member = "add_secondary_data_source",
-    #   objective = 105,
-    #   source = "UNHCR Population Statistics",
-    #   purpose = "To provide context on population movements and displacement trends."
-    # )
+      protocol <- protocol_r()
+      if (is.null(protocol)) {
+        iphra_warning(
+          iphra_txt("Protocol object is not available — cannot export."),
+          origin = "Export: REACH Terms of Reference"
+        )
+        return(NULL)
+      }
 
-    protocol_r()$generate_quarto_doc(
-      output_file = outfile
-    )
+      iphra_message(
+        paste("Rendering REACH Terms of Reference to:", outfile),
+        origin = "Export: REACH Terms of Reference"
+      )
 
-    # phr_touch_module(module_name = "protocol", session = session)
+      # Quarto rendering can take several seconds; show a progress indicator
+      # so the user knows the export is running.
+      withProgress(
+        message = iphra_txt("Generating REACH Terms of Reference..."),
+        value = 0.5,
+        {
+          protocol$generate_quarto_doc(
+            output_file = outfile
+          )
+        }
+      )
 
+      iphra_message(
+        paste("REACH Terms of Reference saved to:", outfile),
+        origin = "Export: REACH Terms of Reference"
+      )
 
+      showNotification(
+        paste(iphra_txt("REACH Terms of Reference saved to:"), outfile),
+        type = "message",
+        duration = 6
+      )
 
-    removeModal()
+    }, on_error = "warn", origin = "Export: REACH Terms of Reference")
 
   })
 

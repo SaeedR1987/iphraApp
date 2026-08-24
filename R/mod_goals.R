@@ -1054,6 +1054,106 @@ mod_goals_server <- function(id){
       }
     })
 
+    # ---- Restore UI state when a project file is loaded ----
+    # Fires each time `flags$project_loaded` is incremented by
+    # `iphra_load_project_file()`. All reactive reads inside are wrapped in
+    # `isolate()` so this observer only re-runs on explicit loads, not on
+    # every protocol mutation during normal use.
+    observeEvent(session$userData$flags$project_loaded, {
+      req(isolate(session$userData$flags$project_loaded) > 0)
+
+      proto <- isolate(protocol_r())
+      if (is.null(proto)) return()
+
+      meta <- proto$metadata
+
+      # --- Restore metadata text inputs ---
+      if (!is.null(meta)) {
+        char_fields_restore <- c(
+          "country_name", "country", "month_year", "research_cycle_id",
+          "assessment_title", "type_emergency", "type_crisis", "population",
+          "rationale", "geographic_coverage", "stratification", "mandating_body",
+          "project_code", "audience_type_cluster"
+        )
+        for (f in char_fields_restore) {
+          val <- meta[[f]]
+          if (!is.null(val) && is.character(val))
+            updateTextInput(session, f, value = val)
+        }
+
+        date_fields_restore <- c(
+          "release_date",
+          "overall_timeframe", "date_pilot_training", "date_data_collection_start",
+          "date_data_collection_end", "date_data_analysis", "date_data_validation",
+          "date_preliminary_presentation", "date_outputs_validation",
+          "date_outputs_publication", "date_final_presentation",
+          "date_milestone_donor", "date_milestone_intercluster",
+          "date_milestone_cluster", "date_milestone_ngo_platform",
+          "date_milestone_other"
+        )
+        for (f in date_fields_restore) {
+          val <- meta[[f]]
+          if (!is.null(val))
+            updateDateInput(session, f, value = val)
+        }
+
+        multi_fields_restore <- c(
+          "expected_output_cluster", "expected_output_donor",
+          "expected_output_operational_actor", "expected_output_other",
+          "dissemination_strategy_cluster", "dissemination_strategy_donor",
+          "dissemination_strategy_operational_actor", "dissemination_strategy_other",
+          "access_cluster", "access_donor", "access_operational_actor", "access_other",
+          "visibility_cluster", "visibility_donor", "visibility_operational_actor",
+          "visibility_other"
+        )
+        for (f in multi_fields_restore) {
+          val <- meta[[f]]
+          if (!is.null(val))
+            updateSelectInput(session, f, selected = val)
+        }
+
+        num_fields_restore <- c(
+          "version_number",
+          "num_report", "num_profile", "num_prelim_presentation",
+          "num_final_presentation", "num_factsheet", "num_dashboard",
+          "num_webmap", "num_map", "num_output_other"
+        )
+        for (f in num_fields_restore) {
+          val <- meta[[f]]
+          if (!is.null(val) && is.numeric(val))
+            updateNumericInput(session, f, value = val)
+        }
+      }
+
+      # --- Restore primary and secondary objectives ---
+      # `proto` is a plain R6 snapshot obtained above via isolate(); its
+      # fields (including framework$primary_objectives) are not reactive, so
+      # these accesses do not create any reactive dependencies.
+      prim_codes <- as.character(
+        proto$framework$primary_objectives %||% integer(0)
+      )
+      selected(prim_codes)
+
+      sec_codes <- as.character(
+        proto$framework$secondary_objectives %||% integer(0)
+      )
+      selected_sdr(sec_codes)
+
+      # --- Restore pillar filter selects so the available pool matches ---
+      # (dynamic_select_ui re-renders before this observer fires, so
+      #  updateSelectInput patches the already-recreated DOM element.)
+      ref <- isolate(reference_objectives_r())
+      if (!is.null(ref) && nrow(ref) > 0) {
+        prim_pillars <- unique(ref$pillar[ref$objective_code %in% prim_codes])
+        sec_pillars  <- unique(ref$pillar[ref$objective_code %in% sec_codes])
+        if (length(prim_pillars) > 0)
+          updateSelectInput(session, "dynamic_select", selected = prim_pillars)
+        if (length(sec_pillars) > 0)
+          updateSelectInput(session, "dynamic_select_sdr", selected = sec_pillars)
+      }
+
+    }, ignoreInit = TRUE)
+
     # ---- Keep selected() in sync with drag-and-drop
     observeEvent(input$selected, {
       iphra_try({

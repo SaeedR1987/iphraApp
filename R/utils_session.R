@@ -118,7 +118,11 @@ init_session <- function(session = shiny::getDefaultReactiveDomain(),
       is_busy = FALSE,
       has_unsaved_changes = FALSE,
       validation_required = FALSE,
-      load_in_progress = FALSE
+      load_in_progress = FALSE,
+      # Incremented each time a project file is successfully loaded.
+      # Module observers can use `observeEvent(session$userData$flags$project_loaded, ...)`
+      # with `ignoreInit = TRUE` to restore UI state after a load.
+      project_loaded = 0L
     )
 
 

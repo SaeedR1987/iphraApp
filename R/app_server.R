@@ -22,6 +22,13 @@ app_server <- function(input, output, session) {
     session = session
   )
 
+  shinyFiles::shinyFileSave(
+    input,
+    "save_project",
+    roots = volumes,
+    session = session
+  )
+
   # ────────────────────────────────────────────────────────────────────────────
   # PLACEHOLDER OBSERVERS FOR NEW NAVBAR ITEMS
   # ────────────────────────────────────────────────────────────────────────────
@@ -38,11 +45,54 @@ app_server <- function(input, output, session) {
   })
 
   observeEvent(input$save_project_as_btn, {
+    # The "Save Project As..." menu item opens the hidden shinyFiles save
+    # dialog directly via onclick (see app_ui.R); the actual save is handled
+    # by the input$save_project observer below. This observer is intentionally
+    # a no-op and only exists to swallow any legacy click events.
+  })
+
+  # ---- Quick Save Handler ----
+  # The "Save Project" menu item sets `input$save_project_btn` on click. If
+  # the project has already been saved to a known path (recorded in
+  # `session$userData$project$path`), we quick-save silently to that path
+  # without prompting. Otherwise we open the shinyFiles save dialog exactly
+  # as "Save Project As..." would, so the user can pick a destination.
+  observeEvent(input$save_project_btn, {
     iphra_try({
-      # TODO: Implement save as dialog
-      showNotification(iphra_txt("Save As functionality coming soon"), type = "message")
-      iphra_message("Save Project As button clicked (placeholder)", origin = "File Menu")
-    }, on_error = "warn", origin = "File Menu: Save As")
+      current_path <- shiny::isolate(session$userData$project$path)
+
+      is_writable_dir <- function(p) {
+        d <- dirname(p)
+        dir.exists(d) && file.access(d, mode = 2) == 0
+      }
+
+      if (is.character(current_path) &&
+          length(current_path) == 1 &&
+          nzchar(current_path) &&
+          is_writable_dir(current_path)) {
+
+        written_path <- iphra_save_project_file(current_path, session = session)
+
+        iphra_message(
+          paste(iphra_txt("Project saved to:"), written_path),
+          origin = iphra_txt("Project File Manager")
+        )
+
+        showNotification(
+          paste(iphra_txt("Project saved to:"), written_path),
+          type = "message",
+          duration = 6
+        )
+      } else {
+        # No known path yet — fall back to opening the shinyFiles save
+        # dialog by clicking the hidden shinySaveButton client-side.
+        session$sendCustomMessage("iphra_click_element", "save_project")
+      }
+    },
+    on_error = "warn",
+    origin = iphra_txt("Project File Manager: Save"),
+    hint = iphra_txt("Check file permissions and session state if save fails.")
+    )
   })
 
   observeEvent(input$import_data_type, {
@@ -617,38 +667,41 @@ app_server <- function(input, output, session) {
   # PROJECT FILE MANAGEMENT ####
 
   # ---- Save Project Handler ----
-  observeEvent(input$save_project_btn, {
+  # The "Save Project" and "Save Project As..." menu items in app_ui.R click
+  # a hidden shinyFiles::shinySaveButton (id = "save_project"), which opens
+  # the shinyFiles save dialog. When the user confirms a destination,
+  # `input$save_project` transitions to a completed state and this observer
+  # writes the current session state to a `.iphra` file at that path via
+  # iphra_save_project_file().
+  observeEvent(input$save_project, {
     iphra_try({
-      # ────────────────────────────────────────────────
-      # 1️⃣ VALIDATION & PRECONDITIONS
-      # ────────────────────────────────────────────────
+      save_path <- shinyFiles::parseSavePath(
+        volumes,
+        input$save_project
+      )
+
+      # Ignore the initial / "select" state emitted by shinySaveButton before
+      # the user has actually confirmed a filename in the save dialog.
+      req(nrow(save_path) > 0)
+
+      outfile <- save_path$datapath[1]
+
       iphra_message(
         iphra_txt("Save project initiated."),
         origin = iphra_txt("Project File Manager")
       )
 
-      # ────────────────────────────────────────────────
-      # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-      # ────────────────────────────────────────────────
-      # In production, this would trigger a download dialog
-      # For now, save to a temp file for demonstration
-      temp_path <- tempfile(
-        pattern = paste0(iphra_session$get_project_name(), "_"),
-        fileext = ".rds"
-      )
-      iphra_session$save_project(temp_path)
+      written_path <- iphra_save_project_file(outfile, session = session)
 
       iphra_message(
-        paste(iphra_txt("Project saved to:"), temp_path),
+        paste(iphra_txt("Project saved to:"), written_path),
         origin = iphra_txt("Project File Manager")
       )
 
-      # ────────────────────────────────────────────────
-      # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-      # ────────────────────────────────────────────────
-      iphra_message(
-        iphra_txt("Project save completed successfully."),
-        origin = iphra_txt("Project File Manager")
+      showNotification(
+        paste(iphra_txt("Project saved to:"), written_path),
+        type = "message",
+        duration = 6
       )
     },
     on_error = "warn",
@@ -658,11 +711,13 @@ app_server <- function(input, output, session) {
   })
 
   # ---- Load Project Handler ----
+  # The "Open Project" menu item is a shiny::fileInput (id =
+  # "load_project_file") restricted to `.iphra` files. When the user picks a
+  # file, `input$load_project_file` becomes a data frame with a `datapath`
+  # column pointing to the uploaded copy; iphra_load_project_file() reads
+  # that copy and reinitializes the current session's serializable state.
   observeEvent(input$load_project_file, {
     iphra_try({
-      # ────────────────────────────────────────────────
-      # 1️⃣ VALIDATION & PRECONDITIONS
-      # ────────────────────────────────────────────────
       req(input$load_project_file)
 
       iphra_message(
@@ -680,27 +735,22 @@ app_server <- function(input, output, session) {
         return(NULL)
       }
 
-      # ────────────────────────────────────────────────
-      # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-      # ────────────────────────────────────────────────
-      iphra_session$load_project(file_path)
+      iphra_load_project_file(file_path, session = session)
 
       iphra_message(
         paste(iphra_txt("Project loaded:"), iphra_session$get_project_name()),
         origin = iphra_txt("Project File Manager")
       )
 
-      # ────────────────────────────────────────────────
-      # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-      # ────────────────────────────────────────────────
-      iphra_message(
-        iphra_txt("Project load completed successfully."),
-        origin = iphra_txt("Project File Manager")
+      showNotification(
+        paste(iphra_txt("Project loaded:"), iphra_session$get_project_name()),
+        type = "message",
+        duration = 6
       )
     },
     on_error = "warn",
     origin = iphra_txt("Project File Manager: Load"),
-    hint = iphra_txt("Ensure file is a valid IPHRA project file (.rds or .json).")
+    hint = iphra_txt("Ensure file is a valid IPHRA project file (.iphra).")
     )
   })
 

@@ -275,6 +275,8 @@ mod_tools_crop_livestock_obs_server <- function(id){
       req(isolate(session$userData$flags$project_loaded) > 0)
 
       proto <- isolate(protocol_r())
+      # Note: the crop/livestock observation tool is on v1 (not v2) in the phr
+      # package; this key intentionally differs from the other tool modules.
       tool  <- proto$tools[["tool_obs_crop_livestock_iphra_v1"]]
       if (is.null(tool)) return()
 

@@ -1126,6 +1126,9 @@ mod_goals_server <- function(id){
       }
 
       # --- Restore primary and secondary objectives ---
+      # `proto` is a plain R6 snapshot obtained above via isolate(); its
+      # fields (including framework$primary_objectives) are not reactive, so
+      # these accesses do not create any reactive dependencies.
       prim_codes <- as.character(
         proto$framework$primary_objectives %||% integer(0)
       )

@@ -238,5 +238,12 @@ iphra_load_project_file <- function(path,
 
   iphra_set_unsaved_changes(FALSE, session)
 
+  # Signal modules that a project has been fully loaded so they can restore
+  # their local reactive state (e.g. selected objectives, metadata inputs).
+  if (!is.null(session) && !is.null(session$userData$flags)) {
+    session$userData$flags$project_loaded <-
+      (session$userData$flags$project_loaded %||% 0L) + 1L
+  }
+
   invisible(snapshot)
 }

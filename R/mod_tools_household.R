@@ -287,6 +287,26 @@ mod_tools_household_server <- function(id){
 
     # OBSERVES ####
 
+    # ---- Restore selected indicators when a project file is loaded ----
+    observeEvent(session$userData$flags$project_loaded, {
+      req(isolate(session$userData$flags$project_loaded) > 0)
+
+      proto <- isolate(protocol_r())
+      tool  <- proto$tools[["tool_household_iphra_v2"]]
+      if (is.null(tool)) return()
+
+      codes <- tryCatch(
+        as.character(tool$get_indicator_codes(prefer_revised = TRUE)),
+        error = function(e) character(0)
+      )
+      # Exclude the global header row ("10000") and parent-group rows ("NNN00")
+      codes <- codes[nchar(codes) > 0 & codes != "10000" & !grepl("00$", codes)]
+      if (length(codes) == 0) return()
+
+      bank <- isolate(all_indicators())
+      selected(as.character(bank$indicator_name[bank$indicator_code %in% codes]))
+    }, ignoreInit = TRUE)
+
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
       iphra_try({

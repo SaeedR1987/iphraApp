@@ -48,7 +48,7 @@ mod_planning_sample_size_ui <- function(id) {
                    ),
                    column(2,
                           numericInput(ns("n_sites"), "Number of Sites to Sample (Non-Cluster sampling):",
-                                       value = 100, min = 1, width = "100%")
+                                       value = 6, min = 1, width = "100%")
 
                    ),
                    column(2,

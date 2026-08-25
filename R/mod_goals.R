@@ -9,6 +9,8 @@
 # }
 
 # Shared choices for select-multiple inputs
+.type_emergency_choices <- c("Natural hazard", "Conflict", "Other")
+.type_crisis_choices <- c("Sudden onset", "Slow onset", "Protracted")
 .output_choices        <- c("Preliminary Presentation", "Technical Report", "Brief", "Factsheet", "Not Applicable")
 .dissemination_choices <- c("In-Person", "Email", "Remote Presentation", "Not Applicable")
 .access_choices        <- c("Public", "Bilateral", "Restricted")
@@ -235,17 +237,20 @@ mod_goals_ui <- function(id) {
 
                     tags$tr(
                       tags$td(
-                        textInput(
+                        selectInput(
                           ns("type_emergency"),
                           label = NULL,
+                          choices = .type_emergency_choices,
+                          multiple = TRUE,
                           width = "100%"
                         )
                       ),
-
                       tags$td(
-                        textInput(
+                        selectInput(
                           ns("type_crisis"),
                           label = NULL,
+                          choices = .type_crisis_choices,
+                          multiple = TRUE,
                           width = "100%"
                         )
                       )

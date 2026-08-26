@@ -474,7 +474,9 @@ mod_goals_ui <- function(id) {
 
                 br(),
 
-                shiny::uiOutput(ns("audience_table"))
+                rhandsontable::rHandsontableOutput(
+                  ns("audience_table")
+                )
 
               )
             )
@@ -647,24 +649,18 @@ mod_goals_server <- function(id){
 
     # Initializing Reactive Values ####
 
-    audience_n <- reactiveVal(1)
-
-    audience_table_data <- reactive({
-
-      lapply(seq_len(audience_n()), function(i) {
-
-        list(
-          audience_type = input[[paste0("audience_category_", i)]],
-          audience_name = input[[paste0("audience_name_", i)]],
-          outputs = input[[paste0("expected_output_", i)]],
-          dissemination = input[[paste0("dissemination_", i)]],
-          access = input[[paste0("access_", i)]],
-          visibility = input[[paste0("visibility_", i)]]
-        )
-
-      })
-
-    })
+    audience_table_data <- reactiveVal(
+      data.frame(
+        AudienceType = NA_character_,
+        Audience = NA_character_,
+        ExpectedOutputs = NA_character_,
+        OutputCounts = NA_real_,
+        Dissemination = NA_character_,
+        Access = NA_character_,
+        Visibility = NA_character_,
+        stringsAsFactors = FALSE
+      )
+    )
 
     selected <- shiny::reactiveVal(character(0))
     selected_sdr <- shiny::reactiveVal(character(0))
@@ -830,118 +826,55 @@ mod_goals_server <- function(id){
       }
     })
 
-    output$audience_table <- renderUI({
+    output$audience_table <- rhandsontable::renderRHandsontable({
 
-      rows <- lapply(seq_len(audience_n()), function(i) {
+      rhandsontable::rhandsontable(
+        audience_table_data(),
+        stretchH = "all"
+      ) |>
 
-        tags$tr(
-
-          # Audience Name
-          tags$td(
-            textInput(
-              ns(paste0("audience_name_", i)),
-              label = NULL,
-              width = "100%"
-            )
-          ),
-
-          # Audience Type
-          tags$td(
-            selectInput(
-              ns(paste0("audience_category_", i)),
-              label = NULL,
-              choices = c(
-                "Strategic",
-                "Coordination/Cluster",
-                "Government Agency",
-                "Donor",
-                "Operational Actor",
-                "Community",
-                "Other"
-              ),
-              width = "100%"
-            )
-          ),
-
-          # Outputs
-          tags$td(
-            selectInput(
-              ns(paste0("expected_output_", i)),
-              label = NULL,
-              choices = .output_choices,
-              multiple = TRUE,
-              width = "100%"
-            )
-          ),
-
-          # Outputs counts
-          tags$td(
-            numericInput(
-              ns(paste0("expected_output_count_", i)),
-              label = NULL,
-              value = NA, min = 0, step = 1,
-              width = "100%"
-            )
-          ),
-
-          # Dissemination
-          tags$td(
-            selectInput(
-              ns(paste0("dissemination_", i)),
-              label = NULL,
-              choices = .dissemination_choices,
-              multiple = TRUE,
-              width = "100%"
-            )
-          ),
-
-          # Access
-          tags$td(
-            selectInput(
-              ns(paste0("access_", i)),
-              label = NULL,
-              choices = .access_choices,
-              multiple = TRUE,
-              width = "100%"
-            )
-          ),
-
-          # Visibility
-          tags$td(
-            selectInput(
-              ns(paste0("visibility_", i)),
-              label = NULL,
-              choices = .visibility_choices,
-              multiple = TRUE,
-              width = "100%"
-            )
+        rhandsontable::hot_col(
+          "AudienceType",
+          type = "dropdown",
+          source = c(
+            "Strategic",
+            "Coordination/Cluster",
+            "Government Agency",
+            "Donor",
+            "Operational Actor",
+            "Community",
+            "Other"
           )
+        ) |>
+
+        rhandsontable::hot_col(
+          "ExpectedOutputs",
+          type = "dropdown",
+          source = .output_choices
+        ) |>
+
+        rhandsontable::hot_col(
+          "OutputCounts",
+          type = "numeric"
+        ) |>
+
+        rhandsontable::hot_col(
+          "Dissemination",
+          type = "dropdown",
+          source = .dissemination_choices
+        ) |>
+
+        rhandsontable::hot_col(
+          "Access",
+          type = "dropdown",
+          source = .access_choices
+        ) |>
+
+        rhandsontable::hot_col(
+          "Visibility",
+          type = "dropdown",
+          source = .visibility_choices
         )
-
-      })
-
-      div(
-        style = "overflow-x:auto;",
-
-        tags$table(
-          class = "table table-bordered table-striped",
-          style = "width:100%; table-layout:fixed;",
-
-          tags$thead(
-            tags$tr(
-              tags$th("Audience Type"),
-              tags$th("Audience"),
-              tags$th("Expected Outputs"),
-              tags$th("Output Counts"),
-              tags$th("Dissemination"),
-              tags$th("Access"),
-              tags$th("Visibility")
-            )
-          ),
-
-          tags$tbody(rows)
-        )
-      )
 
     })
 
@@ -954,13 +887,35 @@ mod_goals_server <- function(id){
     # Observes ####
 
     observeEvent(input$add_audience, {
-      audience_n(audience_n() + 1)
+
+      df <- audience_table_data()
+
+      df <- rbind(
+        df,
+        data.frame(
+          AudienceType = NA_character_,
+          Audience = NA_character_,
+          ExpectedOutputs = NA_character_,
+          OutputCounts = NA_real_,
+          Dissemination = NA_character_,
+          Access = NA_character_,
+          Visibility = NA_character_,
+          stringsAsFactors = FALSE
+        )
+      )
+
+      audience_table_data(df)
+
     })
 
     observeEvent(input$remove_audience, {
 
-      if (audience_n() > 1) {
-        audience_n(audience_n() - 1)
+      df <- audience_table_data()
+
+      if (nrow(df) > 1) {
+        audience_table_data(
+          df[-nrow(df), , drop = FALSE]
+        )
       }
 
     })

@@ -159,7 +159,7 @@ mod_goals_ui <- function(id) {
 
               ),
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("Rationale, Population and Geographic Scope"),
+                title = iphra_txt("Rationale, Goals, Population and Geographic Scope"),
                 style = "primary",
 
                 div(
@@ -188,6 +188,60 @@ mod_goals_ui <- function(id) {
                             width = "100%"
                           ),
                           maxlength = 200
+                        )
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$th(
+                        colspan = 2,
+                        style = "background-color:#f5f5f5;",
+                        iphra_txt("Assessment Goals")
+                      )
+                    ),
+
+                    tags$tr(
+                      tags$td(
+                        colspan = 2,
+
+                        tags$h5(iphra_txt("Primary Goals")),
+
+                        shiny::checkboxInput(
+                          ns("goal_primary_1"),
+                          label = iphra_txt(
+                            "1. To understand the severity of public health needs in the target population."
+                          ),
+                          value = TRUE
+                        ),
+
+                        shiny::checkboxInput(
+                          ns("goal_primary_2"),
+                          label = iphra_txt(
+                            "2. To identify initial public health priorities and service gaps for response."
+                          ),
+                          value = TRUE
+                        ),
+                        tags$script(
+                          HTML(
+                            sprintf(
+                              "$('#%s').prop('disabled', true);
+       $('#%s').prop('disabled', true);",
+                              ns("goal_primary_1"),
+                              ns("goal_primary_2")
+                            )
+                          )
+                        ),
+
+                        tags$hr(),
+
+                        tags$h5(iphra_txt("Secondary Goals")),
+
+                        shiny::checkboxInput(
+                          ns("goal_secondary_impact"),
+                          label = iphra_txt(
+                            "3. To inform the IMPACT acute needs analysis."
+                          ),
+                          value = FALSE
                         )
                       )
                     ),
@@ -886,6 +940,20 @@ mod_goals_server <- function(id){
 
     # Observes ####
 
+    observeEvent(input$goal_secondary_impact, {
+
+      protocol_r()$set(
+        field = "framework",
+        role = "secondary_ana_goal",
+        value = isTRUE(
+          input$goal_secondary_impact
+        )
+      )
+
+      phr_touch_module("protocol", session)
+
+    }, ignoreInit = FALSE)
+
     observeEvent(input$add_audience, {
 
       df <- audience_table_data()
@@ -1111,6 +1179,12 @@ mod_goals_server <- function(id){
         if (length(sec_pillars) > 0)
           updateSelectInput(session, "dynamic_select_sdr", selected = sec_pillars)
       }
+
+      updateCheckboxInput(
+        session,
+        "goal_secondary_impact",
+        value = isTRUE(proto$framework$secondary_ana_goal)
+      )
 
     }, ignoreInit = TRUE)
 

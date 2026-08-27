@@ -57,10 +57,12 @@ mod_planning_sample_size_ui <- function(id) {
                             ns("sampling_method_site"),
                             "Site/Cluster Sampling Method:",
                             choices = c(
-                              "Simple Random Sampling (SRS)" = "simple_random",
-                              "Proportional" = "proportional",
-                              "Cluster (Probability Proportional to Size (PPS) w/replacement)" = "cluster",
-                              "Systematic" = "systematic"
+                              "Simple Random Sampling (SRS) with equal allocation per site " = "simple_random_even",
+                              "Simple Random Sampling (SRS) with proportional allocation per site" = "simple_random_proportional",
+                              "Systematic Random Sampling with equal allocation per site" = "systematic_even",
+                              "Systematic Random Sampling with proportional allocation per site" = "systematic_proportional",
+                              "All sites with proportional allocation per site" = "proportional",
+                              "Cluster (Probability Proportional to Size (PPS) w/replacement)" = "cluster"
                             ),
                             inline = FALSE
                           ),
@@ -121,7 +123,7 @@ mod_planning_sample_size_ui <- function(id) {
                             style = "padding: 10px; font-size: 12px;",
                             h4("Household-level Sample Size", style = "font-size:14px;"),
                             selectInput(ns("pop_indicator"), "Select Indicator:",
-                                        choices = c("General", "HHS")),
+                                        choices = c("General", "Other")),
                             numericInput(ns("pop_expected_prevalence"),
                                          "Expected Prevalence (%):", value = 10, min = 0, max = 100),
                             numericInput(ns("pop_precision"), "Desired Precision (%):",
@@ -144,7 +146,8 @@ mod_planning_sample_size_ui <- function(id) {
                             style = "padding: 10px; font-size: 12px;",
                             h4("Individual-level Sample Size", style = "font-size:14px;"),
                             selectInput(ns("ind_indicator"), "Select Indicator:",
-                                        choices = c("General", "GAM by MUAC")),
+                                        choices = c("GAM by MUAC", "Other"),
+                                        selected = "GAM by MUAC"),
                             numericInput(ns("ind_expected_prevalence"),
                                          "Expected Prevalence (%):", value = 10, min = 0, max = 100),
                             numericInput(ns("ind_precision"), "Desired Precision (%):",
@@ -175,7 +178,8 @@ mod_planning_sample_size_ui <- function(id) {
                             style = "padding: 10px; font-size: 12px;",
                             h4("Rate Sample Size", style = "font-size:14px;"),
                             selectInput(ns("rate_indicator"), "Select Indicator:",
-                                        choices = c("Crude Death Rate")),
+                                        choices = c("Crude Death Rate", "Other"),
+                                        selected = "Crude Death Rate"),
                             numericInput(ns("rate_expected_rate"),
                                          "Expected Death Rate:", value = 0.5, min = 0, max = 100),
                             numericInput(ns("rate_precision"),
@@ -840,8 +844,10 @@ mod_planning_sample_size_server <- function(id) {
             ns('rate_design_effect')
           ))
 
-        } else if (input$sampling_method_site == "simple_random" |
-                   input$sampling_method_site == "systematic" |
+        } else if (input$sampling_method_site == "simple_random_even" |
+                   input$sampling_method_site == "simple_random_proportional" |
+                   input$sampling_method_site == "systematic_even" |
+                   input$sampling_method_site == "systematic_proportional" |
                    input$sampling_method_site == "proportional" |
                    input$sampling_method_site == "purposive") {
           shinyjs::disable(ns("pop_design_effect"))
@@ -883,8 +889,10 @@ mod_planning_sample_size_server <- function(id) {
 
         result <- iphra_try_step({
 
-          if(input$sampling_method_site == "simple_random" |
-             input$sampling_method_site == "systematic" |
+          if(input$sampling_method_site == "simple_random_even" |
+             input$sampling_method_site == "simple_random_proportional" |
+             input$sampling_method_site == "systematic_even" |
+             input$sampling_method_site == "systematic_proportional" |
              input$sampling_method_site == "purposive" |
              input$sampling_method_site == "proportional" ) {
             sample_design <- "simple_random"
@@ -935,8 +943,10 @@ mod_planning_sample_size_server <- function(id) {
     observeEvent(input$ind_calculate, {
       iphra_try({
 
-        if(input$sampling_method_site == "simple_random" |
-           input$sampling_method_site == "systematic" |
+        if(input$sampling_method_site == "simple_random_even" |
+           input$sampling_method_site == "simple_random_proportional" |
+           input$sampling_method_site == "systematic_even" |
+           input$sampling_method_site == "systematic_proportional" |
            input$sampling_method_site == "purposive" |
            input$sampling_method_site == "proportional" ) {
           sample_design <- "simple_random"
@@ -973,8 +983,10 @@ mod_planning_sample_size_server <- function(id) {
     observeEvent(input$rate_calculate, {
       iphra_try({
 
-        if(input$sampling_method_site == "simple_random" |
-           input$sampling_method_site == "systematic" |
+        if(input$sampling_method_site == "simple_random_even" |
+           input$sampling_method_site == "simple_random_proportional" |
+           input$sampling_method_site == "systematic_even" |
+           input$sampling_method_site == "systematic_proportional" |
            input$sampling_method_site == "purposive" |
            input$sampling_method_site == "proportional" ) {
           sample_design <- "simple_random"
@@ -1007,13 +1019,14 @@ mod_planning_sample_size_server <- function(id) {
       )
     })
 
-
     # ▶️ OBSERVE - CALCULATE PLAN ####
     observeEvent(input$calc_plan, {
       iphra_try({
 
-        if(input$sampling_method_site == "simple_random" |
-           input$sampling_method_site == "systematic" |
+        if(input$sampling_method_site == "simple_random_even" |
+           input$sampling_method_site == "simple_random_proportional" |
+           input$sampling_method_site == "systematic_even" |
+           input$sampling_method_site == "systematic_proportional" |
            input$sampling_method_site == "purposive" |
            input$sampling_method_site == "proportional" ) {
           sample_design <- "simple_random"

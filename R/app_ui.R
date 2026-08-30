@@ -142,7 +142,7 @@ app_ui <- function(request) {
                          # FILE MENU
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("File"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("File"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          # New Project
                                          tags$li(
@@ -151,7 +151,7 @@ app_ui <- function(request) {
                                              id = "new_project_btn",
                                              onclick = "Shiny.setInputValue('new_project_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-file"),
-                                             " ", iphra_txt("New Project")
+                                             " ", phrutils::phr_txt("New Project")
                                            )
                                          ),
                                          # Open Project (file input)
@@ -162,8 +162,8 @@ app_ui <- function(request) {
                                                "load_project_file",
                                                label = NULL,
                                                accept = c(".iphra"),
-                                               buttonLabel = iphra_txt("Open Project"),
-                                               placeholder = iphra_txt("No file selected")
+                                               buttonLabel = phrutils::phr_txt("Open Project"),
+                                               placeholder = phrutils::phr_txt("No file selected")
                                              )
                                            )
                                          ),
@@ -171,13 +171,13 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-folder-open"),
-                                                        " ", iphra_txt("Recent Projects"), " ",
+                                                        " ", phrutils::phr_txt("Recent Projects"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
                                                                         id = "recent_project_1",
                                                                         onclick = "Shiny.setInputValue('recent_project_select', 1);",
-                                                                        tags$em(iphra_txt("No recent projects"))
+                                                                        tags$em(phrutils::phr_txt("No recent projects"))
                                                          ))
                                                  )
                                          ),
@@ -194,7 +194,7 @@ app_ui <- function(request) {
                                              id = "save_project_btn",
                                              onclick = "Shiny.setInputValue('save_project_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-floppy-disk"),
-                                             " ", iphra_txt("Save Project")
+                                             " ", phrutils::phr_txt("Save Project")
                                            )
                                          ),
                                          # Save Project As — always opens the
@@ -207,7 +207,7 @@ app_ui <- function(request) {
                                              id = "save_project_as_btn",
                                              onclick = "document.getElementById('save_project').click();",
                                              tags$span(class = "glyphicon glyphicon-floppy-save"),
-                                             " ", iphra_txt("Save Project As...")
+                                             " ", phrutils::phr_txt("Save Project As...")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -215,21 +215,21 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-import"),
-                                                        " ", iphra_txt("Import Data"), " ",
+                                                        " ", phrutils::phr_txt("Import Data"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
                                                                         id = "import_csv_btn",
                                                                         onclick = "Shiny.setInputValue('import_data_type', 'csv');",
-                                                                        iphra_txt("Import CSV"))),
+                                                                        phrutils::phr_txt("Import CSV"))),
                                                          tags$li(tags$a(href = "#",
                                                                         id = "import_xlsx_btn",
                                                                         onclick = "Shiny.setInputValue('import_data_type', 'xlsx');",
-                                                                        iphra_txt("Import Excel"))),
+                                                                        phrutils::phr_txt("Import Excel"))),
                                                          tags$li(tags$a(href = "#",
                                                                         id = "import_kobo_btn",
                                                                         onclick = "Shiny.setInputValue('import_data_type', 'kobo');",
-                                                                        iphra_txt("Import from KoBoToolbox")))
+                                                                        phrutils::phr_txt("Import from KoBoToolbox")))
                                                  )
                                          ),
                                          tags$li(class = "divider"),
@@ -240,7 +240,7 @@ app_ui <- function(request) {
                                              id = "project_properties_btn",
                                              onclick = "Shiny.setInputValue('project_properties_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-cog"),
-                                             " ", iphra_txt("Project Properties")
+                                             " ", phrutils::phr_txt("Project Properties")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -251,7 +251,7 @@ app_ui <- function(request) {
                                              id = "exit_app_btn",
                                              onclick = "Shiny.setInputValue('exit_app_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-log-out"),
-                                             " ", iphra_txt("Exit")
+                                             " ", phrutils::phr_txt("Exit")
                                            )
                                          )
                                  )
@@ -261,7 +261,7 @@ app_ui <- function(request) {
                          # EDIT MENU
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("Edit"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("Edit"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          tags$li(
                                            tags$a(
@@ -269,7 +269,7 @@ app_ui <- function(request) {
                                              id = "undo_btn",
                                              onclick = "Shiny.setInputValue('undo_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-arrow-left"),
-                                             " ", iphra_txt("Undo")
+                                             " ", phrutils::phr_txt("Undo")
                                            )
                                          ),
                                          tags$li(
@@ -278,7 +278,7 @@ app_ui <- function(request) {
                                              id = "redo_btn",
                                              onclick = "Shiny.setInputValue('redo_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-arrow-right"),
-                                             " ", iphra_txt("Redo")
+                                             " ", phrutils::phr_txt("Redo")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -288,7 +288,7 @@ app_ui <- function(request) {
                                              id = "find_replace_btn",
                                              onclick = "Shiny.setInputValue('find_replace_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-search"),
-                                             " ", iphra_txt("Find and Replace")
+                                             " ", phrutils::phr_txt("Find and Replace")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -298,7 +298,7 @@ app_ui <- function(request) {
                                              id = "clear_all_data_btn",
                                              onclick = "Shiny.setInputValue('clear_all_data_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-trash"),
-                                             " ", iphra_txt("Clear All Data")
+                                             " ", phrutils::phr_txt("Clear All Data")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -308,7 +308,7 @@ app_ui <- function(request) {
                                              id = "debug_toggle",
                                              onclick = "Shiny.setInputValue('debug_toggle', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-console"),
-                                             " ", iphra_txt("Debug Console")
+                                             " ", phrutils::phr_txt("Debug Console")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -318,7 +318,7 @@ app_ui <- function(request) {
                                              id = "preferences_btn",
                                              onclick = "Shiny.setInputValue('preferences_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-wrench"),
-                                             " ", iphra_txt("Preferences")
+                                             " ", phrutils::phr_txt("Preferences")
                                            )
                                          )
                                  )
@@ -328,13 +328,13 @@ app_ui <- function(request) {
                          # VIEW MENU
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("View"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("View"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          # Zoom submenu
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-zoom-in"),
-                                                        " ", iphra_txt("Zoom"), " ",
+                                                        " ", phrutils::phr_txt("Zoom"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
@@ -361,7 +361,7 @@ app_ui <- function(request) {
                                              id = "fullscreen_btn",
                                              onclick = "Shiny.setInputValue('fullscreen_btn', Date.now()); if(document.fullscreenElement){document.exitFullscreen();}else{document.documentElement.requestFullscreen();}",
                                              tags$span(class = "glyphicon glyphicon-fullscreen"),
-                                             " ", iphra_txt("Toggle Fullscreen")
+                                             " ", phrutils::phr_txt("Toggle Fullscreen")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -372,7 +372,7 @@ app_ui <- function(request) {
                                              id = "toggle_sidebar_btn",
                                              onclick = "Shiny.setInputValue('toggle_sidebar_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-th-list"),
-                                             " ", iphra_txt("Toggle Sidebar")
+                                             " ", phrutils::phr_txt("Toggle Sidebar")
                                            )
                                          ),
                                          tags$li(
@@ -381,7 +381,7 @@ app_ui <- function(request) {
                                              id = "toggle_status_bar_btn",
                                              onclick = "Shiny.setInputValue('toggle_status_bar_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-info-sign"),
-                                             " ", iphra_txt("Toggle Status Bar")
+                                             " ", phrutils::phr_txt("Toggle Status Bar")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -389,18 +389,18 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-adjust"),
-                                                        " ", iphra_txt("Theme"), " ",
+                                                        " ", phrutils::phr_txt("Theme"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('theme_select', 'light');",
-                                                                        iphra_txt("Light"))),
+                                                                        phrutils::phr_txt("Light"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('theme_select', 'dark');",
-                                                                        iphra_txt("Dark"))),
+                                                                        phrutils::phr_txt("Dark"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('theme_select', 'system');",
-                                                                        iphra_txt("System Default")))
+                                                                        phrutils::phr_txt("System Default")))
                                                  )
                                          )
                                  )
@@ -410,13 +410,13 @@ app_ui <- function(request) {
                          # EXPORT MENU
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("Export"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("Export"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          # Documents submenu
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-file"),
-                                                        " ", iphra_txt("Documents"), " ",
+                                                        " ", phrutils::phr_txt("Documents"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(
@@ -425,59 +425,59 @@ app_ui <- function(request) {
                                                            # (id = "save_tor") so the shinyFiles save dialog
                                                            # opens directly, without an intermediate modalDialog.
                                                            onclick = "document.getElementById('save_tor').click();",
-                                                           iphra_txt("REACH Terms of Reference")
+                                                           phrutils::phr_txt("REACH Terms of Reference")
                                                          )),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_doc', 'protocol');",
-                                                                        iphra_txt("Technical Protocol"))),
+                                                                        phrutils::phr_txt("Technical Protocol"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_doc', 'report');",
-                                                                        iphra_txt("Technical Report"))),
+                                                                        phrutils::phr_txt("Technical Report"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_doc', 'brief');",
-                                                                        iphra_txt("Brief")))
+                                                                        phrutils::phr_txt("Brief")))
                                                  )
                                          ),
                                          # Data submenu
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-list-alt"),
-                                                        " ", iphra_txt("Data"), " ",
+                                                        " ", phrutils::phr_txt("Data"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_data', 'raw');",
-                                                                        iphra_txt("Raw Dataset"))),
+                                                                        phrutils::phr_txt("Raw Dataset"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_data', 'clean');",
-                                                                        iphra_txt("Clean Dataset"))),
+                                                                        phrutils::phr_txt("Clean Dataset"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_data', 'cleaning_log');",
-                                                                        iphra_txt("Cleaning Log"))),
+                                                                        phrutils::phr_txt("Cleaning Log"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_data', 'deletion_log');",
-                                                                        iphra_txt("Deletion Log")))
+                                                                        phrutils::phr_txt("Deletion Log")))
                                                  )
                                          ),
                                          # Analysis Results submenu
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-stats"),
-                                                        " ", iphra_txt("Analysis Results"), " ",
+                                                        " ", phrutils::phr_txt("Analysis Results"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_analysis', 'integrated');",
-                                                                        iphra_txt("Integrated Analysis"))),
+                                                                        phrutils::phr_txt("Integrated Analysis"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_analysis', 'summary');",
-                                                                        iphra_txt("Summary Results"))),
+                                                                        phrutils::phr_txt("Summary Results"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_analysis', 'tables');",
-                                                                        iphra_txt("Analysis Tables"))),
+                                                                        phrutils::phr_txt("Analysis Tables"))),
                                                          tags$li(tags$a(href = "#",
                                                                         onclick = "Shiny.setInputValue('export_analysis', 'charts');",
-                                                                        iphra_txt("Charts and Figures")))
+                                                                        phrutils::phr_txt("Charts and Figures")))
                                                  )
                                          ),
                                          tags$li(class = "divider"),
@@ -487,7 +487,7 @@ app_ui <- function(request) {
                                              href = "#",
                                              onclick = "Shiny.setInputValue('export_ppt', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-blackboard"),
-                                             " ", iphra_txt("Preliminary Powerpoint")
+                                             " ", phrutils::phr_txt("Preliminary Powerpoint")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -498,14 +498,14 @@ app_ui <- function(request) {
                                              id = "export_all_btn",
                                              onclick = "Shiny.setInputValue('export_all_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-download-alt"),
-                                             " ", iphra_txt("Export All...")
+                                             " ", phrutils::phr_txt("Export All...")
                                            )
                                          ),
                                          # Export Format Options
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-cog"),
-                                                        " ", iphra_txt("Export Format"), " ",
+                                                        " ", phrutils::phr_txt("Export Format"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
@@ -526,13 +526,13 @@ app_ui <- function(request) {
                          # SETTINGS MENU (NEW)
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("Settings"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("Settings"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          # Manage Data Schema (with submenu)
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-th"),
-                                                        " ", iphra_txt("Manage Data Schema"), " ",
+                                                        " ", phrutils::phr_txt("Manage Data Schema"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
@@ -559,7 +559,7 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-check"),
-                                                        " ", iphra_txt("Manage Quality Schema"), " ",
+                                                        " ", phrutils::phr_txt("Manage Quality Schema"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
@@ -586,7 +586,7 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-stats"),
-                                                        " ", iphra_txt("Manage Analysis Schema"), " ",
+                                                        " ", phrutils::phr_txt("Manage Analysis Schema"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          tags$li(tags$a(href = "#",
@@ -616,7 +616,7 @@ app_ui <- function(request) {
                                              href = "#",
                                              onclick = "Shiny.setInputValue('schema_trigger', {type: 'integrated_analysis', sector: null, time: Date.now()});",
                                              tags$span(class = "glyphicon glyphicon-tasks"),
-                                             " ", iphra_txt("Manage Integrated Analysis Schema")
+                                             " ", phrutils::phr_txt("Manage Integrated Analysis Schema")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -624,7 +624,7 @@ app_ui <- function(request) {
                                          tags$li(class = "dropdown-submenu",
                                                  tags$a(href = "#", tabindex = "-1",
                                                         tags$span(class = "glyphicon glyphicon-wrench"),
-                                                        " ", iphra_txt("Repair Variable and Value Maps"), " ",
+                                                        " ", phrutils::phr_txt("Repair Variable and Value Maps"), " ",
                                                         tags$span(class = "caret caret-right")),
                                                  tags$ul(class = "dropdown-menu",
                                                          # Household Data Submenu
@@ -699,7 +699,7 @@ app_ui <- function(request) {
                                              id = "customize_livelihoods_btn",
                                              onclick = "Shiny.setInputValue('customize_livelihoods_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-grain"),
-                                             " ", iphra_txt("Customize Livelihoods")
+                                             " ", phrutils::phr_txt("Customize Livelihoods")
                                            )
                                          )
                                  )
@@ -709,7 +709,7 @@ app_ui <- function(request) {
                          # HELP MENU (NEW)
                          # ════════════════════════════════════════════════════════════════
                          tags$li(class = "dropdown",
-                                 tags$a(href = "#", class = "dropdown-toggle", iphra_txt("Help"), `data-toggle`="dropdown"),
+                                 tags$a(href = "#", class = "dropdown-toggle", phrutils::phr_txt("Help"), `data-toggle`="dropdown"),
                                  tags$ul(class = "dropdown-menu",
                                          tags$li(
                                            tags$a(
@@ -717,7 +717,7 @@ app_ui <- function(request) {
                                              id = "documentation_btn",
                                              onclick = "Shiny.setInputValue('documentation_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-book"),
-                                             " ", iphra_txt("Documentation")
+                                             " ", phrutils::phr_txt("Documentation")
                                            )
                                          ),
                                          tags$li(
@@ -726,7 +726,7 @@ app_ui <- function(request) {
                                              id = "tutorials_btn",
                                              onclick = "Shiny.setInputValue('tutorials_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-education"),
-                                             " ", iphra_txt("Tutorials")
+                                             " ", phrutils::phr_txt("Tutorials")
                                            )
                                          ),
                                          tags$li(
@@ -735,7 +735,7 @@ app_ui <- function(request) {
                                              id = "keyboard_shortcuts_btn",
                                              onclick = "Shiny.setInputValue('keyboard_shortcuts_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-flash"),
-                                             " ", iphra_txt("Keyboard Shortcuts")
+                                             " ", phrutils::phr_txt("Keyboard Shortcuts")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -745,7 +745,7 @@ app_ui <- function(request) {
                                              id = "report_issue_btn",
                                              onclick = "Shiny.setInputValue('report_issue_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-exclamation-sign"),
-                                             " ", iphra_txt("Report an Issue")
+                                             " ", phrutils::phr_txt("Report an Issue")
                                            )
                                          ),
                                          tags$li(
@@ -754,7 +754,7 @@ app_ui <- function(request) {
                                              id = "check_updates_btn",
                                              onclick = "Shiny.setInputValue('check_updates_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-refresh"),
-                                             " ", iphra_txt("Check for Updates")
+                                             " ", phrutils::phr_txt("Check for Updates")
                                            )
                                          ),
                                          tags$li(class = "divider"),
@@ -764,7 +764,7 @@ app_ui <- function(request) {
                                              id = "about_btn",
                                              onclick = "Shiny.setInputValue('about_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-info-sign"),
-                                             " ", iphra_txt("About IPHRA")
+                                             " ", phrutils::phr_txt("About IPHRA")
                                            )
                                          )
                                  )
@@ -797,7 +797,7 @@ app_ui <- function(request) {
 
     golem_add_external_resources(),
     fluidPage(
-      titlePanel(iphra_txt("Public Health R Toolkit")),
+      titlePanel(phrutils::phr_txt("Public Health R Toolkit")),
 
       navbarPage(
         title = NULL,
@@ -806,37 +806,37 @@ app_ui <- function(request) {
         fluid = TRUE,
 
         # ── 1. Goals ────────────────────────────────────────────────────
-        tabPanel(iphra_txt("Goals and Objectives"), mod_goals_ui("goals")),
+        tabPanel(phrutils::phr_txt("Goals and Objectives"), mod_goals_ui("goals")),
 
         # ── 2. Tools ────────────────────────────────────────────────
-        tabPanel(iphra_txt("Tool Design"),
+        tabPanel(phrutils::phr_txt("Tool Design"),
 
                  mod_tools_master_ui("tools_master"),
 
                  uiOutput("tool_tabs"),
 
                  # tabsetPanel(
-                 #   tabPanel(iphra_txt("Household Survey"), mod_tools_household_ui("tools_household")),
-                 #   tabPanel(iphra_txt("Community Key Informant"), mod_tools_community_kii_ui("tools_community_kii")),
-                 #   tabPanel(iphra_txt("Community Observation"), mod_tools_community_obs_ui("tools_community_obs")),
+                 #   tabPanel(phrutils::phr_txt("Household Survey"), mod_tools_household_ui("tools_household")),
+                 #   tabPanel(phrutils::phr_txt("Community Key Informant"), mod_tools_community_kii_ui("tools_community_kii")),
+                 #   tabPanel(phrutils::phr_txt("Community Observation"), mod_tools_community_obs_ui("tools_community_obs")),
                  #
-                 #   tabPanel(iphra_txt("FSL Provider Key Informant"), mod_tools_fsl_kii_ui("tools_fsl_kii")),
-                 #   tabPanel(iphra_txt("Market Vender Key Informant"), mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")),
-                 #   tabPanel(iphra_txt("Crop and Livestock Observation"), mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")),
+                 #   tabPanel(phrutils::phr_txt("FSL Provider Key Informant"), mod_tools_fsl_kii_ui("tools_fsl_kii")),
+                 #   tabPanel(phrutils::phr_txt("Market Vender Key Informant"), mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")),
+                 #   tabPanel(phrutils::phr_txt("Crop and Livestock Observation"), mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")),
                  #
-                 #   tabPanel(iphra_txt("Health Facility Key Informant"), mod_tools_health_kii_ui("tools_health_kii")),
-                 #   tabPanel(iphra_txt("Health Facility Observation"), mod_tools_health_obs_ui("tools_health_obs")),
-                 #   tabPanel(iphra_txt("Nutrition Facility Key Informant"), mod_tools_nutrition_kii_ui("tools_nutrition_kii")),
+                 #   tabPanel(phrutils::phr_txt("Health Facility Key Informant"), mod_tools_health_kii_ui("tools_health_kii")),
+                 #   tabPanel(phrutils::phr_txt("Health Facility Observation"), mod_tools_health_obs_ui("tools_health_obs")),
+                 #   tabPanel(phrutils::phr_txt("Nutrition Facility Key Informant"), mod_tools_nutrition_kii_ui("tools_nutrition_kii")),
                  #
-                 #   tabPanel(iphra_txt("WASH Provider Key Informant"), mod_tools_wash_kii_ui("tools_wash_kii")),
-                 #   tabPanel(iphra_txt("Water Point Observation"), mod_tools_water_point_obs_ui("tools_water_point_obs")),
-                 #   tabPanel(iphra_txt("Latrine Observation"), mod_tools_latrine_obs_ui("tools_latrine_obs"))
+                 #   tabPanel(phrutils::phr_txt("WASH Provider Key Informant"), mod_tools_wash_kii_ui("tools_wash_kii")),
+                 #   tabPanel(phrutils::phr_txt("Water Point Observation"), mod_tools_water_point_obs_ui("tools_water_point_obs")),
+                 #   tabPanel(phrutils::phr_txt("Latrine Observation"), mod_tools_latrine_obs_ui("tools_latrine_obs"))
                  # )
         ),
 
         # ── 3. Sample Size and Planning ─────────────────────────────────────────────────
         # Planning ####
-        tabPanel(iphra_txt("Planning and Sampling"), mod_planning_sample_size_ui("planning_sample_size")
+        tabPanel(phrutils::phr_txt("Planning and Sampling"), mod_planning_sample_size_ui("planning_sample_size")
         )
 
       )
@@ -880,7 +880,7 @@ app_ui <- function(request) {
     # (id = "save_project") when the current project has no known path yet,
     # falling back to a "Save Project As..." style flow.
     tags$script(HTML(
-      "Shiny.addCustomMessageHandler('iphra_click_element', function(id) { var el = document.getElementById(id); if (el) { el.click(); } });"
+      "Shiny.addCustomMessageHandler('phr_click_element', function(id) { var el = document.getElementById(id); if (el) { el.click(); } });"
     ))
   )
 }

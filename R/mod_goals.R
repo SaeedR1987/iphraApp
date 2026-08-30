@@ -40,7 +40,7 @@ mod_goals_ui <- function(id) {
 
           # ---- Assessment Info Tab ----
           shiny::tabPanel(
-            title = iphra_txt("Assessment Info"),
+            title = phrutils::phr_txt("Assessment Info"),
             br(),
 
             # Group 1
@@ -50,7 +50,7 @@ mod_goals_ui <- function(id) {
               open = NULL,
 
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("General Information"),
+                title = phrutils::phr_txt("General Information"),
                 style = "primary",
 
                 div(
@@ -63,12 +63,12 @@ mod_goals_ui <- function(id) {
                     tags$tr(
                       tags$th(colspan = 4,
                               style = "background-color:#f5f5f5;",
-                              iphra_txt("Assessment Metadata")
+                              phrutils::phr_txt("Assessment Metadata")
                       )
                     ),
 
                     tags$tr(
-                      tags$th(style = "width:20%;", iphra_txt("Assessment Title")),
+                      tags$th(style = "width:20%;", phrutils::phr_txt("Assessment Title")),
                       tags$td(style = "width:30%;",
                               textInput(
                                 ns("assessment_title"),
@@ -77,7 +77,7 @@ mod_goals_ui <- function(id) {
                               )
                       ),
 
-                      tags$th(style = "width:20%;", iphra_txt("Country Name")),
+                      tags$th(style = "width:20%;", phrutils::phr_txt("Country Name")),
                       tags$td(style = "width:30%;",
                               textInput(
                                 ns("country_name"),
@@ -88,7 +88,7 @@ mod_goals_ui <- function(id) {
                     ),
 
                     tags$tr(
-                      tags$th(iphra_txt("Month/Year")),
+                      tags$th(phrutils::phr_txt("Month/Year")),
                       tags$td(
                         textInput(
                           ns("month_year"),
@@ -97,7 +97,7 @@ mod_goals_ui <- function(id) {
                         )
                       ),
 
-                      tags$th(iphra_txt("Research Cycle ID")),
+                      tags$th(phrutils::phr_txt("Research Cycle ID")),
                       tags$td(
                         textInput(
                           ns("research_cycle_id"),
@@ -108,7 +108,7 @@ mod_goals_ui <- function(id) {
                     ),
 
                     tags$tr(
-                      tags$th(iphra_txt("Project Code")),
+                      tags$th(phrutils::phr_txt("Project Code")),
                       tags$td(
                         textInput(
                           ns("project_code"),
@@ -117,7 +117,7 @@ mod_goals_ui <- function(id) {
                         )
                       ),
 
-                      tags$th(iphra_txt("Mandating Body")),
+                      tags$th(phrutils::phr_txt("Mandating Body")),
                       tags$td(
                         textInput(
                           ns("mandating_body"),
@@ -128,7 +128,7 @@ mod_goals_ui <- function(id) {
                     ),
 
                     tags$tr(
-                      tags$th(iphra_txt("Version Number")),
+                      tags$th(phrutils::phr_txt("Version Number")),
                       tags$td(
                         numericInput(
                           ns("version_number"),
@@ -140,7 +140,7 @@ mod_goals_ui <- function(id) {
                         )
                       ),
 
-                      tags$th(iphra_txt("Release Date")),
+                      tags$th(phrutils::phr_txt("Release Date")),
                       tags$td(
                         dateInput(
                           ns("release_date"),
@@ -159,7 +159,7 @@ mod_goals_ui <- function(id) {
 
               ),
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("Rationale, Goals, Population and Geographic Scope"),
+                title = phrutils::phr_txt("Rationale, Goals, Population and Geographic Scope"),
                 style = "primary",
 
                 div(
@@ -173,7 +173,7 @@ mod_goals_ui <- function(id) {
                       tags$th(
                         colspan = 2,
                         style = "background-color:#f5f5f5;",
-                        iphra_txt("Rationale for Assessment")
+                        phrutils::phr_txt("Rationale for Assessment")
                       )
                     ),
 
@@ -196,7 +196,7 @@ mod_goals_ui <- function(id) {
                       tags$th(
                         colspan = 2,
                         style = "background-color:#f5f5f5;",
-                        iphra_txt("Assessment Goals")
+                        phrutils::phr_txt("Assessment Goals")
                       )
                     ),
 
@@ -204,11 +204,11 @@ mod_goals_ui <- function(id) {
                       tags$td(
                         colspan = 2,
 
-                        tags$h5(iphra_txt("Primary Goals")),
+                        tags$h5(phrutils::phr_txt("Primary Goals")),
 
                         shiny::checkboxInput(
                           ns("goal_primary_1"),
-                          label = iphra_txt(
+                          label = phrutils::phr_txt(
                             "1. To understand the severity of public health needs in the target population."
                           ),
                           value = TRUE
@@ -216,7 +216,7 @@ mod_goals_ui <- function(id) {
 
                         shiny::checkboxInput(
                           ns("goal_primary_2"),
-                          label = iphra_txt(
+                          label = phrutils::phr_txt(
                             "2. To identify initial public health priorities and service gaps for response."
                           ),
                           value = TRUE
@@ -234,11 +234,11 @@ mod_goals_ui <- function(id) {
 
                         tags$hr(),
 
-                        tags$h5(iphra_txt("Secondary Goals")),
+                        tags$h5(phrutils::phr_txt("Secondary Goals")),
 
                         shiny::checkboxInput(
                           ns("goal_secondary_impact"),
-                          label = iphra_txt(
+                          label = phrutils::phr_txt(
                             "3. To inform the IMPACT acute needs analysis."
                           ),
                           value = FALSE
@@ -250,7 +250,7 @@ mod_goals_ui <- function(id) {
                       tags$th(
                         colspan = 2,
                         style = "background-color:#f5f5f5;",
-                        iphra_txt("Geographic Scope")
+                        phrutils::phr_txt("Geographic Scope")
                       )
                     ),
 
@@ -273,19 +273,19 @@ mod_goals_ui <- function(id) {
                       tags$th(
                         colspan = 2,
                         style = "background-color:#f5f5f5;",
-                        iphra_txt("Population and Stratification Plan")
+                        phrutils::phr_txt("Population and Stratification Plan")
                       )
                     ),
 
                     tags$tr(
                       tags$th(
                         style = "width:25%;",
-                        iphra_txt("Type of Emergency")
+                        phrutils::phr_txt("Type of Emergency")
                       ),
 
                       tags$th(
                         style = "width:25%;",
-                        iphra_txt("Type of Crisis")
+                        phrutils::phr_txt("Type of Crisis")
                       )
                     ),
 
@@ -312,11 +312,11 @@ mod_goals_ui <- function(id) {
 
                     tags$tr(
                       tags$th(
-                        iphra_txt("Population")
+                        phrutils::phr_txt("Population")
                       ),
 
                       tags$th(
-                        iphra_txt("Stratification")
+                        phrutils::phr_txt("Stratification")
                       )
                     ),
 
@@ -343,7 +343,7 @@ mod_goals_ui <- function(id) {
 
               ),
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("Timelines and Milestones"),
+                title = phrutils::phr_txt("Timelines and Milestones"),
                 style = "primary",
 
                 div(
@@ -357,15 +357,15 @@ mod_goals_ui <- function(id) {
                       tags$tr(
                         tags$th(
                           style = "width:20%;",
-                          iphra_txt("Phase")
+                          phrutils::phr_txt("Phase")
                         ),
                         tags$th(
                           style = "width:35%;",
-                          iphra_txt("Milestone")
+                          phrutils::phr_txt("Milestone")
                         ),
                         tags$th(
                           style = "width:45%;",
-                          iphra_txt("Date")
+                          phrutils::phr_txt("Date")
                         )
                       )
                     ),
@@ -378,9 +378,9 @@ mod_goals_ui <- function(id) {
                       tags$tr(
                         tags$td(
                           rowspan = 3,
-                          strong(iphra_txt("Data Collection"))
+                          strong(phrutils::phr_txt("Data Collection"))
                         ),
-                        tags$td(iphra_txt("Pilot Training")),
+                        tags$td(phrutils::phr_txt("Pilot Training")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_pilot_training"),
@@ -392,7 +392,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Data Collection Start")),
+                        tags$td(phrutils::phr_txt("Data Collection Start")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_data_collection_start"),
@@ -404,7 +404,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Data Collection End")),
+                        tags$td(phrutils::phr_txt("Data Collection End")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_data_collection_end"),
@@ -421,9 +421,9 @@ mod_goals_ui <- function(id) {
                       tags$tr(
                         tags$td(
                           rowspan = 2,
-                          strong(iphra_txt("Data Analysis"))
+                          strong(phrutils::phr_txt("Data Analysis"))
                         ),
-                        tags$td(iphra_txt("Data Analysis")),
+                        tags$td(phrutils::phr_txt("Data Analysis")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_data_analysis"),
@@ -435,7 +435,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Data Validation")),
+                        tags$td(phrutils::phr_txt("Data Validation")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_data_validation"),
@@ -452,9 +452,9 @@ mod_goals_ui <- function(id) {
                       tags$tr(
                         tags$td(
                           rowspan = 4,
-                          strong(iphra_txt("Output Production"))
+                          strong(phrutils::phr_txt("Output Production"))
                         ),
-                        tags$td(iphra_txt("Preliminary Presentation")),
+                        tags$td(phrutils::phr_txt("Preliminary Presentation")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_preliminary_presentation"),
@@ -466,7 +466,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Outputs Validation")),
+                        tags$td(phrutils::phr_txt("Outputs Validation")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_outputs_validation"),
@@ -478,7 +478,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Outputs Publication")),
+                        tags$td(phrutils::phr_txt("Outputs Publication")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_outputs_publication"),
@@ -490,7 +490,7 @@ mod_goals_ui <- function(id) {
                       ),
 
                       tags$tr(
-                        tags$td(iphra_txt("Final Presentation")),
+                        tags$td(phrutils::phr_txt("Final Presentation")),
                         tags$td(
                           shiny::dateInput(
                             ns("date_final_presentation"),
@@ -506,7 +506,7 @@ mod_goals_ui <- function(id) {
                 )
               ),
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("Audience, Outputs, Dissemination Plan"),
+                title = phrutils::phr_txt("Audience, Outputs, Dissemination Plan"),
                 style = "primary",
 
                 fluidRow(
@@ -514,14 +514,14 @@ mod_goals_ui <- function(id) {
                     6,
                     actionButton(
                       ns("add_audience"),
-                      iphra_txt("Add Audience")
+                      phrutils::phr_txt("Add Audience")
                     )
                   ),
                   column(
                     6,
                     actionButton(
                       ns("remove_audience"),
-                      iphra_txt("Remove Audience")
+                      phrutils::phr_txt("Remove Audience")
                     )
                   )
                 ),
@@ -539,14 +539,14 @@ mod_goals_ui <- function(id) {
 
           # ---- Primary Tab ----
           shiny::tabPanel(
-            title = iphra_txt("Primary"),
+            title = phrutils::phr_txt("Primary"),
             shinydashboard::box(
-              title = iphra_txt("Objectives Presets"),
+              title = phrutils::phr_txt("Objectives Presets"),
               width = 12,
-              shiny::actionButton(ns("preset_core"), iphra_txt("Core")),
+              shiny::actionButton(ns("preset_core"), phrutils::phr_txt("Core")),
               shiny::actionButton(
                 ns("clear_objectives"),
-                iphra_txt("Clear Objectives"),
+                phrutils::phr_txt("Clear Objectives"),
                 style = "margin-left:10px; background-color:#f88; color:white;"
               )
             ),
@@ -560,16 +560,16 @@ mod_goals_ui <- function(id) {
 
           # ---- Secondary Tab ----
           shiny::tabPanel(
-            title = iphra_txt("Secondary"),
+            title = phrutils::phr_txt("Secondary"),
             shinyBS::bsCollapse(
               id = ns("secondary_data_sources_collapse"),
               shinyBS::bsCollapsePanel(
-                title = iphra_txt("Secondary Data Sources"),
+                title = phrutils::phr_txt("Secondary Data Sources"),
                 style = "primary",
 
                 shiny::actionButton(
                   ns("refresh_secondary_sources"),
-                  iphra_txt("Refresh")
+                  phrutils::phr_txt("Refresh")
                 ),
 
                 shiny::br(),
@@ -579,12 +579,12 @@ mod_goals_ui <- function(id) {
               )
             ),
             shinydashboard::box(
-              title = iphra_txt("Objectives Presets"),
+              title = phrutils::phr_txt("Objectives Presets"),
               width = 12,
-              shiny::actionButton(ns("preset_sdr_core"), iphra_txt("Core")),
+              shiny::actionButton(ns("preset_sdr_core"), phrutils::phr_txt("Core")),
               shiny::actionButton(
                 ns("clear_sdr_objectives"),
-                iphra_txt("Clear Objectives"),
+                phrutils::phr_txt("Clear Objectives"),
                 style = "margin-left:10px; background-color:#f88; color:white;"
               )
             ),
@@ -598,12 +598,12 @@ mod_goals_ui <- function(id) {
 
           # ---- Full Objectives Tab ----
           shiny::tabPanel(
-            title = iphra_txt("Full Objectives"),
-            shiny::h4(iphra_txt("Goal Statements")),
-            shiny::p(iphra_txt("1. To understand the severity of public health needs in the target population.")),
-            shiny::p(iphra_txt("2. To identify initial public health priorities and service gaps for response.")),
+            title = phrutils::phr_txt("Full Objectives"),
+            shiny::h4(phrutils::phr_txt("Goal Statements")),
+            shiny::p(phrutils::phr_txt("1. To understand the severity of public health needs in the target population.")),
+            shiny::p(phrutils::phr_txt("2. To identify initial public health priorities and service gaps for response.")),
             shiny::hr(),
-            shiny::h4(iphra_txt("Selected Objectives")),
+            shiny::h4(phrutils::phr_txt("Selected Objectives")),
             shiny::uiOutput(ns("full_objectives_ui"))
           )
         )
@@ -618,19 +618,19 @@ mod_goals_ui <- function(id) {
           tags$span(
             style = "display:inline-block; width:15px; height:15px; background:white; border:1px solid #ccc; margin-right:5px;"
           ),
-          iphra_txt("Unselected"),
+          phrutils::phr_txt("Unselected"),
           tags$span(
             style = "display:inline-block; width:15px; height:15px; background:lightgreen; border:1px solid #ccc; margin-left:15px; margin-right:5px;"
           ),
-          iphra_txt("Primary Sources"),
+          phrutils::phr_txt("Primary Sources"),
           tags$span(
             style = "display:inline-block; width:15px; height:15px; background:lightblue; border:1px solid #ccc; margin-left:15px; margin-right:5px;"
           ),
-          iphra_txt("Secondary Sources"),
+          phrutils::phr_txt("Secondary Sources"),
           tags$span(
             style = "display:inline-block; width:15px; height:15px; background:#D8BFD8; border:1px solid #ccc; margin-left:15px; margin-right:5px;"
           ),
-          iphra_txt("Both")
+          phrutils::phr_txt("Both")
         ),
         tags$div(
           id = ns("framework_container"),
@@ -757,7 +757,7 @@ mod_goals_server <- function(id){
 
       selectInput(
         ns("dynamic_select"),
-        label = iphra_txt("Select Pillars"),
+        label = phrutils::phr_txt("Select Pillars"),
         choices = unique(reference_objectives_r()$pillar),  # Replace with your reactive or static vector
         selected = isolate(input$dynamic_select %||%
                            c("Demographics", "HealthStatus")),
@@ -769,7 +769,7 @@ mod_goals_server <- function(id){
 
       selectInput(
         ns("dynamic_select_sdr"),
-        label = iphra_txt("Select Dimensions"),
+        label = phrutils::phr_txt("Select Dimensions"),
         choices = unique(reference_objectives_r()$pillar),  # Replace with your reactive or static vector
         selected = isolate(input$dynamic_select_sdr %||%
                              c("Demographics", "HealthStatus")),
@@ -794,7 +794,7 @@ mod_goals_server <- function(id){
       labels <- labels[!is.na(labels)]
 
       sortable::rank_list(
-        text = iphra_txt("Available Objectives"),
+        text = phrutils::phr_txt("Available Objectives"),
         labels = labels,
         input_id = ns("available"),
         options = sortable::sortable_options(group = "all_objectives")
@@ -807,7 +807,7 @@ mod_goals_server <- function(id){
       labels <- unname(code_to_short_r()[as.character(selected())])
       labels <- labels[!is.na(labels)]
       sortable::rank_list(
-        text = iphra_txt("Selected Objectives"),
+        text = phrutils::phr_txt("Selected Objectives"),
         labels = labels,
         input_id = ns("selected"),
         options = sortable::sortable_options(group = "all_objectives")
@@ -819,7 +819,7 @@ mod_goals_server <- function(id){
       labels_sdr <- unname(code_to_short_r()[as.character(available_sdr_codes)])
       labels_sdr <- labels_sdr[!is.na(labels_sdr)]
       sortable::rank_list(
-        text = iphra_txt("Available Objectives"),
+        text = phrutils::phr_txt("Available Objectives"),
         labels = labels_sdr,
         input_id = ns("available_sdr"),
         options = sortable::sortable_options(group = "all_objectives")
@@ -831,7 +831,7 @@ mod_goals_server <- function(id){
       labels_sdr <- unname(code_to_short_r()[as.character(selected_sdr())])
       labels_sdr <- labels_sdr[!is.na(labels_sdr)]
       sortable::rank_list(
-        text = iphra_txt("Selected Objectives"),
+        text = phrutils::phr_txt("Selected Objectives"),
         labels = labels_sdr,
         input_id = ns("selected_sdr"),
         options = sortable::sortable_options(group = "all_objectives")
@@ -872,7 +872,7 @@ mod_goals_server <- function(id){
 
 
       if (length(objs) == 0) {
-        shiny::em(iphra_txt("No objectives selected."))
+        shiny::em(phrutils::phr_txt("No objectives selected."))
       } else {
         tags$ul(
           lapply(objs, tags$li)
@@ -1205,15 +1205,15 @@ mod_goals_server <- function(id){
 
         iphra_message(
           paste0(
-            iphra_txt("Selected item(s) updated to: "),
+            phrutils::phr_txt("Selected item(s) updated to: "),
             paste(input$selected, collapse = ", ")
           ),
-          origin = iphra_txt("Selection Update")
+          origin = phrutils::phr_txt("Selection Update")
         )
         },
       on_error = "warn",
-      origin = iphra_txt("Selection Update"),
-      hint = iphra_txt("Check input binding or reactive assignment if this fails.")
+      origin = phrutils::phr_txt("Selection Update"),
+      hint = phrutils::phr_txt("Check input binding or reactive assignment if this fails.")
       )
     }, ignoreNULL = FALSE)
 
@@ -1231,15 +1231,15 @@ mod_goals_server <- function(id){
 
         iphra_message(
           paste0(
-            iphra_txt("SDR selection updated to: "),
+            phrutils::phr_txt("SDR selection updated to: "),
             paste(input$selected_sdr, collapse = ", ")
           ),
-          origin = iphra_txt("SDR selection Update")
+          origin = phrutils::phr_txt("SDR selection Update")
         )
       },
       on_error = "warn",
-      origin = iphra_txt("SDR Selection Update"),
-      hint = iphra_txt("Check input binding or reactive assignment if this fails.")
+      origin = phrutils::phr_txt("SDR Selection Update"),
+      hint = phrutils::phr_txt("Check input binding or reactive assignment if this fails.")
       )
     }, ignoreNULL = FALSE)
 
@@ -1262,8 +1262,8 @@ mod_goals_server <- function(id){
 
         },
       on_error = "warn",
-      origin = iphra_txt("Preset: Core Objectives"),
-      hint = iphra_txt("Check objective data structure or input binding if this fails.")
+      origin = phrutils::phr_txt("Preset: Core Objectives"),
+      hint = phrutils::phr_txt("Check objective data structure or input binding if this fails.")
       )
     })
 
@@ -1285,8 +1285,8 @@ mod_goals_server <- function(id){
 
         },
       on_error = "warn",
-      origin = iphra_txt("Preset SDR: Core Objectives"),
-      hint = iphra_txt("Check objective data structure or SDR input binding if this fails.")
+      origin = phrutils::phr_txt("Preset SDR: Core Objectives"),
+      hint = phrutils::phr_txt("Check objective data structure or SDR input binding if this fails.")
       )
     })
 
@@ -1338,8 +1338,8 @@ mod_goals_server <- function(id){
 
       },
       on_error = "warn",
-      origin = iphra_txt("Secondary Data Sources: Sync"),
-      hint = iphra_txt("Check Framework$secondary_data_sources access_nested calls if this fails.")
+      origin = phrutils::phr_txt("Secondary Data Sources: Sync"),
+      hint = phrutils::phr_txt("Check Framework$secondary_data_sources access_nested calls if this fails.")
       )
     }
 
@@ -1373,8 +1373,8 @@ mod_goals_server <- function(id){
 
       },
       on_error = "warn",
-      origin = iphra_txt("Secondary Data Sources: Refresh"),
-      hint = iphra_txt("Check selected secondary objectives if this fails.")
+      origin = phrutils::phr_txt("Secondary Data Sources: Refresh"),
+      hint = phrutils::phr_txt("Check selected secondary objectives if this fails.")
       )
     })
 
@@ -1390,8 +1390,8 @@ mod_goals_server <- function(id){
 
       },
       on_error = "warn",
-      origin = iphra_txt("Secondary Data Sources: Edit"),
-      hint = iphra_txt("Ensure rhandsontable input is correctly bound if this fails.")
+      origin = phrutils::phr_txt("Secondary Data Sources: Edit"),
+      hint = phrutils::phr_txt("Ensure rhandsontable input is correctly bound if this fails.")
       )
     }, ignoreInit = TRUE)
 
@@ -1407,8 +1407,8 @@ mod_goals_server <- function(id){
         result <- iphra_try_step({
 
           iphra_message(
-            iphra_txt("Reactive update triggered for framework visualization."),
-            origin = iphra_txt("Framework SVG Highlighter")
+            phrutils::phr_txt("Reactive update triggered for framework visualization."),
+            origin = phrutils::phr_txt("Framework SVG Highlighter")
           )
 
         }, step = "mod_goals_server/observe/Validation")
@@ -1450,16 +1450,16 @@ mod_goals_server <- function(id){
         result <- iphra_try_step({
 
           iphra_message(
-            iphra_txt("Framework visualization updated successfully."),
-            origin = iphra_txt("Framework SVG Highlighter")
+            phrutils::phr_txt("Framework visualization updated successfully."),
+            origin = phrutils::phr_txt("Framework SVG Highlighter")
           )
         }, step = "mod_goals_server/observe/Result Handling")
         if (iphra_failed(result)) return(result)
 
         },
       on_error = "warn",
-      origin = iphra_txt("Framework SVG Highlighter"),
-      hint = iphra_txt("Check reactive dependencies or JavaScript message binding if this fails.")
+      origin = phrutils::phr_txt("Framework SVG Highlighter"),
+      hint = phrutils::phr_txt("Check reactive dependencies or JavaScript message binding if this fails.")
       )
     }, ignoreNULL = FALSE)
 

@@ -5,6 +5,12 @@
    # other libraries
  })
 
+ # Load translations at package load time
+ phr_translations <- phrutils::phr_load_translations()
+
+ # Placeholder for current language (can later live in session$userData)
+ phr_current_lang <- "en"
+
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -12,6 +18,15 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
+
+  session$userData$lang <- reactiveVal("en")
+
+  observeEvent(input$global_language, {
+    phrutils::set_phr_language(
+      input$global_language,
+      session
+    )
+  })
 
   volumes <- c(Home = fs::path_home())
 
@@ -28,6 +43,8 @@ app_server <- function(input, output, session) {
     roots = volumes,
     session = session
   )
+
+
 
   # ────────────────────────────────────────────────────────────────────────────
   # PLACEHOLDER OBSERVERS FOR NEW NAVBAR ITEMS
@@ -49,6 +66,15 @@ app_server <- function(input, output, session) {
     # dialog directly via onclick (see app_ui.R); the actual save is handled
     # by the input$save_project observer below. This observer is intentionally
     # a no-op and only exists to swallow any legacy click events.
+  })
+
+  observeEvent(input$global_language, {
+
+    phrutils::set_phr_language(
+      input$global_language,
+      session
+    )
+
   })
 
   # ---- Quick Save Handler ----
@@ -323,7 +349,7 @@ app_server <- function(input, output, session) {
   iphra_session <- init_session(session, project_name = "IPHRA")
 
   set_module(module_name = "protocol",
-             module_object = phr::IPHRAProtocol$new(
+             module_object = IPHRAProtocol$new(
                assessment_title = "IPHRA",
                country_name = "TBD",
                month_year = "2026-01-01"
@@ -350,7 +376,7 @@ app_server <- function(input, output, session) {
 
   observeEvent(input$save_tor, {
 
-    iphra_try({
+    phr::phr_try({
 
       save_path <- shinyFiles::parseSavePath(
         volumes,
@@ -365,38 +391,50 @@ app_server <- function(input, output, session) {
 
       protocol <- protocol_r()
       if (is.null(protocol)) {
-        iphra_warning(
-          iphra_txt("Protocol object is not available — cannot export."),
+        phr::phr_warning(
+          phrutils::phr_txt("Protocol object is not available — cannot export."),
           origin = "Export: REACH Terms of Reference"
         )
         return(NULL)
       }
 
-      iphra_message(
+      phr::phr_message(
         paste("Rendering REACH Terms of Reference to:", outfile),
         origin = "Export: REACH Terms of Reference"
       )
 
       # Quarto rendering can take several seconds; show a progress indicator
       # so the user knows the export is running.
-      withProgress(
-        message = iphra_txt("Generating REACH Terms of Reference..."),
-        value = 0.1,
-        {
-          protocol$generate_quarto_doc(
-            output_file = outfile
-          )
-          setProgress(value = 1)
-        }
+      showModal(
+        modalDialog(
+          title = phrutils::phr_txt("Generating REACH Terms of Reference"),
+          tagList(
+            tags$p(phrutils::phr_txt("Please wait while the document is generated.")),
+            tags$div(
+              style = "text-align:center; padding:20px;",
+              tags$i(
+                class = "fa fa-spinner fa-spin fa-3x"
+              )
+            )
+          ),
+          footer = NULL,
+          easyClose = FALSE
+        )
       )
 
-      iphra_message(
+      on.exit(removeModal(), add = TRUE)
+
+      protocol$generate_quarto_doc(
+        output_file = outfile
+      )
+
+      phr::phr_message(
         paste("REACH Terms of Reference saved to:", outfile),
         origin = "Export: REACH Terms of Reference"
       )
 
       showNotification(
-        paste(iphra_txt("REACH Terms of Reference saved to:"), outfile),
+        paste(phrutils::phr_txt("REACH Terms of Reference saved to:"), outfile),
         type = "message",
         duration = 6
       )
@@ -410,58 +448,12 @@ app_server <- function(input, output, session) {
   # NOTE: `set_module()` above registers the protocol's reactive
   # "version" signal (`session$userData$modules_version[["protocol"]]`).
   # Any code that mutates the protocol object (e.g. `protocol$add_tools()`)
-  # must call `iphra_touch_module("protocol", session)` afterwards so
+  # must call `phr_touch_module("protocol", session)` afterwards so
   # dependent modules re-evaluate. Read the protocol reactively via
-  # `iphra_get_module_reactive("protocol", session)` instead of caching a
+  # `phr_get_module_reactive("protocol", session)` instead of caching a
   # one-time snapshot of the object. See `R/utils_session.R` for details.
 
-  # iphra_get_log_store(session)
-
-  # ---- Global Language Selection ---
-  observeEvent(input$global_language, {
-    iphra_try({
-
-      # 1️⃣ VALIDATION
-      if (is.null(input$global_language)) {
-        iphra_warning(
-          iphra_txt("Language input is NULL — skipping update."),
-          origin = iphra_txt("Global Language Selector")
-        )
-        return(NULL)
-      }
-
-      # 2️⃣ CORE LOGIC
-      # ---- Future: this will set the session-wide language ---
-      # session$userData$lang(input$global_language)
-      # iphra_current_lang <<- input$global_language  # (temporary fallback until session connected)
-
-      iphra_message(
-        paste(
-          iphra_txt("Language selection changed to:"),
-          input$global_language
-        ),
-        origin = iphra_txt("Global Language Selector")
-      )
-
-      # ---- Dummy placeholder behavior for now ---
-      # (In future: trigger UI text refresh or reactive translation re-render)
-      iphra_message(
-        iphra_txt("Dummy mode: UI text translations not yet reactive."),
-        origin = iphra_txt("Global Language Selector")
-      )
-
-      # 3️⃣ RESULT HANDLING
-      iphra_message(
-        iphra_txt("Language selection update processed successfully."),
-        origin = iphra_txt("Global Language Selector")
-      )
-
-    },
-    on_error = "warn",
-    origin = iphra_txt("Global Language Selector"),
-    hint = iphra_txt("Verify input ID or future session$userData$lang connection if this fails.")
-    )
-  })
+  # phr_get_log_store(session)
 
   # GOALS AND OBJECTIVES ####
 

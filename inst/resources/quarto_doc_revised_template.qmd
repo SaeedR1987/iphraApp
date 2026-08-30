@@ -1163,7 +1163,6 @@ Please confirm that:
 * The secondary data sources listed in the table below are still recent and applicable, and match the stated ANA framework pillars and sub-pillars. 
 
 **DELETE THIS NOTE BEFORE SUBMITTING TO REPOSITORY**
-
 :::
 
 The main assessment design is based off guidance documents and tools for Integrated Public Health Rapid Assessment (IPHRA), available on the IMPACT Intranet (soon, link to intranet).  Secondly, the IPHRA toolkit is designed to align with the Acute Needs Framework (ANF) utilized by IMPACT Initiatives in their Acute Needs Analysis workstreams [@ANF2025]. The intention of the Secondary Data Review step is to identify existing data sources for various ANF Pillars and Sub-Pillars, and to identify data gaps which will inform the design of the primary data collection component of the IPHRA. The below figure illustrates the ANF framework and how it maps against the planned primary data collection, as well as secondary data sources planned to be utilized for this assessment.
@@ -1663,7 +1662,7 @@ ft
 #| results: asis
 
 if(params$individual_survey & params$rate_survey) {
-  cat(glue::glue("The sample size for the indicator {params$ind_indicator} was {params$sample_size_ind_hh} households and for the indicator {params$rate_indicator} the sample size was {sample_size_rate_hh} households. The higher of these two values is taken as the final sample size of {params$sample_size_hh_final}. \n\n "))
+  cat(glue::glue("The sample size for the indicator {params$ind_indicator} was {params$sample_size_ind_hh} households and for the indicator {params$rate_indicator} the sample size was {params$sample_size_rate_hh} households. The higher of these two values is taken as the final sample size of {params$sample_size_hh_final}. \n\n "))
   
   cat(glue::glue(table_caption("Field planning calculations")))
 

@@ -100,7 +100,7 @@
 #' @export
 IPHRAProtocol <- R6::R6Class(
   "IPHRAProtocol",
-  inherit = SurveyProtocol,
+  inherit = phr::SurveyProtocol,
 
   public = list(
     #' @description
@@ -129,7 +129,6 @@ IPHRAProtocol <- R6::R6Class(
       self$valid_tool_types <- c(
         "household",
         "key_informant",
-        "observation",
         "generic"
       )
       self$metadata$assessment_title <- assessment_title
@@ -138,7 +137,7 @@ IPHRAProtocol <- R6::R6Class(
       self$metadata$framework_type <- "ana"
 
       phrutils::phr_message(
-        phr_txt("IPHRAProtocol initialized."),
+        ("IPHRAProtocol initialized."),
         origin = "IPHRAProtocol$initialize"
       )
       invisible(self)
@@ -163,15 +162,12 @@ IPHRAProtocol <- R6::R6Class(
             is.character(tool_name) &&
               length(tool_name) == 1 &&
               nzchar(tool_name),
-            message = phr_txt(
-              "tool_name must be a non-empty character string."
-            ),
+            message = "tool_name must be a non-empty character string.",
             origin = "IPHRAProtocol$add_tools"
           )
           phrutils::phr_assert(
             tool_name %in% names(allowable),
-            message = phr_txt(
-              "'{tool_name}' is not a recognised IPHRA tool. Allowable tools: {paste(names(allowable), collapse=', ')}."
+            message = glue::glue("'{tool_name}' is not a recognised IPHRA tool. Allowable tools: {paste(names(allowable), collapse=', ')}."
             ),
             origin = "IPHRAProtocol$add_tools"
           )
@@ -197,7 +193,7 @@ IPHRAProtocol <- R6::R6Class(
               t
             } else {
               phrutils::phr_warning(
-                message = phr_txt(
+                message = glue::glue(
                   "XLSForm file not found for '{tool_name}': {xlsx_file}. Creating empty tool."
                 ),
                 origin = "IPHRAProtocol$add_tools"
@@ -215,7 +211,7 @@ IPHRAProtocol <- R6::R6Class(
               t
             } else {
               phrutils::phr_warning(
-                message = phr_txt(
+                message = glue::glue(
                   "XLSForm file not found for '{tool_name}': {xlsx_file}. Creating empty tool."
                 ),
                 origin = "IPHRAProtocol$add_tools"
@@ -234,7 +230,7 @@ IPHRAProtocol <- R6::R6Class(
               t
             } else {
               phrutils::phr_warning(
-                message = phr_txt(
+                message = glue::glue(
                   "XLSForm file not found for '{tool_name}': {xlsx_file}. Creating empty tool."
                 ),
                 origin = "IPHRAProtocol$add_tools"
@@ -249,7 +245,7 @@ IPHRAProtocol <- R6::R6Class(
           self$tools[[tool_name]] <- tool
           private$..touch()
           phrutils::phr_message(
-            phr_txt("IPHRA tool '{tool_name}' added."),
+            glue::glue("IPHRA tool '{tool_name}' added."),
             origin = "IPHRAProtocol$add_tools"
           )
         },
@@ -286,7 +282,7 @@ IPHRAProtocol <- R6::R6Class(
         {
           phrutils::phr_assert(
             !is.null(recall_date),
-            message = phr_txt("recall_date must not be NULL."),
+            message = glue::glue("recall_date must not be NULL."),
             origin = "IPHRAProtocol$update_recall_date"
           )
 
@@ -295,7 +291,7 @@ IPHRAProtocol <- R6::R6Class(
             as.Date(recall_date),
             error = function(e) {
               phr_error(
-                message = phr_txt(
+                message = glue::glue(
                   "recall_date could not be coerced to a Date: {conditionMessage(e)}"
                 ),
                 origin = "IPHRAProtocol$update_recall_date"
@@ -309,7 +305,7 @@ IPHRAProtocol <- R6::R6Class(
 
           phrutils::phr_assert(
             !is.null(self$tools) && tool_name %in% names(self$tools),
-            message = phr_txt(
+            message = glue::glue(
               "Tool '{tool_name}' not found. Add it first with add_tools()."
             ),
             origin = "IPHRAProtocol$update_recall_date"
@@ -357,7 +353,7 @@ IPHRAProtocol <- R6::R6Class(
 
           private$..touch()
           phrutils::phr_message(
-            phr_txt(
+            glue::glue(
               "Recall date updated to '{date_str}' in tool '{tool_name}'."
             ),
             origin = "IPHRAProtocol$update_recall_date"
@@ -1288,7 +1284,7 @@ IPHRAProtocol <- R6::R6Class(
     .household_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("hh_dap_table is read-only"),
+          message = glue::glue("hh_dap_table is read-only"),
           origin = "IPHRAProtocol$active$hh_dap_table"
         )
       }
@@ -1312,7 +1308,7 @@ IPHRAProtocol <- R6::R6Class(
     .community_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("community_kii_dap_table is read-only"),
+          message = glue::glue("community_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$community_kii_dap_table"
         )
       }
@@ -1335,7 +1331,7 @@ IPHRAProtocol <- R6::R6Class(
     .community_observation_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("community_obs_dap_table is read-only"),
+          message = glue::glue("community_obs_dap_table is read-only"),
           origin = "IPHRAProtocol$active$community_obs_dap_table"
         )
       }
@@ -1358,7 +1354,7 @@ IPHRAProtocol <- R6::R6Class(
     .health_facility_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("health_facility_kii_dap_table is read-only"),
+          message = glue::glue("health_facility_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$health_facility_kii_dap_table"
         )
       }
@@ -1381,7 +1377,7 @@ IPHRAProtocol <- R6::R6Class(
     .health_facility_observation_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt(
+          message = glue::glue(
             "health_facility_observation_dap_table is read-only"
           ),
           origin = "IPHRAProtocol$active$health_facility_observation_dap_table"
@@ -1406,7 +1402,7 @@ IPHRAProtocol <- R6::R6Class(
     .nutrition_facility_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("nutrition_facility_kii_dap_table is read-only"),
+          message = glue::glue("nutrition_facility_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$nutrition_facility_kii_dap_table"
         )
       }
@@ -1429,7 +1425,7 @@ IPHRAProtocol <- R6::R6Class(
     .fsl_provider_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("fsl_provider_kii_dap_table is read-only"),
+          message = glue::glue("fsl_provider_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$fsl_provider_kii_dap_table"
         )
       }
@@ -1452,7 +1448,7 @@ IPHRAProtocol <- R6::R6Class(
     .market_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("market_kii_dap_table is read-only"),
+          message = glue::glue("market_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$market_kii_dap_table"
         )
       }
@@ -1475,7 +1471,7 @@ IPHRAProtocol <- R6::R6Class(
     .crop_livstock_observation_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt(
+          message = glue::glue(
             "crop_livestock_observation_dap_table is read-only"
           ),
           origin = "IPHRAProtocol$active$crop_livestock_observation_dap_table"
@@ -1500,7 +1496,7 @@ IPHRAProtocol <- R6::R6Class(
     .wash_provider_kii_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("wash_provider_kii_dap_table is read-only"),
+          message = glue::glue("wash_provider_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$wash_provider_kii_dap_table"
         )
       }
@@ -1523,7 +1519,7 @@ IPHRAProtocol <- R6::R6Class(
     .water_point_observation_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("water_point_observation_dap_table is read-only"),
+          message = glue::glue("water_point_observation_dap_table is read-only"),
           origin = "IPHRAProtocol$active$water_point_observation_dap_table"
         )
       }
@@ -1546,7 +1542,7 @@ IPHRAProtocol <- R6::R6Class(
     .latrine_observation_dap_df = function(value) {
       if (!missing(value)) {
         phr_abort(
-          message = phr_txt("latrine_observation_dap_table is read-only"),
+          message = glue::glue("latrine_observation_dap_table is read-only"),
           origin = "IPHRAProtocol$active$latrine_observation_dap_table"
         )
       }

@@ -56,7 +56,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$new_project_btn, {
     iphra_try({
       # TODO: Implement new project creation
-      showNotification(iphra_txt("New Project functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("New Project functionality coming soon"), type = "message")
       iphra_message("New Project button clicked (placeholder)", origin = "File Menu")
     }, on_error = "warn", origin = "File Menu: New Project")
   })
@@ -100,12 +100,12 @@ app_server <- function(input, output, session) {
         written_path <- iphra_save_project_file(current_path, session = session)
 
         iphra_message(
-          paste(iphra_txt("Project saved to:"), written_path),
-          origin = iphra_txt("Project File Manager")
+          paste(phrutils::phr_txt("Project saved to:"), written_path),
+          origin = phrutils::phr_txt("Project File Manager")
         )
 
         showNotification(
-          paste(iphra_txt("Project saved to:"), written_path),
+          paste(phrutils::phr_txt("Project saved to:"), written_path),
           type = "message",
           duration = 6
         )
@@ -116,15 +116,15 @@ app_server <- function(input, output, session) {
       }
     },
     on_error = "warn",
-    origin = iphra_txt("Project File Manager: Save"),
-    hint = iphra_txt("Check file permissions and session state if save fails.")
+    origin = phrutils::phr_txt("Project File Manager: Save"),
+    hint = phrutils::phr_txt("Check file permissions and session state if save fails.")
     )
   })
 
   observeEvent(input$import_data_type, {
     iphra_try({
       # TODO: Implement data import dialogs
-      showNotification(paste(iphra_txt("Import"), input$import_data_type, iphra_txt("functionality coming soon")), type = "message")
+      showNotification(paste(phrutils::phr_txt("Import"), input$import_data_type, phrutils::phr_txt("functionality coming soon")), type = "message")
       iphra_message(paste("Import data type:", input$import_data_type, "(placeholder)"), origin = "File Menu")
     }, on_error = "warn", origin = "File Menu: Import Data")
   })
@@ -132,7 +132,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$project_properties_btn, {
     iphra_try({
       # TODO: Implement project properties dialog
-      showNotification(iphra_txt("Project Properties functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Project Properties functionality coming soon"), type = "message")
       iphra_message("Project Properties button clicked (placeholder)", origin = "File Menu")
     }, on_error = "warn", origin = "File Menu: Project Properties")
   })
@@ -140,7 +140,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$exit_app_btn, {
     iphra_try({
       # TODO: Implement exit confirmation
-      showNotification(iphra_txt("Exit functionality coming soon - close browser tab to exit"), type = "message")
+      showNotification(phrutils::phr_txt("Exit functionality coming soon - close browser tab to exit"), type = "message")
       iphra_message("Exit button clicked (placeholder)", origin = "File Menu")
     }, on_error = "warn", origin = "File Menu: Exit")
   })
@@ -149,7 +149,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$undo_btn, {
     iphra_try({
       # TODO: Implement undo functionality
-      showNotification(iphra_txt("Undo functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Undo functionality coming soon"), type = "message")
       iphra_message("Undo button clicked (placeholder)", origin = "Edit Menu")
     }, on_error = "warn", origin = "Edit Menu: Undo")
   })
@@ -157,7 +157,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$redo_btn, {
     iphra_try({
       # TODO: Implement redo functionality
-      showNotification(iphra_txt("Redo functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Redo functionality coming soon"), type = "message")
       iphra_message("Redo button clicked (placeholder)", origin = "Edit Menu")
     }, on_error = "warn", origin = "Edit Menu: Redo")
   })
@@ -165,7 +165,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$find_replace_btn, {
     iphra_try({
       # TODO: Implement find and replace dialog
-      showNotification(iphra_txt("Find and Replace functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Find and Replace functionality coming soon"), type = "message")
       iphra_message("Find and Replace button clicked (placeholder)", origin = "Edit Menu")
     }, on_error = "warn", origin = "Edit Menu: Find Replace")
   })
@@ -173,7 +173,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$clear_all_data_btn, {
     iphra_try({
       # TODO: Implement clear all data with confirmation
-      showNotification(iphra_txt("Clear All Data functionality coming soon"), type = "warning")
+      showNotification(phrutils::phr_txt("Clear All Data functionality coming soon"), type = "warning")
       iphra_message("Clear All Data button clicked (placeholder)", origin = "Edit Menu")
     }, on_error = "warn", origin = "Edit Menu: Clear All Data")
   })
@@ -181,7 +181,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$preferences_btn, {
     iphra_try({
       # TODO: Implement preferences dialog
-      showNotification(iphra_txt("Preferences functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Preferences functionality coming soon"), type = "message")
       iphra_message("Preferences button clicked (placeholder)", origin = "Edit Menu")
     }, on_error = "warn", origin = "Edit Menu: Preferences")
   })
@@ -199,7 +199,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$toggle_sidebar_btn, {
     iphra_try({
       # TODO: Implement sidebar toggle
-      showNotification(iphra_txt("Toggle Sidebar functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Toggle Sidebar functionality coming soon"), type = "message")
       iphra_message("Toggle Sidebar button clicked (placeholder)", origin = "View Menu")
     }, on_error = "warn", origin = "View Menu: Toggle Sidebar")
   })
@@ -207,7 +207,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$toggle_status_bar_btn, {
     iphra_try({
       # TODO: Implement status bar toggle
-      showNotification(iphra_txt("Toggle Status Bar functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Toggle Status Bar functionality coming soon"), type = "message")
       iphra_message("Toggle Status Bar button clicked (placeholder)", origin = "View Menu")
     }, on_error = "warn", origin = "View Menu: Toggle Status Bar")
   })
@@ -216,7 +216,7 @@ app_server <- function(input, output, session) {
     iphra_try({
       # TODO: Implement theme switching
       theme <- input$theme_select
-      showNotification(paste(iphra_txt("Theme:"), theme, iphra_txt("(coming soon)")), type = "message")
+      showNotification(paste(phrutils::phr_txt("Theme:"), theme, phrutils::phr_txt("(coming soon)")), type = "message")
       iphra_message(paste("Theme selected:", theme, "(placeholder)"), origin = "View Menu")
     }, on_error = "warn", origin = "View Menu: Theme")
   })
@@ -226,7 +226,7 @@ app_server <- function(input, output, session) {
     iphra_try({
       # TODO: Implement document export
       doc_type <- input$export_doc
-      showNotification(paste(iphra_txt("Export"), doc_type, iphra_txt("coming soon")), type = "message")
+      showNotification(paste(phrutils::phr_txt("Export"), doc_type, phrutils::phr_txt("coming soon")), type = "message")
       iphra_message(paste("Export document:", doc_type, "(placeholder)"), origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: Document")
   })
@@ -235,7 +235,7 @@ app_server <- function(input, output, session) {
     iphra_try({
       # TODO: Implement data export
       data_type <- input$export_data
-      showNotification(paste(iphra_txt("Export"), data_type, iphra_txt("data coming soon")), type = "message")
+      showNotification(paste(phrutils::phr_txt("Export"), data_type, phrutils::phr_txt("data coming soon")), type = "message")
       iphra_message(paste("Export data:", data_type, "(placeholder)"), origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: Data")
   })
@@ -244,7 +244,7 @@ app_server <- function(input, output, session) {
     iphra_try({
       # TODO: Implement analysis export
       analysis_type <- input$export_analysis
-      showNotification(paste(iphra_txt("Export"), analysis_type, iphra_txt("analysis coming soon")), type = "message")
+      showNotification(paste(phrutils::phr_txt("Export"), analysis_type, phrutils::phr_txt("analysis coming soon")), type = "message")
       iphra_message(paste("Export analysis:", analysis_type, "(placeholder)"), origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: Analysis")
   })
@@ -252,7 +252,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$export_ppt, {
     iphra_try({
       # TODO: Implement PPT export
-      showNotification(iphra_txt("PowerPoint export coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("PowerPoint export coming soon"), type = "message")
       iphra_message("Export PPT button clicked (placeholder)", origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: PPT")
   })
@@ -260,7 +260,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$export_all_btn, {
     iphra_try({
       # TODO: Implement export all
-      showNotification(iphra_txt("Export All functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Export All functionality coming soon"), type = "message")
       iphra_message("Export All button clicked (placeholder)", origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: Export All")
   })
@@ -269,7 +269,7 @@ app_server <- function(input, output, session) {
     iphra_try({
       # TODO: Implement export format selection
       format <- input$export_format
-      showNotification(paste(iphra_txt("Export format set to:"), format), type = "message")
+      showNotification(paste(phrutils::phr_txt("Export format set to:"), format), type = "message")
       iphra_message(paste("Export format set:", format, "(placeholder)"), origin = "Export Menu")
     }, on_error = "warn", origin = "Export Menu: Format")
   })
@@ -278,7 +278,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$documentation_btn, {
     iphra_try({
       # TODO: Open documentation
-      showNotification(iphra_txt("Documentation coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Documentation coming soon"), type = "message")
       iphra_message("Documentation button clicked (placeholder)", origin = "Help Menu")
     }, on_error = "warn", origin = "Help Menu: Documentation")
   })
@@ -286,7 +286,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$tutorials_btn, {
     iphra_try({
       # TODO: Open tutorials
-      showNotification(iphra_txt("Tutorials coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Tutorials coming soon"), type = "message")
       iphra_message("Tutorials button clicked (placeholder)", origin = "Help Menu")
     }, on_error = "warn", origin = "Help Menu: Tutorials")
   })
@@ -294,7 +294,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$keyboard_shortcuts_btn, {
     iphra_try({
       # TODO: Show keyboard shortcuts modal
-      showNotification(iphra_txt("Keyboard Shortcuts coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Keyboard Shortcuts coming soon"), type = "message")
       iphra_message("Keyboard Shortcuts button clicked (placeholder)", origin = "Help Menu")
     }, on_error = "warn", origin = "Help Menu: Keyboard Shortcuts")
   })
@@ -302,7 +302,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$report_issue_btn, {
     iphra_try({
       # TODO: Open issue reporting dialog or link
-      showNotification(iphra_txt("Report Issue functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Report Issue functionality coming soon"), type = "message")
       iphra_message("Report Issue button clicked (placeholder)", origin = "Help Menu")
     }, on_error = "warn", origin = "Help Menu: Report Issue")
   })
@@ -310,7 +310,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$check_updates_btn, {
     iphra_try({
       # TODO: Check for updates
-      showNotification(iphra_txt("Check for Updates functionality coming soon"), type = "message")
+      showNotification(phrutils::phr_txt("Check for Updates functionality coming soon"), type = "message")
       iphra_message("Check Updates button clicked (placeholder)", origin = "Help Menu")
     }, on_error = "warn", origin = "Help Menu: Check Updates")
   })
@@ -319,18 +319,18 @@ app_server <- function(input, output, session) {
     iphra_try({
       # Show about dialog
       showModal(modalDialog(
-        title = iphra_txt("About IPHRA"),
+        title = phrutils::phr_txt("About IPHRA"),
         tagList(
           h3("IPHRA - Integrated Public Health Risk Assessment"),
-          p(iphra_txt("Version: 0.0.0.9000")),
-          p(iphra_txt("A Shiny application for conducting Integrated Public Health Risk Assessments.")),
+          p(phrutils::phr_txt("Version: 0.0.0.9000")),
+          p(phrutils::phr_txt("A Shiny application for conducting Integrated Public Health Risk Assessments.")),
           hr(),
-          p(tags$strong(iphra_txt("Author:")), " Saeed Rahman"),
-          p(tags$strong(iphra_txt("License:")), " CC BY 4.0"),
+          p(tags$strong(phrutils::phr_txt("Author:")), " Saeed Rahman"),
+          p(tags$strong(phrutils::phr_txt("License:")), " CC BY 4.0"),
           hr(),
-          p(iphra_txt("Provides tools for survey design, data collection monitoring, quality assurance, data cleaning, analysis, and reporting for multi-sectoral humanitarian health assessments."))
+          p(phrutils::phr_txt("Provides tools for survey design, data collection monitoring, quality assurance, data cleaning, analysis, and reporting for multi-sectoral humanitarian health assessments."))
         ),
-        footer = modalButton(iphra_txt("Close")),
+        footer = modalButton(phrutils::phr_txt("Close")),
         easyClose = TRUE
       ))
       iphra_message("About dialog opened", origin = "Help Menu")
@@ -376,7 +376,7 @@ app_server <- function(input, output, session) {
 
   observeEvent(input$save_tor, {
 
-    phr::phr_try({
+    phrutils::phr_try({
 
       save_path <- shinyFiles::parseSavePath(
         volumes,
@@ -391,14 +391,14 @@ app_server <- function(input, output, session) {
 
       protocol <- protocol_r()
       if (is.null(protocol)) {
-        phr::phr_warning(
+        phrutils::phr_warning(
           phrutils::phr_txt("Protocol object is not available — cannot export."),
           origin = "Export: REACH Terms of Reference"
         )
         return(NULL)
       }
 
-      phr::phr_message(
+      phrutils::phr_message(
         paste("Rendering REACH Terms of Reference to:", outfile),
         origin = "Export: REACH Terms of Reference"
       )
@@ -428,7 +428,7 @@ app_server <- function(input, output, session) {
         output_file = outfile
       )
 
-      phr::phr_message(
+      phrutils::phr_message(
         paste("REACH Terms of Reference saved to:", outfile),
         origin = "Export: REACH Terms of Reference"
       )
@@ -472,8 +472,8 @@ app_server <- function(input, output, session) {
   mod_tools_market_vendor_kii_server("tools_market_vendor_kii")
   mod_tools_crop_livestock_obs_server("tools_crop_livestock_obs")
 
-  mod_tools_health_kii_server("tools_health")
-  mod_tools_health_obs_server("tools_health")
+  mod_tools_health_kii_server("tools_health_kii")
+  mod_tools_health_obs_server("tools_health_obs")
   mod_tools_nutrition_kii_server("tools_nutrition_kii")
 
   mod_tools_wash_kii_server("tools_wash_kii")
@@ -501,7 +501,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Household Survey"),
+            phrutils::phr_txt("Household Survey"),
             mod_tools_household_ui("tools_household")
           )
         )
@@ -513,7 +513,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Community Key Informant"),
+            phrutils::phr_txt("Community Key Informant"),
             mod_tools_community_kii_ui("tools_community_kii")
           )
         )
@@ -525,7 +525,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Community Observation"),
+            phrutils::phr_txt("Community Observation"),
             mod_tools_community_obs_ui("tools_community_obs")
           )
         )
@@ -537,7 +537,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("FSL Provider Key Informant"),
+            phrutils::phr_txt("FSL Provider Key Informant"),
             mod_tools_fsl_kii_ui("tools_fsl_kii")
           )
         )
@@ -549,7 +549,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Market Vendor Key Informant"),
+            phrutils::phr_txt("Market Vendor Key Informant"),
             mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")
           )
         )
@@ -561,7 +561,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Crop and Livestock Observation"),
+            phrutils::phr_txt("Crop and Livestock Observation"),
             mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")
           )
         )
@@ -573,7 +573,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Health Facility Key Informant"),
+            phrutils::phr_txt("Health Facility Key Informant"),
             mod_tools_health_kii_ui("tools_health_kii")
           )
         )
@@ -585,7 +585,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Health Facility Observation"),
+            phrutils::phr_txt("Health Facility Observation"),
             mod_tools_health_obs_ui("tools_health_obs")
           )
         )
@@ -597,7 +597,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Nutrition Facility Key Informant"),
+            phrutils::phr_txt("Nutrition Facility Key Informant"),
             mod_tools_nutrition_kii_ui("tools_nutrition_kii")
           )
         )
@@ -609,7 +609,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("WASH Provider Key Informant"),
+            phrutils::phr_txt("WASH Provider Key Informant"),
             mod_tools_wash_kii_ui("tools_wash_kii")
           )
         )
@@ -621,7 +621,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Water Point Observation"),
+            phrutils::phr_txt("Water Point Observation"),
             mod_tools_water_point_obs_ui("tools_water_point_obs")
           )
         )
@@ -633,7 +633,7 @@ app_server <- function(input, output, session) {
         tabs,
         list(
           tabPanel(
-            iphra_txt("Latrine Observation"),
+            phrutils::phr_txt("Latrine Observation"),
             mod_tools_latrine_obs_ui("tools_latrine_obs")
           )
         )
@@ -679,26 +679,26 @@ app_server <- function(input, output, session) {
       outfile <- save_path$datapath[1]
 
       iphra_message(
-        iphra_txt("Save project initiated."),
-        origin = iphra_txt("Project File Manager")
+        phrutils::phr_txt("Save project initiated."),
+        origin = phrutils::phr_txt("Project File Manager")
       )
 
       written_path <- iphra_save_project_file(outfile, session = session)
 
       iphra_message(
-        paste(iphra_txt("Project saved to:"), written_path),
-        origin = iphra_txt("Project File Manager")
+        paste(phrutils::phr_txt("Project saved to:"), written_path),
+        origin = phrutils::phr_txt("Project File Manager")
       )
 
       showNotification(
-        paste(iphra_txt("Project saved to:"), written_path),
+        paste(phrutils::phr_txt("Project saved to:"), written_path),
         type = "message",
         duration = 6
       )
     },
     on_error = "warn",
-    origin = iphra_txt("Project File Manager: Save"),
-    hint = iphra_txt("Check file permissions and session state if save fails.")
+    origin = phrutils::phr_txt("Project File Manager: Save"),
+    hint = phrutils::phr_txt("Check file permissions and session state if save fails.")
     )
   })
 
@@ -713,16 +713,16 @@ app_server <- function(input, output, session) {
       req(input$load_project_file)
 
       iphra_message(
-        iphra_txt("Load project initiated."),
-        origin = iphra_txt("Project File Manager")
+        phrutils::phr_txt("Load project initiated."),
+        origin = phrutils::phr_txt("Project File Manager")
       )
 
       file_path <- input$load_project_file$datapath
 
       if (!file.exists(file_path)) {
         iphra_error(
-          iphra_txt("Selected file does not exist."),
-          origin = iphra_txt("Project File Manager")
+          phrutils::phr_txt("Selected file does not exist."),
+          origin = phrutils::phr_txt("Project File Manager")
         )
         return(NULL)
       }
@@ -730,19 +730,19 @@ app_server <- function(input, output, session) {
       iphra_load_project_file(file_path, session = session)
 
       iphra_message(
-        paste(iphra_txt("Project loaded:"), iphra_session$get_project_name()),
-        origin = iphra_txt("Project File Manager")
+        paste(phrutils::phr_txt("Project loaded:"), iphra_session$get_project_name()),
+        origin = phrutils::phr_txt("Project File Manager")
       )
 
       showNotification(
-        paste(iphra_txt("Project loaded:"), iphra_session$get_project_name()),
+        paste(phrutils::phr_txt("Project loaded:"), iphra_session$get_project_name()),
         type = "message",
         duration = 6
       )
     },
     on_error = "warn",
-    origin = iphra_txt("Project File Manager: Load"),
-    hint = iphra_txt("Ensure file is a valid IPHRA project file (.iphra).")
+    origin = phrutils::phr_txt("Project File Manager: Load"),
+    hint = phrutils::phr_txt("Ensure file is a valid IPHRA project file (.iphra).")
     )
   })
 

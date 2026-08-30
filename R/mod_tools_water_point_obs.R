@@ -291,7 +291,7 @@ mod_tools_water_point_obs_server <- function(id){
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
-      iphra_try({
+      phrutils::phr_try({
 
         selected(as.character(input$selected))
 
@@ -305,42 +305,42 @@ mod_tools_water_point_obs_server <- function(id){
 
         phr_touch_module("protocol")
 
-        iphra_message(
+        phrutils::phr_message(
           paste0(
-            iphra_txt("Selection synchronized with: "),
+            phrutils::phr_txt("Selection synchronized with: "),
             paste(input$selected, collapse = ", ")
           ),
-          origin = iphra_txt("Water Point Observation Tool: Selection Sync")
+          origin = phrutils::phr_txt("Water Point Observation Tool: Selection Sync")
         )
       },
       on_error = "warn",
-      origin = iphra_txt("Water Point Observation Tool: Selection Sync"),
-      hint = iphra_txt("Ensure the drag-and-drop or selection input is properly bound.")
+      origin = phrutils::phr_txt("Water Point Observation Tool: Selection Sync"),
+      hint = phrutils::phr_txt("Ensure the drag-and-drop or selection input is properly bound.")
       )
     })
     # ---- Presets (KII)
 
     # Preset: Objectives
     observeEvent(input$preset_obj_water_point_obs, {
-      iphra_try({
+      phrutils::phr_try({
 
         # 1️⃣ VALIDATION & PRECONDITIONS
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
-          iphra_message(
-            iphra_txt("Validation checks passed (dummy mode)."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Objectives")
+          phrutils::phr_message(
+            phrutils::phr_txt("Validation checks passed (dummy mode)."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Objectives")
           )
 
 
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_obj_water_point_obs/Validation")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
           selected_kii(c(
             indicators_kii$Demographics,
@@ -349,53 +349,53 @@ mod_tools_water_point_obs_server <- function(id){
             indicators_kii$Health_Core,
             indicators_kii$Shelter_Core
           ))
-          iphra_message(
-            iphra_txt("Water Point Observation objectives preset applied successfully."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Objectives")
+          phrutils::phr_message(
+            phrutils::phr_txt("Water Point Observation objectives preset applied successfully."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Objectives")
           )
 
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_obj_water_point_obs/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
-          iphra_message(
-            iphra_txt("Water Point Observation objectives preset selection completed."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Objectives")
+          phrutils::phr_message(
+            phrutils::phr_txt("Water Point Observation objectives preset selection completed."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Objectives")
           )
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_obj_water_point_obs/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
-      origin = iphra_txt("Water Point Observation Tool: Preset Objectives"),
-      hint = iphra_txt("Verify that indicators_obs object is correctly defined and accessible.")
+      origin = phrutils::phr_txt("Water Point Observation Tool: Preset Objectives"),
+      hint = phrutils::phr_txt("Verify that indicators_obs object is correctly defined and accessible.")
       )
     })
 
     # Preset: Core
     observeEvent(input$preset_core_water_point_obs, {
-      iphra_try({
+      phrutils::phr_try({
 
 
 
         # 1️⃣ VALIDATION
 
-        result <- iphra_try_step({
-          iphra_message(
-            iphra_txt("Validation checks passed (dummy mode)."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Core")
+        result <- phrutils::phr_try_step({
+          phrutils::phr_message(
+            phrutils::phr_txt("Validation checks passed (dummy mode)."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Core")
           )
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_core_water_point_obs/Validation")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 2️⃣ CORE LOGIC
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
           selected_kii(c(
             indicators_kii$FSL_Core,
             indicators_kii$WASH_Core,
@@ -403,77 +403,77 @@ mod_tools_water_point_obs_server <- function(id){
             indicators_kii$Nutrition_Core,
             indicators_kii$Shelter_Core
           ))
-          iphra_message(
-            iphra_txt("Water Point Observation core preset applied successfully."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Core")
+          phrutils::phr_message(
+            phrutils::phr_txt("Water Point Observation core preset applied successfully."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Core")
           )
 
           # --- Future: propagate selection to session for KII core indicators ---
           # session$userData$project$set_selection("kii_core", selected_kii())
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_core_water_point_obs/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 3️⃣ RESULT HANDLING
 
-        result <- iphra_try_step({
-          iphra_message(
-            iphra_txt("Water Point Observation core preset selection completed."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Core")
+        result <- phrutils::phr_try_step({
+          phrutils::phr_message(
+            phrutils::phr_txt("Water Point Observation core preset selection completed."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Core")
           )
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_core_water_point_obs/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
-      origin = iphra_txt("Water Point Observation Tool: Preset Core"),
-      hint = iphra_txt("Check that indicators_kii core components exist and are populated.")
+      origin = phrutils::phr_txt("Water Point Observation Tool: Preset Core"),
+      hint = phrutils::phr_txt("Check that indicators_kii core components exist and are populated.")
       )
     })
 
 
     # Preset: Full
     observeEvent(input$preset_full_obs, {
-      iphra_try({
+      phrutils::phr_try({
 
         # 1️⃣ VALIDATION
 
-        result <- iphra_try_step({
-          iphra_message(
-            iphra_txt("Validation checks passed (dummy mode)."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Full")
+        result <- phrutils::phr_try_step({
+          phrutils::phr_message(
+            phrutils::phr_txt("Validation checks passed (dummy mode)."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Full")
           )
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_full_water_point_obs/Validation")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 2️⃣ CORE LOGIC
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
           selected_kii(all_indicators_kii())
-          iphra_message(
-            iphra_txt("Full Water Point Observation preset applied successfully."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Full")
+          phrutils::phr_message(
+            phrutils::phr_txt("Full Water Point Observation preset applied successfully."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Full")
           )
 
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_full_water_point_obs/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
 
-        result <- iphra_try_step({
-          iphra_message(
-            iphra_txt("Water Point Observation preset selection completed."),
-            origin = iphra_txt("Water Point Observation Tool: Preset Full")
+        result <- phrutils::phr_try_step({
+          phrutils::phr_message(
+            phrutils::phr_txt("Water Point Observation preset selection completed."),
+            origin = phrutils::phr_txt("Water Point Observation Tool: Preset Full")
           )
         }, step = "mod_tools_water_point_obs_server/observeEvent_preset_full_water_point_obs/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
-      origin = iphra_txt("Water Point Observation Tool: Preset Full"),
-      hint = iphra_txt("Ensure all_indicators_obs object is properly defined in the environment.")
+      origin = phrutils::phr_txt("Water Point Observation Tool: Preset Full"),
+      hint = phrutils::phr_txt("Ensure all_indicators_obs object is properly defined in the environment.")
       )
     })
 
@@ -487,32 +487,32 @@ mod_tools_water_point_obs_server <- function(id){
     # only used to surface that download link because the UI-side control
     # is an `actionButton`, not a `downloadButton`.
     observeEvent(input$export_tool, {
-      iphra_try({
+      phrutils::phr_try({
         if (!isTRUE(protocol_r()$.tool_water_point_observation)) {
           shiny::showModal(shiny::modalDialog(
-            title = iphra_txt("Export Water Point Observation Tool"),
-            iphra_txt("The Water Point Observation tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
-            footer = shiny::modalButton(iphra_txt("Close")),
+            title = phrutils::phr_txt("Export Water Point Observation Tool"),
+            phrutils::phr_txt("The Water Point Observation tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
+            footer = shiny::modalButton(phrutils::phr_txt("Close")),
             easyClose = TRUE
           ))
           return(NULL)
         }
 
         shiny::showModal(shiny::modalDialog(
-          title = iphra_txt("Export Water Point Observation Tool"),
+          title = phrutils::phr_txt("Export Water Point Observation Tool"),
           shiny::tagList(
-            shiny::p(iphra_txt("Click below to save the Water Point Observation tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
+            shiny::p(phrutils::phr_txt("Click below to save the Water Point Observation tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
             shiny::downloadButton(ns("download_tool"),
-                                  label = iphra_txt("Download Excel"),
+                                  label = phrutils::phr_txt("Download Excel"),
                                   class = "btn-success")
           ),
-          footer = shiny::modalButton(iphra_txt("Cancel")),
+          footer = shiny::modalButton(phrutils::phr_txt("Cancel")),
           easyClose = TRUE
         ))
       },
       on_error = "warn",
-      origin = iphra_txt("Water Point Observation Tool: Export"),
-      hint = iphra_txt("Ensure the Water Point Observation tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
+      origin = phrutils::phr_txt("Water Point Observation Tool: Export"),
+      hint = phrutils::phr_txt("Ensure the Water Point Observation tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
       )
     })
 
@@ -538,9 +538,9 @@ mod_tools_water_point_obs_server <- function(id){
 
         writexl::write_xlsx(sheets, path = file)
 
-        iphra_message(
-          iphra_txt("Water Point Observation tool exported to Excel."),
-          origin = iphra_txt("Water Point Observation Tool: Export")
+        phrutils::phr_message(
+          phrutils::phr_txt("Water Point Observation tool exported to Excel."),
+          origin = phrutils::phr_txt("Water Point Observation Tool: Export")
         )
       }
     )

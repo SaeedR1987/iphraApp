@@ -1816,7 +1816,9 @@ if (params$site_selection_purposive & !params$multiple_strata) {
 if (params$site_selection_purposive & params$multiple_strata) {
   
   cat("
+  
 ::: {.callout-note}
+
 ## Additional Guidance
 
 You selected **purposive site selection** and indicated that **multiple strata** are present.
@@ -2000,30 +2002,32 @@ In the event of specific at-risk or difficult to identify groups within the popu
 #| results: asis
 
 if(params$tool_market_kii) {
-  cat(glue::glue(
+  cat(
     "
     #### Market Vendor Key Informant Interviews
     
     ::: {.callout-tip}
+    
     **Drafter Note:** When preparing the key informant tool, please consult with HQ Cash Specialist, in-country Cash Working Groups, or review recent JMMI or market monitoring reports to identify and select between 3 to 5 market items to ask about availability and prices. It is recommended to include 2 staple crops, a vegetable, soap, and one type of fuel. Depending on the assessment objectives, you may choose different groups of items for different population groups.
     
     Please see the example table below and complete with selected market items to be asked in the market key informant tools. 
+    
     :::
     
     Market vendors should be selected by purposive selection methods based on their leadership positions in the market or as service providers. Wherever possible, market authorities ashould be informed and consulted before interviews are conducted with vendors. Teams may conduct two to three interviews per market to ensure a diverse perspective on market conditions and vendor experiences.
     
     Several market items are selected as sentinel items to understand the availability and cost of goods in the market. Please see the table below for an example:  
-    "))
+    ")
 
 cat(table_caption("Selected Market Items for Vendor Key Informant Interviews"))
 
   
 survival_needs_df <- data.frame(
-  `Target Population` = c(
+  `Target.Population` = c(
     "IDPs",
     "Host population"
   ),
-  `Survival Items` = c(
+  `Survival.Items` = c(
     "• Maize\n• Beans\n• Blankets\n• Plastic sheets",
     "• Maize\n• Beans\n• Jerry Cans\n• Farming tools (Livelihoods protection needs)"
   ),
@@ -2051,8 +2055,8 @@ ft <- border_outer(ft, part = "all")
 ft <- border_inner_h(ft, part = "all")
 ft <- border_inner_v(ft, part = "all")
 
-ft <- width(ft, j = "Target Population", width = 1.5)
-ft <- width(ft, j = "Survival Items", width = 3.5)
+ft <- width(ft, j = "Target.Population", width = 1.5)
+ft <- width(ft, j = "Survival.Items", width = 3.5)
 ft <- width(ft, j = "Justification", width = 2.0)
 
 ft <- autofit(ft)

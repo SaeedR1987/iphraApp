@@ -190,7 +190,7 @@ protocol$.tools_table_df
 
     \item{\code{.market_kii_dap_df}}{Data frame containing the market KII data analysis plan.}
 
-    \item{\code{.crop_livstock_observation_dap_df}}{Active binding.}
+    \item{\code{.crop_livestock_observation_dap_df}}{Active binding.}
 
     \item{\code{.wash_provider_kii_dap_df}}{Data frame containing the WASH provider KII data analysis plan.}
 

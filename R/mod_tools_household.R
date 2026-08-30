@@ -165,7 +165,6 @@ mod_tools_household_server <- function(id){
     selected <- shiny::reactiveVal(character(0))
 
     selected_indicators <- shiny::reactive({
-      selected(as.character(input$selected))
       inds <- all_indicators()
       sel  <- selected()
 
@@ -218,7 +217,9 @@ mod_tools_household_server <- function(id){
 
       sortable::rank_list(
         text = "Available Indicators",
-        labels = setdiff(labels$indicator_name, selected()),
+        labels = unique(labels$indicator_name[
+          !labels$indicator_code %in% selected()
+        ]),
         input_id = ns("available"),
         options = sortable::sortable_options(group = ns("indicators"))
       )
@@ -226,9 +227,15 @@ mod_tools_household_server <- function(id){
 
     # ---- UI for selected list
     output$selected_ui <- shiny::renderUI({
+      inds <- all_indicators()
+
+      labels <- inds$indicator_name[
+        match(selected(), inds$indicator_code)
+      ]
+
       sortable::rank_list(
         text = "Selected Indicators (drag to reorder)",
-        labels = selected(),
+        labels = labels,
         input_id = ns("selected"),
         options = sortable::sortable_options(group = ns("indicators"))
       )
@@ -295,23 +302,26 @@ mod_tools_household_server <- function(id){
       tool  <- proto$tools[["tool_household_iphra_v2"]]
       if (is.null(tool)) return()
 
-      codes <- tryCatch(
-        as.character(tool$get_indicator_codes(prefer_revised = TRUE)),
-        error = function(e) character(0)
-      )
-      # Exclude the global header row ("10000") and parent-group rows ("NNN00")
-      codes <- codes[nchar(codes) > 0 & codes != "10000" & !grepl("00$", codes)]
-      if (length(codes) == 0) return()
+      selected(as.character(tool$selected_indicator_codes %||% character(0)))
 
-      bank <- isolate(all_indicators())
-      selected(as.character(bank$indicator_name[bank$indicator_code %in% codes]))
     }, ignoreInit = TRUE)
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
-      iphra_try({
+      phrutils::phr_try({
 
-        selected(as.character(input$selected))
+        inds <- all_indicators()
+
+        codes <- inds$indicator_code[
+          match(as.character(input$selected), inds$indicator_name)
+        ]
+
+        codes <- as.character(codes[!is.na(codes)])
+
+        selected(codes)
+
+        tool <- protocol_r()$tools[["tool_household_iphra_v2"]]
+        tool$selected_indicator_codes <- codes
 
         indicators_selected <- selected_indicators()
 
@@ -323,17 +333,10 @@ mod_tools_household_server <- function(id){
 
         phr_touch_module("protocol")
 
-        iphra_message(
-          paste0(
-            iphra_txt("Selection synchronized with: "),
-            paste(input$selected, collapse = ", ")
-          ),
-          origin = iphra_txt("Household Tool: Selection Sync")
-        )
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Selection Sync"),
-      hint = iphra_txt("Ensure the drag-and-drop or selection input is properly bound.")
+      origin = phrutils::phr_txt("Household Tool: Selection Sync"),
+      hint = phrutils::phr_txt("Ensure the drag-and-drop or selection input is properly bound.")
       )
     })
 
@@ -341,9 +344,9 @@ mod_tools_household_server <- function(id){
 
     # Preset: Objectives
     observeEvent(input$preset_obj, {
-      iphra_try({
+      phrutils::phr_try({
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
           selected(c(
           indicators$Demographics,
           indicators$FSL_Core,
@@ -351,34 +354,31 @@ mod_tools_household_server <- function(id){
           indicators$Health_Core,
           indicators$Shelter_Core
         ))
-        iphra_message(
-          iphra_txt("Objectives preset applied successfully."),
-          origin = iphra_txt("Household Tool: Preset Objectives")
-        )
+
         }, step = "mod_tools_household_server/observeEvent_preset_obj/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
 
         # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
 
-        result <- iphra_try_step({
-          iphra_message(
-          iphra_txt("Preset Objectives selection completed."),
-          origin = iphra_txt("Household Tool: Preset Objectives")
+        result <- phrutils::phr_try_step({
+          phrutils::phr_message(
+          phrutils::phr_txt("Preset Objectives selection completed."),
+          origin = phrutils::phr_txt("Household Tool: Preset Objectives")
         )
         }, step = "mod_tools_household_server/observeEvent_preset_obj/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Preset Objectives"),
-      hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
+      origin = phrutils::phr_txt("Household Tool: Preset Objectives"),
+      hint = phrutils::phr_txt("Verify that all indicator groups exist in the indicators object.")
       )
     })
 
     # Preset: Core
     observeEvent(input$preset_core, {
-      iphra_try({
+      phrutils::phr_try({
         selected(c(
           indicators$Demographics,
           indicators$FSL_Core,
@@ -386,14 +386,14 @@ mod_tools_household_server <- function(id){
           indicators$Health_Core,
           indicators$Shelter_Core
         ))
-        iphra_message(
-          iphra_txt("Core preset applied successfully."),
-          origin = iphra_txt("Household Tool: Preset Core")
+        phrutils::phr_message(
+          phrutils::phr_txt("Core preset applied successfully."),
+          origin = phrutils::phr_txt("Household Tool: Preset Core")
         )
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Preset Core"),
-      hint = iphra_txt("Verify that all indicator groups exist in the indicators object.")
+      origin = phrutils::phr_txt("Household Tool: Preset Core"),
+      hint = phrutils::phr_txt("Verify that all indicator groups exist in the indicators object.")
       )
     })
 
@@ -407,32 +407,32 @@ mod_tools_household_server <- function(id){
     # only used to surface that download link because the UI-side control
     # is an `actionButton`, not a `downloadButton`.
     observeEvent(input$export_tool, {
-      iphra_try({
+      phrutils::phr_try({
         if (!isTRUE(protocol_r()$.tool_household_iphra)) {
           shiny::showModal(shiny::modalDialog(
-            title = iphra_txt("Export Household Tool"),
-            iphra_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
-            footer = shiny::modalButton(iphra_txt("Close")),
+            title = phrutils::phr_txt("Export Household Tool"),
+            phrutils::phr_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
+            footer = shiny::modalButton(phrutils::phr_txt("Close")),
             easyClose = TRUE
           ))
           return(NULL)
         }
 
         shiny::showModal(shiny::modalDialog(
-          title = iphra_txt("Export Household Tool"),
+          title = phrutils::phr_txt("Export Household Tool"),
           shiny::tagList(
-            shiny::p(iphra_txt("Click below to save the Household tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
+            shiny::p(phrutils::phr_txt("Click below to save the Household tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
             shiny::downloadButton(ns("download_tool"),
-                                  label = iphra_txt("Download Excel"),
+                                  label = phrutils::phr_txt("Download Excel"),
                                   class = "btn-success")
           ),
-          footer = shiny::modalButton(iphra_txt("Cancel")),
+          footer = shiny::modalButton(phrutils::phr_txt("Cancel")),
           easyClose = TRUE
         ))
       },
       on_error = "warn",
-      origin = iphra_txt("Household Tool: Export"),
-      hint = iphra_txt("Ensure the Household tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
+      origin = phrutils::phr_txt("Household Tool: Export"),
+      hint = phrutils::phr_txt("Ensure the Household tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
       )
     })
 
@@ -458,9 +458,9 @@ mod_tools_household_server <- function(id){
 
         writexl::write_xlsx(sheets, path = file)
 
-        iphra_message(
-          iphra_txt("Household tool exported to Excel."),
-          origin = iphra_txt("Household Tool: Export")
+        phrutils::phr_message(
+          phrutils::phr_txt("Household tool exported to Excel."),
+          origin = phrutils::phr_txt("Household Tool: Export")
         )
       }
     )

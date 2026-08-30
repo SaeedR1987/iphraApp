@@ -1186,6 +1186,27 @@ mod_goals_server <- function(id){
         value = isTRUE(proto$framework$secondary_ana_goal)
       )
 
+      if (!is.null(proto$metadata$audience_matrix)) {
+        audience_table_data(
+          proto$metadata$audience_matrix
+        )
+      }
+
+      if (!is.null(proto$framework$secondary_data_sources)) {
+
+        restored <- proto$framework$secondary_data_sources
+
+        secondary_sources_data(
+          data.frame(
+            Objective = restored$objective,
+            Source = restored$source,
+            Purpose = restored$purpose,
+            stringsAsFactors = FALSE
+          )
+        )
+
+      }
+
     }, ignoreInit = TRUE)
 
     # ---- Keep selected() in sync with drag-and-drop

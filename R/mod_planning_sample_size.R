@@ -755,21 +755,21 @@ mod_planning_sample_size_server <- function(id) {
         result <- iphra_try_step({
           iphra_message(
           paste0(
-            iphra_txt("Dropdown updated with"),
+            phrutils::phr_txt("Dropdown updated with"),
             " ",
             length(choices),
             " ",
-            iphra_txt("available population(s).")
+            phrutils::phr_txt("available population(s).")
           ),
-          origin = iphra_txt("Remove Target Dropdown Sync")
+          origin = phrutils::phr_txt("Remove Target Dropdown Sync")
         )
         }, step = "mod_planning_sample_size_server/unknown/Result Handling")
         if (iphra_failed(result)) return(result)
 
 },
       on_error = "warn",
-      origin = iphra_txt("Remove Target Dropdown Sync"),
-      hint = iphra_txt("Check reactive samples() or input bindings if this fails.")
+      origin = phrutils::phr_txt("Remove Target Dropdown Sync"),
+      hint = phrutils::phr_txt("Check reactive samples() or input bindings if this fails.")
       )
     },
     ignoreInit = FALSE)
@@ -818,8 +818,8 @@ mod_planning_sample_size_server <- function(id) {
 
       },
       on_error = "warn",
-      origin = iphra_txt("Sample Module: Remove Sample"),
-      hint   = iphra_txt("Check reactive sample frame or dropdown value if this fails.")
+      origin = phrutils::phr_txt("Sample Module: Remove Sample"),
+      hint   = phrutils::phr_txt("Check reactive sample frame or dropdown value if this fails.")
       )
     })
 
@@ -865,8 +865,8 @@ mod_planning_sample_size_server <- function(id) {
 
       },
       on_error = "warn",
-      origin = iphra_txt("Sample Module: Sampling Method Change"),
-      hint = iphra_txt("Verify shinyjs bindings or ns() IDs if this fails.")
+      origin = phrutils::phr_txt("Sample Module: Sampling Method Change"),
+      hint = phrutils::phr_txt("Verify shinyjs bindings or ns() IDs if this fails.")
       )
     })
 
@@ -926,15 +926,15 @@ mod_planning_sample_size_server <- function(id) {
 
         result <- iphra_try_step({
           iphra_message(
-          iphra_txt("Household sample size calculation completed successfully."),
-          origin = iphra_txt("Planning: Household Sample")
+          phrutils::phr_txt("Household sample size calculation completed successfully."),
+          origin = phrutils::phr_txt("Planning: Household Sample")
         )
         }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Result Handling")
         if (iphra_failed(result)) return(result)
 
       }, on_error = "warn",
-      origin = iphra_txt("Planning: Household Sample"),
-      hint = iphra_txt("Check numeric inputs or missing data fields if this fails.")
+      origin = phrutils::phr_txt("Planning: Household Sample"),
+      hint = phrutils::phr_txt("Check numeric inputs or missing data fields if this fails.")
       )
     })
 
@@ -973,8 +973,8 @@ mod_planning_sample_size_server <- function(id) {
         ind_sample_size(sample_n)
 
       }, on_error = "warn",
-      origin = iphra_txt("Planning: Individual Sample"),
-      hint = iphra_txt("Check numeric inputs or missing data fields if this fails.")
+      origin = phrutils::phr_txt("Planning: Individual Sample"),
+      hint = phrutils::phr_txt("Check numeric inputs or missing data fields if this fails.")
       )
     })
 
@@ -1014,8 +1014,8 @@ mod_planning_sample_size_server <- function(id) {
         rate_sample_size(sample_n)
 
 }, on_error = "warn",
-      origin = iphra_txt("Planning: Mortality Sample"),
-      hint = iphra_txt("Check numeric inputs or missing data fields if this fails.")
+      origin = phrutils::phr_txt("Planning: Mortality Sample"),
+      hint = phrutils::phr_txt("Check numeric inputs or missing data fields if this fails.")
       )
     })
 
@@ -1058,8 +1058,8 @@ mod_planning_sample_size_server <- function(id) {
         }
 
 }, on_error = "warn",
-      origin = iphra_txt("Planning: Survey Days"),
-      hint = iphra_txt("Check time fields or numeric entries if this fails.")
+      origin = phrutils::phr_txt("Planning: Survey Days"),
+      hint = phrutils::phr_txt("Check time fields or numeric entries if this fails.")
       )
     })
 
@@ -1070,8 +1070,8 @@ mod_planning_sample_size_server <- function(id) {
 
 
       }, on_error = "warn",
-      origin = iphra_txt("Planning: Update Population"),
-      hint = iphra_txt("Check if population table or selection binding failed.")
+      origin = phrutils::phr_txt("Planning: Update Population"),
+      hint = phrutils::phr_txt("Check if population table or selection binding failed.")
       )
     })
 
@@ -1268,8 +1268,8 @@ mod_planning_sample_size_server <- function(id) {
 
       # },
       # on_error = "warn",
-      # origin = iphra_txt("Sample Module: Draw Sample"),
-      # hint   = iphra_txt("Verify sampling frame availability and randomization logic if this fails.")
+      # origin = phrutils::phr_txt("Sample Module: Draw Sample"),
+      # hint   = phrutils::phr_txt("Verify sampling frame availability and randomization logic if this fails.")
       # )
     })
 
@@ -1288,8 +1288,8 @@ mod_planning_sample_size_server <- function(id) {
           )
         },
       on_error = "warn",
-      origin = iphra_txt("Sample Module: Sampling Frame Update"),
-      hint   = iphra_txt("Ensure rhandsontable input is correctly bound or re-rendered if updates fail.")
+      origin = phrutils::phr_txt("Sample Module: Sampling Frame Update"),
+      hint   = phrutils::phr_txt("Ensure rhandsontable input is correctly bound or re-rendered if updates fail.")
       )
     })
 

@@ -19,9 +19,6 @@ app_ui <- function(request) {
   ")),
       # Hide all Shiny notifications
       tags$style(HTML("
-      .shiny-notification {
-      display: none !important;
-      }
       .shiny-output-error-validation {
       display: none !important;
       }
@@ -812,26 +809,8 @@ app_ui <- function(request) {
         tabPanel(phrutils::phr_txt("Tool Design"),
 
                  mod_tools_master_ui("tools_master"),
-
                  uiOutput("tool_tabs"),
 
-                 # tabsetPanel(
-                 #   tabPanel(phrutils::phr_txt("Household Survey"), mod_tools_household_ui("tools_household")),
-                 #   tabPanel(phrutils::phr_txt("Community Key Informant"), mod_tools_community_kii_ui("tools_community_kii")),
-                 #   tabPanel(phrutils::phr_txt("Community Observation"), mod_tools_community_obs_ui("tools_community_obs")),
-                 #
-                 #   tabPanel(phrutils::phr_txt("FSL Provider Key Informant"), mod_tools_fsl_kii_ui("tools_fsl_kii")),
-                 #   tabPanel(phrutils::phr_txt("Market Vender Key Informant"), mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")),
-                 #   tabPanel(phrutils::phr_txt("Crop and Livestock Observation"), mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")),
-                 #
-                 #   tabPanel(phrutils::phr_txt("Health Facility Key Informant"), mod_tools_health_kii_ui("tools_health_kii")),
-                 #   tabPanel(phrutils::phr_txt("Health Facility Observation"), mod_tools_health_obs_ui("tools_health_obs")),
-                 #   tabPanel(phrutils::phr_txt("Nutrition Facility Key Informant"), mod_tools_nutrition_kii_ui("tools_nutrition_kii")),
-                 #
-                 #   tabPanel(phrutils::phr_txt("WASH Provider Key Informant"), mod_tools_wash_kii_ui("tools_wash_kii")),
-                 #   tabPanel(phrutils::phr_txt("Water Point Observation"), mod_tools_water_point_obs_ui("tools_water_point_obs")),
-                 #   tabPanel(phrutils::phr_txt("Latrine Observation"), mod_tools_latrine_obs_ui("tools_latrine_obs"))
-                 # )
         ),
 
         # ── 3. Sample Size and Planning ─────────────────────────────────────────────────

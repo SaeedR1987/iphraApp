@@ -140,7 +140,7 @@ mod_tools_master_server <- function(id){
       tool_name <- t$name
 
       observeEvent(input[[paste0("add_", tool_name)]], {
-        iphra_try({
+        phrutils::phr_try({
 
           if(tool_name == "tool_household_iphra_v2") {
             protocol_r()$add_tools("tool_household_iphra_v2")
@@ -178,7 +178,7 @@ mod_tools_master_server <- function(id){
       }, ignoreInit = TRUE)
 
       observeEvent(input[[paste0("remove_", tool_name)]], {
-        iphra_try({
+        phrutils::phr_try({
 
           if(tool_name == "tool_household_iphra_v2") {
             protocol_r()$remove_tools("tool_household_iphra_v2")

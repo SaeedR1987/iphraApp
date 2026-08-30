@@ -184,7 +184,7 @@ IPHRAProtocol <- R6::R6Class(
 
           tool <- if (identical(tool_class, "HouseholdTool")) {
             if (file.exists(tool_path)) {
-              t <- HouseholdTool$new(
+              t <- phr::HouseholdTool$new(
                 name = tool_name,
                 survey = NULL,
                 choices = NULL
@@ -198,11 +198,11 @@ IPHRAProtocol <- R6::R6Class(
                 ),
                 origin = "IPHRAProtocol$add_tools"
               )
-              HouseholdTool$new(name = tool_name)
+              phr::HouseholdTool$new(name = tool_name)
             }
           } else if (identical(tool_class, "KeyInformantTool")) {
             if (file.exists(tool_path)) {
-              t <- KeyInformantTool$new(
+              t <- phr::KeyInformantTool$new(
                 name = tool_name,
                 survey = NULL,
                 choices = NULL
@@ -216,12 +216,12 @@ IPHRAProtocol <- R6::R6Class(
                 ),
                 origin = "IPHRAProtocol$add_tools"
               )
-              KeyInformantTool$new(name = tool_name)
+              phr::KeyInformantTool$new(name = tool_name)
             }
           } else {
             # ObservationTool
             if (file.exists(tool_path)) {
-              t <- ObservationTool$new(
+              t <- phr::ObservationTool$new(
                 name = tool_name,
                 survey = NULL,
                 choices = NULL
@@ -235,7 +235,7 @@ IPHRAProtocol <- R6::R6Class(
                 ),
                 origin = "IPHRAProtocol$add_tools"
               )
-              ObservationTool$new(name = tool_name)
+              phr::ObservationTool$new(name = tool_name)
             }
           }
 
@@ -1283,7 +1283,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .household_dap_df Data frame containing the household data analysis plan.
     .household_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("hh_dap_table is read-only"),
           origin = "IPHRAProtocol$active$hh_dap_table"
         )
@@ -1307,7 +1307,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .community_kii_dap_df Data frame containing the community KII data analysis plan.
     .community_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("community_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$community_kii_dap_table"
         )
@@ -1330,7 +1330,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .community_observation_dap_df Data frame containing the community observation data analysis plan.
     .community_observation_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("community_obs_dap_table is read-only"),
           origin = "IPHRAProtocol$active$community_obs_dap_table"
         )
@@ -1353,7 +1353,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .health_facility_kii_dap_df Data frame containing the health facility KII data analysis plan.
     .health_facility_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("health_facility_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$health_facility_kii_dap_table"
         )
@@ -1376,7 +1376,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .health_facility_observation_dap_df Data frame containing the health facility observation data analysis plan.
     .health_facility_observation_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue(
             "health_facility_observation_dap_table is read-only"
           ),
@@ -1401,7 +1401,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .nutrition_facility_kii_dap_df Data frame containing the nutrition facility KII data analysis plan.
     .nutrition_facility_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("nutrition_facility_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$nutrition_facility_kii_dap_table"
         )
@@ -1424,7 +1424,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .fsl_provider_kii_dap_df Data frame containing the FSL provider KII data analysis plan.
     .fsl_provider_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("fsl_provider_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$fsl_provider_kii_dap_table"
         )
@@ -1447,7 +1447,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .market_kii_dap_df Data frame containing the market KII data analysis plan.
     .market_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("market_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$market_kii_dap_table"
         )
@@ -1467,10 +1467,10 @@ IPHRAProtocol <- R6::R6Class(
         ))
       }
     },
-    #' @field .crop_livstock_observation_dap_df Active binding.
-    .crop_livstock_observation_dap_df = function(value) {
+    #' @field .crop_livestock_observation_dap_df Active binding.
+    .crop_livestock_observation_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue(
             "crop_livestock_observation_dap_table is read-only"
           ),
@@ -1495,7 +1495,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .wash_provider_kii_dap_df Data frame containing the WASH provider KII data analysis plan.
     .wash_provider_kii_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("wash_provider_kii_dap_table is read-only"),
           origin = "IPHRAProtocol$active$wash_provider_kii_dap_table"
         )
@@ -1518,7 +1518,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .water_point_observation_dap_df Data frame containing the water point observation data analysis plan.
     .water_point_observation_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("water_point_observation_dap_table is read-only"),
           origin = "IPHRAProtocol$active$water_point_observation_dap_table"
         )
@@ -1541,7 +1541,7 @@ IPHRAProtocol <- R6::R6Class(
     #' @field .latrine_observation_dap_df Data frame containing the latrine observation data analysis plan.
     .latrine_observation_dap_df = function(value) {
       if (!missing(value)) {
-        phr_abort(
+        phrutils::phr_error(
           message = glue::glue("latrine_observation_dap_table is read-only"),
           origin = "IPHRAProtocol$active$latrine_observation_dap_table"
         )

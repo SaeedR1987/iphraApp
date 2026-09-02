@@ -262,7 +262,8 @@ mod_goals_ui <- function(id) {
                             ns("geographic_coverage"),
                             label = NULL,
                             rows = 3,
-                            width = "100%"
+                            width = "100%",
+                            value = "The geographic coverage of the assessment includes: "
                           ),
                           maxlength = 200
                         )

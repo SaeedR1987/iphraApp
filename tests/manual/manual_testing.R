@@ -1,4 +1,4 @@
-test_protocol <- phr::IPHRAProtocol$new()
+test_protocol <- IPHRAProtocol$new()
 
 test_protocol$framework$modified_objectives_schema
 
@@ -65,16 +65,20 @@ test_protocol$sample_object$add_stratum(
   avg_interview_time = 30,
   avg_rest_time = 30,
   avg_travel_time = 60,
-  sampling_method_site = "systematic",
+  sampling_method_site = "simple_random_even",
   sampling_method_hh = "systematic",
   n_sites = 10
 )
 
+test_protocol$.total_population_size
 
 
-test_protocol$sampling_frame$set(field = "log_df", value = read.csv("inst/resources/example_sampling_frame.csv") |>
-                                   dplyr::mutate(
-  inclusion = ifelse(inclusion == "True", TRUE, FALSE)))
+
+test_protocol$sampling_frame$set(field = "log_df", value = read.csv("inst/resources/example_sampling_frame.csv"))
+
+# |>
+#   dplyr::mutate(
+#     inclusion = ifelse(inclusion == "True", TRUE, FALSE))
 
 a <- test_protocol$sampling_frame$get(field = "log_df")
 str(a)
@@ -89,7 +93,7 @@ test_protocol$get_allowable_tools()
 
 test_protcol$add_tools(tool_name = "tool_household_iphra_v2")
 
-test_protocol$metadata$audience_matric <- "test"
+test_protocol$metadata$audience_matrix <- "test"
 
 
 

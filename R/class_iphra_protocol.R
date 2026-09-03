@@ -370,9 +370,12 @@ IPHRAProtocol <- R6::R6Class(
     get_quarto_params = function() {
       params <- super$get_quarto_params()
 
+
+
       c(
         params,
         list(
+          audience_matrix = self$metadata$audience_matrix,
           secondary_goal = self$.secondary_goal,
           anf_framework_path = self$.modified_framework_svg,
           tool_household = self$.tool_household_iphra,

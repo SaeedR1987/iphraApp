@@ -748,6 +748,8 @@ timeline_plot
 
 tbl <- as.data.frame(params$audience_matrix)
 
+
+
 if (is.list(tbl) && !is.data.frame(tbl)) {
   tbl <- as.data.frame(tbl, stringsAsFactors = FALSE)
 }

@@ -754,31 +754,49 @@ if (is.list(tbl) && !is.data.frame(tbl)) {
 
 ft <- flextable(tbl)
 
-ft <- delete_part(ft, part = "header")
+if (ncol(tbl) > 0) {
+  # Human-readable column headers (audience_matrix columns are
+  # AudienceType, Audience, ExpectedOutputs, OutputCounts, Dissemination,
+  # Access, Visibility; only rename labels that are actually present in
+  # case the incoming data frame's columns ever change).
+  header_labels <- list(
+    AudienceType = "Audience Type",
+    Audience = "Audience",
+    ExpectedOutputs = "Expected Outputs",
+    OutputCounts = "Output Counts",
+    Dissemination = "Dissemination",
+    Access = "Access",
+    Visibility = "Visibility"
+  )
+  header_labels <- header_labels[names(header_labels) %in% names(tbl)]
+  if (length(header_labels) > 0) {
+    ft <- do.call(set_header_labels, c(list(x = ft), header_labels))
+  }
 
-# Page-width five-column table
-ft <- width(ft, j = 1:5, width = 1.3)
+  # Page-width table spanning all columns
+  ft <- width(ft, j = seq_len(ncol(tbl)), width = 6.5 / ncol(tbl))
+}
 
 # Font
-ft <- font(ft, fontname = "Arial Narrow", part = "body")
-ft <- fontsize(ft, size = 9, part = "body")
+ft <- font(ft, fontname = "Arial Narrow", part = "all")
+ft <- fontsize(ft, size = 9, part = "all")
 
 # Header row formatting
-ft <- bold(ft, i = 1, bold = TRUE, part = "body")
-ft <- bg(ft, i = 1, bg = "#DDDDDE", part = "body")
+ft <- bold(ft, bold = TRUE, part = "header")
+ft <- bg(ft, bg = "#DDDDDE", part = "header")
 
 # Alignment
-ft <- align(ft, align = "left", part = "body")
-ft <- valign(ft, valign = "top", part = "body")
+ft <- align(ft, align = "left", part = "all")
+ft <- valign(ft, valign = "top", part = "all")
 
 # Padding and spacing
-ft <- padding(ft, padding = 4, part = "body")
+ft <- padding(ft, padding = 4, part = "all")
 ft <- line_spacing(ft, space = 0.9, part = "body")
 
 # Borders
 ft <- border_outer(ft, part = "all")
-ft <- border_inner_h(ft, part = "body")
-ft <- border_inner_v(ft, part = "body")
+ft <- border_inner_h(ft, part = "all")
+ft <- border_inner_v(ft, part = "all")
 
 ft
 ```

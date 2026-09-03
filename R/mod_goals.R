@@ -989,7 +989,15 @@ mod_goals_server <- function(id){
 
     })
 
-    observe({
+    observeEvent(input$audience_table, {
+
+      new_df <- rhandsontable::hot_to_r(input$audience_table)
+
+      audience_table_data(new_df)
+
+    }, ignoreInit = TRUE)
+
+    observeEvent(audience_table_data(), {
 
       protocol_r()$set(
         field = "metadata",
@@ -997,7 +1005,9 @@ mod_goals_server <- function(id){
         value = audience_table_data()
       )
 
-    })
+      phr_touch_module("protocol", session)
+
+    }, ignoreInit = TRUE)
 
     # ---- Assessment Info metadata observers
     # Character fields (groups 1 & 3)

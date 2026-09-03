@@ -426,6 +426,24 @@ protocol$access_nested(
   purpose = "Ascertain severity of nutrition in population"
 )
 
+df <- data.frame(
+  AudienceType = "HIGH",
+  Audience = "HO",
+  ExpectedOutputs = NA_character_,
+  OutputCounts = NA_real_,
+  Dissemination = NA_character_,
+  Access = NA_character_,
+  Visibility = NA_character_,
+  stringsAsFactors = FALSE
+)
+
+protocol$set(field = "metadata", role = "audience_matrix", value = df)
+
+protocol$metadata$audience_matrix
+
+protocol$.audience_table_df
+
+
 # Generate ToR ####
 
 protocol$generate_quarto_doc(

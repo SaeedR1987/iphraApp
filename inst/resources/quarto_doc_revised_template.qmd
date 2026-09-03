@@ -357,6 +357,34 @@ ft <- border_remove(ft)
 ft
 ```
 
+
+```{r} 
+#| results: asis 
+ 
+cat("<br><br><br><br>")
+
+```
+
+::: {.callout-note}
+## How to complete this ToR
+
+Step 1: Review each Note and Tip for instructions on how to complete the various ToR sections. You can leave these in for RQA submission if you like, but these boxes should be deleted before external sharing or Repository Submission. 
+
+Step 2:  
+
+**DELETE THIS NOTE BEFORE SUBMITTING DOCUMENT**
+
+:::
+
+::: {.callout-tip}
+## PLACEHOLDER - Coherence Report
+
+This is a placeholder note for a future feature which will highlight any coherence issues between selected objectives, indicators, and methods against each other and expected core recommendations in IPHRA. 
+
+**DELETE THIS NOTE BEFORE SUBMITTING DOCUMENT**
+
+:::
+
 \newpage
 
 
@@ -783,11 +811,11 @@ ft
 ::: {.callout-tip}
 ## EXAMPLE - Background
 
-_Cabo Delgado Province in northern Mozambique continues to experience a protracted humanitarian crisis driven by non-state armed group violence, repeated population displacement, climatic shocks, and disruptions to basic service delivery. Mueda Town, located in Mueda District, serves as a key administrative and service hub for surrounding communities and hosts populations affected by both direct and indirect impacts of the conflict. As of August 2026, Mueda Town has a population of 170,000 as well as hosting around 45,000 IDPs according to IOM DTM data. 
+_Cabo Delgado Province in northern Mozambique continues to experience a protracted humanitarian crisis driven by non-state armed group violence, repeated population displacement, climatic shocks, and disruptions to basic service delivery. Mueda Town, located in Mueda District, serves as a key administrative and service hub for surrounding communities and hosts populations affected by both direct and indirect impacts of the conflict. As of August 2026, Mueda Town has a population of 170,000 as well as hosting around 45,000 IDPs according to IOM DTM data._ 
 
-The population in and around Mueda has been affected by the crisis since the escalation of insecurity in Cabo Delgado in 2017. While security conditions have improved in some areas, periodic incidents of violence and fear of renewed attacks continue to affect population movements, access to livelihoods, and access to essential services. The town hosts a mix of resident populations, returnees, and internally displaced persons (IDPs), creating additional pressure on existing infrastructure and services.
+_The population in and around Mueda has been affected by the crisis since the escalation of insecurity in Cabo Delgado in 2017. While security conditions have improved in some areas, periodic incidents of violence and fear of renewed attacks continue to affect population movements, access to livelihoods, and access to essential services. The town hosts a mix of resident populations, returnees, and internally displaced persons (IDPs), creating additional pressure on existing infrastructure and services._
 
-The most recent IPC analysis from April 2025 indicated both host and IDP populations were facing IPC Phase 3 "Crisis" conditions, and the Joint Intersectoral Analysis 2025 classified the population as Severity 4 "Critical" due to compounded vulnerabilities of conflict and climate shocks. These analyses are outdated and updated information on the severity of needs and conditions are needed._  
+_The most recent IPC analysis from April 2025 indicated both host and IDP populations were facing IPC Phase 3 "Crisis" conditions, and the Joint Intersectoral Analysis 2025 classified the population as Severity 4 "Critical" due to compounded vulnerabilities of conflict and climate shocks. These analyses are outdated and updated information on the severity of needs and conditions are needed._  
 
 
 **DELETE THIS NOTE BEFORE SUBMITTING DOCUMENT**
@@ -798,9 +826,7 @@ The most recent IPC analysis from April 2025 indicated both host and IDP populat
 ::: {.callout-tip}
 ## EXAMPLE - Intended Impact
 
-_In order to fill these information gaps, REACH will conduct an Integrated Public Health Rapid Assessment (IPHRA) in Mueda Town, Cabo Delgado Province, Mozambique, from (start date) to (end date). The assessment will generate timely evidence on humanitarian needs, health and market service accessibility, and public health conditions affecting conflict-affected populations.
-
-The assessment findings will be shared with key humanitarian stakeholders, including the Health Cluster, WASH Cluster, Nutrition Cluster, Food Security Cluster, Protection actors, relevant government authorities, UN agencies, NGOs, and operational partners active in Cabo Delgado Province._
+_In order to fill these information gaps, REACH will conduct an Integrated Public Health Rapid Assessment (IPHRA) in Mueda Town, Cabo Delgado Province, Mozambique, from (start date) to (end date). The assessment will generate timely evidence on humanitarian needs, health and market service accessibility, and public health conditions affecting conflict-affected populations. The assessment findings will be shared with key humanitarian stakeholders, including the Health Cluster, WASH Cluster, Nutrition Cluster, Food Security Cluster, Protection actors, relevant government authorities, UN agencies, NGOs, and operational partners active in Cabo Delgado Province._
 
 **DELETE THIS NOTE BEFORE SUBMITTING DOCUMENT**
 
@@ -897,17 +923,17 @@ ft
 
 * For section 4.1, please ensure the methodology overview reflects the intended methods for all strata.
 * For section 4.2, please ensure the population description follows recommendations from CE-DAT Completeness Checklist Guidelines [@CEDAT2010] below: 
-  ** The type of population assessed (e.g. refugee, IDP, host, livelihood group, etc.)
-  ** The geographic area assessed, with clearly defined bounds defining the sampling frame (e.g. the admin2 or group of camps being assessed)
-  ** Any areas that are excluded from sampling and the reason that area was excluded (e.g. insecurity)
-  ** Ideally a map could be included in this section, if capacity allows.
+  * The type of population assessed (e.g. refugee, IDP, host, livelihood group, etc.)
+  * The geographic area assessed, with clearly defined bounds defining the sampling frame (e.g. the admin2 or group of camps being assessed)
+  * Any areas that are excluded from sampling and the reason that area was excluded (e.g. insecurity)
+  * Ideally a map could be included in this section, if capacity allows.
 * For section 4.3, please ensure secondary objectives for the ANA framework are properly mapped and explained in the diagram and in the secondary data source stable. 
 * For section 4.4, please ensure key definitions are included for any key standardized indicators in the assessment. Please review that the household and population group (host, idp, refugee) definitions are included and contextualized for the setting.
 * For section 4.5, please confirm:
-  ** All intended tools and methods are included and how they have been contextualized for the setting per CE-DAT Completeness Checklist Guidelines [@CEDAT2010], specifically:
-    *** What languages was the tool translated to?
-    *** Was the tool tested or piloted? 
-  ** Sample size and planning calculations have appropriate sources and justifications included, and match intended methods.  
+  * All intended tools and methods are included and how they have been contextualized for the setting per CE-DAT Completeness Checklist Guidelines [@CEDAT2010], specifically:
+    * What languages was the tool translated to?
+    * Was the tool tested or piloted? 
+  * Sample size and planning calculations have appropriate sources and justifications included, and match intended methods.  
 * For section 4.6, that planned analysis matches your intended outputs, such as in terms of stratification of results.
 * For section 4.7, please ensure to include any context specific limitations, such as access constraints or timing
 
@@ -1685,7 +1711,7 @@ if (params$multiple_strata) {
 if (params$site_selection_srs_even & !params$multiple_strata) {
   
     cat(glue::glue(
-      "**Simple Random Sampling (Even Allocation):** A total of {params$n_sites_srs_even} sites will be selected for the assessment. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size_srs_even} households planned per site. \n\n"
+      "\n\n**Simple Random Sampling (Even Allocation):** A total of {params$n_sites_srs_even} sites will be selected for the assessment. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size_srs_even} households planned per site. \n\n"
     ))
 
   } 
@@ -1693,7 +1719,7 @@ if (params$site_selection_srs_even & !params$multiple_strata) {
 if (params$site_selection_srs_even & params$multiple_strata) {
   
     cat(glue::glue(
-      "**Simple Random Sampling (Even Allocation):** The following total number of sites per stratum will be selected for this assessment: {params$n_sites_srs_even}. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with the following number of households per stratum per site: {params$cluster_size_srs_even}. Additional weighting applied during analysis to account for under- or over-sampling of population groups between sites. \n\n"
+      "\n\n**Simple Random Sampling (Even Allocation):** The following total number of sites per stratum will be selected for this assessment: {params$n_sites_srs_even}. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with the following number of households per stratum per site: {params$cluster_size_srs_even}. Additional weighting applied during analysis to account for under- or over-sampling of population groups between sites. \n\n"
     ))
 
   } 
@@ -1701,7 +1727,7 @@ if (params$site_selection_srs_even & params$multiple_strata) {
 if (params$site_selection_srs_proportional & !params$multiple_strata) {
 
     cat(glue::glue(
-      "**Simple Random Sampling (Proportional Allocation):** A total {params$n_sites} will be selected for this assessment. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal chance of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using best available information on the distribution of the population. \n\n"
+      "\n\n**Simple Random Sampling (Proportional Allocation):** A total {params$n_sites} will be selected for this assessment. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal chance of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using best available information on the distribution of the population. \n\n"
     ))
 
   }  
@@ -1709,7 +1735,7 @@ if (params$site_selection_srs_proportional & !params$multiple_strata) {
 if (params$site_selection_srs_proportional & params$multiple_strata) {
 
     cat(glue::glue(
-      "**Simple Random Sampling (Proportional Allocation):** The following total number of sites per stratum will be selected for this assessment:  {params$n_sites_srs_proportional}. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using best available information on the distribution of the population. Additional weighting applied during analysis to account for under- or over-sampling of population groups between sites. \n\n"
+      "\n\n**Simple Random Sampling (Proportional Allocation):** The following total number of sites per stratum will be selected for this assessment:  {params$n_sites_srs_proportional}. Due to a lack of reliable population data, these sites will be selected with simple random sampling with each site having an equal change of selection. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using best available information on the distribution of the population. Additional weighting applied during analysis to account for under- or over-sampling of population groups between sites. \n\n"
     ))
 
   }     
@@ -1717,56 +1743,56 @@ if (params$site_selection_srs_proportional & params$multiple_strata) {
 if (params$site_selection_systematic_even & !params$multiple_strata) {
 
   cat(glue::glue(
-    "**Systematic Random Sampling (Even Allocation):** A total of {params$n_sites} sites will be selected for this assessment. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size} households planned per site. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected.\n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down.\n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
+    "\n\n**Systematic Random Sampling (Even Allocation):** A total of {params$n_sites} sites will be selected for this assessment. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size} households planned per site. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected.\n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down.\n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
   ))
 }
 
 if (params$site_selection_systematic_even & params$multiple_strata) {
 cat(glue::glue(
-    "**Systematic Random Sampling (Even Allocation):** The following number of sites per stratum will be selected for this assessment: {params$n_sites_systematic_even}. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size} households planned per site. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected. \n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up.\n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
+    "\n\n**Systematic Random Sampling (Even Allocation):** The following number of sites per stratum will be selected for this assessment: {params$n_sites_systematic_even}. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be evenly allocated across selected sites with {params$cluster_size} households planned per site. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected. \n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up.\n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
   ))
 }
 
 if (params$site_selection_systematic_proportional & !params$multiple_strata) {
 
   cat(glue::glue(
-    "**Systematic Random Sampling (Proportional Allocation):** A total of {params$n_sites} sites will be selected for the assessment. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using the best available relative estimates of population across sites.\n\nData collection teams will utilize the following steps:\n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation.\n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected. \n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites. \n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply:\n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
+    "\n\n**Systematic Random Sampling (Proportional Allocation):** A total of {params$n_sites} sites will be selected for the assessment. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis. The sample will be proportionately allocated across selected sites using the best available relative estimates of population across sites.\n\nData collection teams will utilize the following steps:\n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation.\n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected. \n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites. \n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply:\n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
   ))
 }
 
 if (params$site_selection_systematic_proportional & params$multiple_strata) {
 cat(glue::glue(
-    "**Systematic Random Sampling (Proportional Allocation):** The following total number of sites per stratum will be selected for this assessment:  {params$n_sites_systematic_proportional}. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis.  The sample will be proportionately allocated across selected sites using the best available relative estimates of population across sites. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected.\n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
+    "\n\n**Systematic Random Sampling (Proportional Allocation):** The following total number of sites per stratum will be selected for this assessment:  {params$n_sites_systematic_proportional}. Due to a lack of reliable population data, these sites will be selected with systematic random sampling with the list of eligible sites being ordered geographically in a list from north to south or east to west to allow for implicit stratification and improve geographic distribution, and sites selected based on a sampling interval and random start. This method for site selection is only applicable when no population data is available, however teams must evaluate population size, find estimates at field level, or evaluate relative population size between sites for later analysis.  The sample will be proportionately allocated across selected sites using the best available relative estimates of population across sites. \n\nData collection teams will utilize the following steps: \n\n* **Ordering the Sampling Frame** – Order the sites in the sampling frame geographically either from north to south or east to west. This will help ensure some geographic representation. \n* **Determining the sampling interval** – This will be estimated by dividing the total number of eligible sites in the sampling frame by the number of required sites. \n  * E.g. 42 sites total and 6 sites needed means sampling interval = 42 / 6 = 7. \n* **Select the first sampling unit** – To select a random start, randomly select a number N between 1-X, with X being the sampling interval. Starting from the top of the list, count to Nth site and that will be the first interview. \n  * E.g. randomly select the number 4 between 1 and 7; the 4th site will be the first one selected.\n* **Select the following sampling units** – From the 1st site selected, keep counting down the sampling frame counting the number of sites equal to the sampling interval until you reach the next site to select. Continue doing this until you have selected all sites.\n  * E.g. first site selected is #4, the 2nd selected is #11 (4+7), the 3rd site is #18 (11+7). \n  * If the sampling interval has a decimal, you may need to adjust how you count to ensure you do not run out of sites or exclude sites at the end of the sampling frame. The following rules can apply: \n    * Decimal between 0–0.2: round sampling interval down. \n    * Decimal between 0.3–0.7: alternate between rounding sampling interval down and up. \n    * Decimal between 0.8–0.9: round sampling interval up. \n\n"
   ))
 }
   
 if (params$site_selection_exhaustive & !params$multiple_strata) {
   cat(glue::glue(
-    "All eligible sites will be exhaustively selected and included in the assessment for a total of {params$n_sites} sites for the assessment. The household sample will be allocated across these sites proportional to the population size of these sites. \n\n"
+    "\n\n**Exhaustive Selection:** All eligible sites will be exhaustively selected and included in the assessment for a total of {params$n_sites} sites for the assessment. The household sample will be allocated across these sites proportional to the population size of these sites. \n\n"
   ))
 }
 
 if (params$site_selection_exhaustive & params$multiple_strata) {
   cat(glue::glue(
-    "**Exhaustive Selection:** All eligible sites will be exhaustively selected and included in the assessment for a total of {params$n_sites_exhaustive} sites for the assessment. The household sample will be allocated across these sites proportional to the population size of these sites. \n\n"
+    "\n\n**Exhaustive Selection:** All eligible sites will be exhaustively selected and included in the assessment for a total of {params$n_sites_exhaustive} sites for the assessment. The household sample will be allocated across these sites proportional to the population size of these sites. \n\n"
   ))
 }
   
 if (params$site_selection_cluster & !params$multiple_strata) {
   cat(glue::glue(
-    "\nA total of {params$n_psu} PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. Each PSU/cluster will have a set cluster size of {params$cluster_size} households. \n\n"
+    "\n\n**Probability Proportional to Size (PPS) Sampling:** A total of {params$n_psu} PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. Each PSU/cluster will have a set cluster size of {params$cluster_size} households. \n\n"
   ))
 }
 
 if (params$site_selection_cluster & params$multiple_strata) {
   cat(glue::glue(
-    "\n**Probability Proportional to Size (PPS) Sampling:** The following number of PSUs/clusters will be selected per stratum: {params$n_sites_cluster}.  PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. The cluster size for each stratum is as follows: {params$cluster_size_cluster}. \n\n"
+    "\n\n**Probability Proportional to Size (PPS) Sampling:** The following number of PSUs/clusters will be selected per stratum: {params$n_sites_cluster}.  PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. The cluster size for each stratum is as follows: {params$cluster_size_cluster}. \n\n"
   ))
 }
   
 if (params$site_selection_purposive & !params$multiple_strata) {
   cat(glue::glue(
-    "\nA total of {params$n_sites} sites will be selected purposively based on their accessibility at the time of assessment. The sample will be equally distributed across sites with {params$cluster_size} households per site. [PLEASE UPDATE FOR SELECTION CRITERIA].\n\n"
+    "\n\n**Purposive Sampling:** A total of {params$n_sites} sites will be selected purposively based on their accessibility at the time of assessment. The sample will be equally distributed across sites with {params$cluster_size} households per site. [PLEASE UPDATE FOR SELECTION CRITERIA].\n\n"
   ))
 }
 
@@ -1965,30 +1991,48 @@ In the event of specific at-risk or difficult to identify groups within the popu
 
 ```
 
+```{r 'kii_markets_intro'}
+#| results: asis
+
+if(params$tool_market_kii) {
+  cat(glue::glue(
+    "
+    #### Market Vendor Key Informant Interviews
+    
+    "))
+  
+}
+  
+```
+
+{{< if params.tool_market_kii >}}
+
+::: {.callout-tip}
+
+**Drafter Note:** When preparing the key informant tool, please consult with HQ Cash Specialist, in-country Cash Working Groups, or review recent JMMI or market monitoring reports to identify and select between 3 to 5 market items to ask about availability and prices. It is recommended to include 2 staple crops, a vegetable, soap, and one type of fuel. Depending on the assessment objectives, you may choose different groups of items for different population groups.
+    
+Please see the example table below and complete with selected market items to be asked in the market key informant tools. 
+    
+:::
+
+{{< /if >}}
+
 
 ```{r 'kii_markets'}
 #| results: asis
 
 if(params$tool_market_kii) {
-  cat(
+  
+    cat(glue::glue(
     "
-    #### Market Vendor Key Informant Interviews
-    
-    ::: {.callout-tip}
-    
-    **Drafter Note:** When preparing the key informant tool, please consult with HQ Cash Specialist, in-country Cash Working Groups, or review recent JMMI or market monitoring reports to identify and select between 3 to 5 market items to ask about availability and prices. It is recommended to include 2 staple crops, a vegetable, soap, and one type of fuel. Depending on the assessment objectives, you may choose different groups of items for different population groups.
-    
-    Please see the example table below and complete with selected market items to be asked in the market key informant tools. 
-    
-    :::
     
     Market vendors should be selected by purposive selection methods based on their leadership positions in the market or as service providers. Wherever possible, market authorities ashould be informed and consulted before interviews are conducted with vendors. Teams may conduct two to three interviews per market to ensure a diverse perspective on market conditions and vendor experiences.
     
-    Several market items are selected as sentinel items to understand the availability and cost of goods in the market. Please see the table below for an example: 
+    Several market items are selected as sentinel items to understand the availability and cost of goods in the market. Please see the table below for an example: \n\n
     
-    ")
-
-cat(table_caption("Selected Market Items for Vendor Key Informant Interviews"))
+    "))
+  
+cat(table_caption("\n\nSelected Market Items for Vendor Key Informant Interviews"))
 
   
 survival_needs_df <- data.frame(
@@ -2169,7 +2213,7 @@ if (params$tool_household) {
  
 if ((params$site_selection_srs_even == TRUE | params$site_selection_systematic_even == TRUE) & (params$hh_selection_srs == TRUE | params$hh_selection_systematic == TRUE)) {
   
-cat("**Weighted Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites. If relative population figures are available in the field, then they will be accounted for to relatively weight the results between sites. If not, then an unweighted analysis will be produced. \n\n")
+cat("\n\n**Weighted Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites. If relative population figures are available in the field, then they will be accounted for to relatively weight the results between sites. If not, then an unweighted analysis will be produced. \n\n")
 
   if(params$multiple_strata == TRUE) {
     cat(" An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. ")
@@ -2191,7 +2235,7 @@ cat("**Weighted Simple Random Design:** The household analysis will be treated a
 
 if ((params$site_selection_srs_even == TRUE | params$site_selection_systematic_even == TRUE) & params$hh_selection_rlc == TRUE) {
   
-  cat("**Simple Random Design with RLC:** The household analysis will be treated as a weighted cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. Survey weights will be generated between sites to correct for under- or over-sampling between sites based on the best available population estimated the field teams were able to recover. If no adequate population data was available during the assessment, the final analysis will be unweighted. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. \n\n")
+  cat("\n\n**Simple Random Design with RLC:** The household analysis will be treated as a weighted cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. Survey weights will be generated between sites to correct for under- or over-sampling between sites based on the best available population estimated the field teams were able to recover. If no adequate population data was available during the assessment, the final analysis will be unweighted. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. \n\n")
 
   if(params$multiple_strata == TRUE) {
     cat(" An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. ")
@@ -2214,7 +2258,7 @@ if ((params$site_selection_srs_even == TRUE | params$site_selection_systematic_e
 
 if ((params$site_selection_srs_proportional == TRUE | params$site_selection_systematic_proportional == TRUE) & (params$hh_selection_srs == TRUE | params$hh_selection_systematic == TRUE)) {
   
-cat("**Unweighted Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites and an unweighted analysis conducted as the sample was proportionately distributed across sites relative to population size. \n\n")
+cat("\n\n**Unweighted Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites and an unweighted analysis conducted as the sample was proportionately distributed across sites relative to population size. \n\n")
 
   if(params$multiple_strata == TRUE) {
     cat("An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. ")
@@ -2236,7 +2280,7 @@ cat("**Unweighted Simple Random Design:** The household analysis will be treated
 
 if ((params$site_selection_srs_proportional == TRUE | params$site_selection_systematic_proportional == TRUE) & params$hh_selection_rlc == TRUE) {
   
-  cat("**Unweighted Simple Random Design with RLC:** The household analysis will be treated as a weighted cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. No survey weights will be generated between sites as the number of GPS points was allocated proportional to population size of selected sites. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. \n\n")
+  cat("\n\n**Unweighted Simple Random Design with RLC:** The household analysis will be treated as a weighted cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. No survey weights will be generated between sites as the number of GPS points was allocated proportional to population size of selected sites. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. \n\n")
 
   if(params$multiple_strata == TRUE) {
     cat(" An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. ")
@@ -2259,7 +2303,7 @@ if ((params$site_selection_srs_proportional == TRUE | params$site_selection_syst
 
 if (params$site_selection_cluster == TRUE & (params$hh_selection_srs == TRUE | params$hh_selection_systematic == TRUE)) {
   
-  cat("**Cluster Design:** The household analysis will be treated as a cluster design and sites/PSUs will be treated as clusters in the analysis. ")
+  cat("\n\n**Cluster Design:** The household analysis will be treated as a cluster design and sites/PSUs will be treated as clusters in the analysis. ")
 
   if(params$multiple_strata == TRUE) {
     cat("Survey weights will be generated for aggregation of results between strata. ")
@@ -2284,7 +2328,7 @@ if (params$site_selection_cluster == TRUE & (params$hh_selection_srs == TRUE | p
 
 if (params$site_selection_cluster == TRUE & params$hh_selection_rlc == TRUE) {
   
-  cat("**Cluster Design with RLC:** The household analysis will be treated as a cluster design with sites/PSU being the primary clusters assigned in the analysis. Within these PSUs, additional clustering effects may be taking place as three households are sampled per random location cluster (GPS point) however this clustering effect will not be explicitly accounted for in the analysis. If population density is assessed to be very different within assessment sites/PSUs, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each random location cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
+  cat("\n\n**Cluster Design with RLC:** The household analysis will be treated as a cluster design with sites/PSU being the primary clusters assigned in the analysis. Within these PSUs, additional clustering effects may be taking place as three households are sampled per random location cluster (GPS point) however this clustering effect will not be explicitly accounted for in the analysis. If population density is assessed to be very different within assessment sites/PSUs, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each random location cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
 
   if(params$multiple_strata == TRUE) {
     cat("An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights for strata and random location clusters will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. ")
@@ -2309,7 +2353,7 @@ if (params$site_selection_cluster == TRUE & params$hh_selection_rlc == TRUE) {
 
 if (params$site_selection_exhaustive == TRUE & (params$hh_selection_srs == TRUE | params$hh_selection_systematic == TRUE)) {
   
-  cat("**Exhaustive Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites. ")
+  cat("\n\n**Exhaustive Simple Random Design:** The household analysis will be treated as a simple random sampling design across sites. ")
 
   if(params$multiple_strata == TRUE) {
     cat("Survey weights will be generated for aggregation of results between strata. ")
@@ -2334,7 +2378,7 @@ if (params$site_selection_exhaustive == TRUE & (params$hh_selection_srs == TRUE 
 
 if (params$site_selection_exhaustive == TRUE & params$hh_selection_rlc == TRUE) {
   
-  cat("**Exhaustive Simple Random Design with RLC:** The household analysis will be treated as a cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
+  cat("\n\n**Exhaustive Simple Random Design with RLC:** The household analysis will be treated as a cluster design across sites with groupings of households at each GPS point treated as the clusters in the analysis. If population density is assessed to be very different within or across assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
 
   if(params$multiple_strata == TRUE) {
     cat("An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis.")
@@ -2359,7 +2403,7 @@ if (params$site_selection_exhaustive == TRUE & params$hh_selection_rlc == TRUE) 
 
 if (params$site_selection_purposive == TRUE & (params$hh_selection_srs == TRUE | params$hh_selection_systematic == TRUE)) {
   
-  cat("**Purposive Design:** The household analysis will be treated as a simple random sampling design across purposively selected sites. ")
+  cat("\n\n**Purposive Design:** The household analysis will be treated as a simple random sampling design across purposively selected sites. ")
 
   if(params$multiple_strata == TRUE) {
     cat("Survey weights will be generated for aggregation of results between strata within these sites. ")
@@ -2384,7 +2428,7 @@ if (params$site_selection_purposive == TRUE & (params$hh_selection_srs == TRUE |
 
 if (params$site_selection_purposive == TRUE & params$hh_selection_rlc == TRUE) {
   
-  cat("**Purposive Design with RLC:** The household analysis will be treated as a cluster design across selected sites with groupings of households at each GPS point treated as the clusters in the analysis. If population density is assessed to be very different within or across these assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
+  cat("\n\n**Purposive Design with RLC:** The household analysis will be treated as a cluster design across selected sites with groupings of households at each GPS point treated as the clusters in the analysis. If population density is assessed to be very different within or across these assessment sites, survey weights will be used for each random location cluster equivalent to the inverse of the population density of each cluster. This is intended to correct for any bias due to an uneven population density across the assessment area to make sure households have a more equal representation in the dataset. Population density is estimated based on the number of people in households within a random location cluster divided by the area of the circle formed by the locations of the three households and the GPS point of that random location cluster. ")
 
   if(params$multiple_strata == TRUE) {
     cat("An additional set of weights will be generated between strata to account for under- or over-sampling of population groups. Each set of weights will be multiplied together at the household level to generate a single set of composite weights for aggregated analysis. Results cannot be extrapolated to other populations due to the non-probabilistic method of site selection, however the use of survey weights can help to make sure the results are more representative of the population within the selected sites. ")

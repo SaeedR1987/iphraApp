@@ -210,9 +210,9 @@ frame_C <- make_psu_frame("strata_C", n_psu = 30, pop_range = c(100, 500))
 
 sampling_frame <- dplyr::bind_rows(frame_A, frame_B, frame_C)
 
-protocol$sampling_frame$set("log_df", sampling_frame)
+protocol$sampling_frame$set(field = "log_df", value = sampling_frame)
 
-protocol$sampling_frame$get("log_df")
+protocol$sampling_frame$get(field = "log_df")
 
 protocol$sampling_frame$draw_sample(strata_table = protocol$sample_object$sample_table)
 

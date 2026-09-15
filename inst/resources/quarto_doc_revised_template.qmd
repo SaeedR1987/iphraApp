@@ -746,9 +746,7 @@ timeline_plot
 ```{r exec_dissemination}
 
 
-tbl <- as.data.frame(params$audience_matrix)
-
-
+tbl <- params$audience_matrix
 
 if (is.list(tbl) && !is.data.frame(tbl)) {
   tbl <- as.data.frame(tbl, stringsAsFactors = FALSE)
@@ -811,14 +809,14 @@ ft
 **Drafter Note:** Complete sections 2.1 and 2.2 to clearly explain the context in which the assessment would be conducted, key information needs, and the intended impact of the assessment.
 
 * **Background** This section should minimally include: 
-  ** What is the type of crisis and type of emergency setting the context for the assessment. 
-  ** For how long has the population been affected? 
-  ** What is the size of the different population groups in the affected area? 
-  ** What information is known about severity and service coverage? This may include most recent current and projected IPC classifications, JIAF severity, sectoral People in Need, or other prioritization frameworks. This may include information on current FSL, WASH, Health, or Nutrition service providers from HERAMS, 4Ws or other available sources.
-  ** What information gaps on severity or service coverage are not known?
+  * What is the type of crisis and type of emergency setting the context for the assessment. 
+  * For how long has the population been affected? 
+  * What is the size of the different population groups in the affected area? 
+  * What information is known about severity and service coverage? This may include most recent current and projected IPC classifications, JIAF severity, sectoral People in Need, or other prioritization frameworks. This may include information on current FSL, WASH, Health, or Nutrition service providers from HERAMS, 4Ws or other available sources.
+  * What information gaps on severity or service coverage are not known?
 
 * **Intended Impact** This should minimally include:
-  ** Describe what action IMPACT/REACH is taking and who the key stakeholders and decisions you will inform with the assessment.
+  * Describe what action IMPACT/REACH is taking and who the key stakeholders and decisions you will inform with the assessment.
 
 **Reviewer Note:** Please ensure the above minimum information is included in the text.
 

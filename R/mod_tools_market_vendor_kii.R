@@ -270,7 +270,7 @@ mod_tools_market_vendor_kii_server <- function(id){
 
     # OBSERVES ####
 
-    # ---- Restore selected indicators when a project file is loaded ----
+    # ---- Restore filters + selected indicators when a project file is loaded ----
     observeEvent(session$userData$flags$project_loaded, {
       req(isolate(session$userData$flags$project_loaded) > 0)
 
@@ -278,16 +278,45 @@ mod_tools_market_vendor_kii_server <- function(id){
       tool  <- proto$tools[["tool_kii_markets_iphra_v2"]]
       if (is.null(tool)) return()
 
-      codes <- tryCatch(
-        as.character(tool$get_indicator_codes(prefer_revised = TRUE)),
-        error = function(e) character(0)
-      )
-      codes <- codes[nchar(codes) > 0 & codes != "10000" & !grepl("00$", codes)]
-      if (length(codes) == 0) return()
+      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
 
-      bank <- isolate(all_indicators())
-      selected(as.character(bank$indicator_name[bank$indicator_code %in% codes]))
+      codes <- as.character(tool$selected_indicator_codes %||% character(0))
+      if (length(codes) > 0) {
+        bank <- isolate(all_indicators())
+        selected(as.character(bank$indicator_name[bank$indicator_code %in% codes]))
+      }
     }, ignoreInit = TRUE)
+
+    # ---- Keep Tool in sync with the filters ----
+    observeEvent(input$sector_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_kii_markets_iphra_v2"]],
+        "selected_sectors", input$sector_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$pillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_kii_markets_iphra_v2"]],
+        "selected_pillars", input$pillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$subpillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_kii_markets_iphra_v2"]],
+        "selected_subpillars", input$subpillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    # ---- Keep Tool in sync with the currently available indicators ----
+    observeEvent(filtered_available_indicators(), {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_kii_markets_iphra_v2"]],
+        "available_indicator_codes",
+        unique(filtered_available_indicators()$indicator_code)
+      )
+    }, ignoreNULL = FALSE)
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
@@ -296,6 +325,11 @@ mod_tools_market_vendor_kii_server <- function(id){
         selected(as.character(input$selected))
 
         indicators_selected <- selected_indicators()
+
+        tool <- protocol_r()$tools[["tool_kii_markets_iphra_v2"]]
+        if (!is.null(tool)) {
+          tool$selected_indicator_codes <- as.character(indicators_selected$indicator_code)
+        }
 
         if (is.null(indicators_selected) || nrow(indicators_selected) == 0) {
           return(NULL)

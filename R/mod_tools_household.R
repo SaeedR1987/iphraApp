@@ -168,7 +168,7 @@ mod_tools_household_server <- function(id){
       inds <- all_indicators()
       sel  <- selected()
 
-      inds[inds$indicator_name %in% sel, ]
+      inds[inds$indicator_code %in% sel, ]
     })
 
     # OUTPUTS ####
@@ -294,7 +294,7 @@ mod_tools_household_server <- function(id){
 
     # OBSERVES ####
 
-    # ---- Restore selected indicators when a project file is loaded ----
+    # ---- Restore filters + selected indicators when a project file is loaded ----
     observeEvent(session$userData$flags$project_loaded, {
       req(isolate(session$userData$flags$project_loaded) > 0)
 
@@ -302,9 +302,42 @@ mod_tools_household_server <- function(id){
       tool  <- proto$tools[["tool_household_iphra_v2"]]
       if (is.null(tool)) return()
 
+      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
+
       selected(as.character(tool$selected_indicator_codes %||% character(0)))
 
     }, ignoreInit = TRUE)
+
+    # ---- Keep Tool in sync with the filters ----
+    observeEvent(input$sector_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_household_iphra_v2"]],
+        "selected_sectors", input$sector_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$pillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_household_iphra_v2"]],
+        "selected_pillars", input$pillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$subpillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_household_iphra_v2"]],
+        "selected_subpillars", input$subpillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    # ---- Keep Tool in sync with the currently available indicators ----
+    observeEvent(filtered_available_indicators(), {
+      iphra_save_tool_field(
+        protocol_r()$tools[["tool_household_iphra_v2"]],
+        "available_indicator_codes",
+        unique(filtered_available_indicators()$indicator_code)
+      )
+    }, ignoreNULL = FALSE)
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {

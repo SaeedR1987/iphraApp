@@ -371,7 +371,7 @@ mod_tools_latrine_obs_server <- function(id){
 
       },
       on_error = "warn",
-      origin = phrutils::phr_txt("Latrine Observation Tool: Preset Objectives"),
+      origin = phrutils::phr_txt("Latrine Observation Tool : Preset Objectives"),
       hint = phrutils::phr_txt("Verify that indicators_obs object is correctly defined and accessible.")
       )
     })

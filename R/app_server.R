@@ -424,6 +424,15 @@ app_server <- function(input, output, session) {
 
       on.exit(removeModal(), add = TRUE)
 
+      write.csv(protocol$.audience_table_df, "audience_matrix_text2.csv")
+
+      if(!is.null(protocol$metadata$audience_matrix)) {
+        write.csv(protocol$metadata$audience_matrix, "audience_matrix_text3.csv")
+      } else {
+        text <- "audience matrix is null"
+        write.csv(text, "audience_matrix_text3.csv")
+      }
+
       protocol$generate_quarto_doc(
         output_file = outfile
       )

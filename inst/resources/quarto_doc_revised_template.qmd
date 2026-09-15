@@ -613,7 +613,7 @@ timeline_df <- data.frame(
     params$date_outputs_publication,
     params$date_final_presentation
   ),
-  milestone = c(
+  milestone = c( 
     "1. Pilot / training",
     "2. Start collect data",
     "3. Data collected",

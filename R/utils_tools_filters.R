@@ -100,6 +100,8 @@ iphra_restore_tool_filters <- function(session, tool, objective_filters) {
 #' @noRd
 iphra_save_tool_field <- function(tool, field, value) {
   if (is.null(tool)) return(invisible(NULL))
-  tool[[field]] <- as.character(value %||% character(0))
+
+  tool$set(field = field, value = as.character(value %||% character(0)))
+
   invisible(NULL)
 }

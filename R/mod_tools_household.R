@@ -77,8 +77,10 @@ mod_tools_household_server <- function(id){
     protocol_r <- phr_get_module_reactive("protocol", session)
 
     objective_filters_r <- reactive({
-
-      protocol_r()$framework$master_objectives_schema[
+      protocol_r()$get(
+        field = "framework",
+        member = "master_objectives_schema"
+      )[
         ,
         c(
           "objective_code",
@@ -87,7 +89,6 @@ mod_tools_household_server <- function(id){
           "sub_pillar"
         )
       ]
-
     })
 
     filtered_pillars_r <- reactive({
@@ -146,15 +147,23 @@ mod_tools_household_server <- function(id){
 
     all_indicators <- shiny::reactive({
 
-      req(!is.null(protocol_r()$framework$modified_objectives_schema))
-      req(!is.null(protocol_r()$framework$modified_indicator_bank))
+      req(!is.null(protocol_r()$get(field = "framework", member = "modified_objectives_schema")))
+      req(!is.null(protocol_r()$get(field = "framework", member = "modified_indicator_bank")))
 
-      objs <- protocol_r()$framework$modified_objectives_schema[
+      objs <- protocol_r()$get(
+        field = "framework",
+        member = "modified_objectives_schema"
+      )[
         , c("sector", "pillar", "sub_pillar", "objective_code")
       ]
 
-      bank <- protocol_r()$framework$modified_indicator_bank[
-        protocol_r()$framework$modified_indicator_bank$tool == "household",
+      indicator_bank <- protocol_r()$get(
+        field = "framework",
+        member = "modified_indicator_bank"
+      )
+
+      bank <- indicator_bank[
+        indicator_bank$tool == "household",
         c("objective_code", "indicator_code", "indicator_name")
       ]
 
@@ -168,7 +177,7 @@ mod_tools_household_server <- function(id){
       inds <- all_indicators()
       sel  <- selected()
 
-      inds[inds$indicator_code %in% sel, ]
+      inds[inds$indicator_name %in% sel, ]
     })
 
     # OUTPUTS ####
@@ -258,7 +267,10 @@ mod_tools_household_server <- function(id){
 
       if (nrow(sel_df) == 0) return(empty)
 
-      survey <- protocol_r()$tools$tool_household_iphra_v2$revised_survey
+      tool <- protocol_r()$get(field = "tools", role = "tool_household_iphra_v2")
+
+      survey <- tool$get(field = "revised_survey")
+
       if (is.null(survey) || !is.data.frame(survey) || nrow(survey) == 0 ||
           !all(c("indicator_code", "time_seconds") %in% names(survey))) {
         return(empty)
@@ -294,50 +306,17 @@ mod_tools_household_server <- function(id){
 
     # OBSERVES ####
 
-    # ---- Restore filters + selected indicators when a project file is loaded ----
+    # ---- Restore selected indicators when a project file is loaded ----
     observeEvent(session$userData$flags$project_loaded, {
       req(isolate(session$userData$flags$project_loaded) > 0)
 
       proto <- isolate(protocol_r())
-      tool  <- proto$tools[["tool_household_iphra_v2"]]
+      tool  <- proto$get(field = tools, role = "tool_household_iphra_v2")
       if (is.null(tool)) return()
 
-      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
-
-      selected(as.character(tool$selected_indicator_codes %||% character(0)))
+      selected(as.character(tool$get(field = "selected_indicator_codes") %||% character(0)))
 
     }, ignoreInit = TRUE)
-
-    # ---- Keep Tool in sync with the filters ----
-    observeEvent(input$sector_filter, {
-      iphra_save_tool_field(
-        protocol_r()$tools[["tool_household_iphra_v2"]],
-        "selected_sectors", input$sector_filter
-      )
-    }, ignoreNULL = FALSE)
-
-    observeEvent(input$pillar_filter, {
-      iphra_save_tool_field(
-        protocol_r()$tools[["tool_household_iphra_v2"]],
-        "selected_pillars", input$pillar_filter
-      )
-    }, ignoreNULL = FALSE)
-
-    observeEvent(input$subpillar_filter, {
-      iphra_save_tool_field(
-        protocol_r()$tools[["tool_household_iphra_v2"]],
-        "selected_subpillars", input$subpillar_filter
-      )
-    }, ignoreNULL = FALSE)
-
-    # ---- Keep Tool in sync with the currently available indicators ----
-    observeEvent(filtered_available_indicators(), {
-      iphra_save_tool_field(
-        protocol_r()$tools[["tool_household_iphra_v2"]],
-        "available_indicator_codes",
-        unique(filtered_available_indicators()$indicator_code)
-      )
-    }, ignoreNULL = FALSE)
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
@@ -353,7 +332,10 @@ mod_tools_household_server <- function(id){
 
         selected(codes)
 
-        tool <- protocol_r()$tools[["tool_household_iphra_v2"]]
+        tool <- protocol_r()$get(field = tools, role = "tool_household_iphra_v2")
+
+        tool$set(field = selected_indicator_codes, value = codes)
+
         tool$selected_indicator_codes <- codes
 
         indicators_selected <- selected_indicators()
@@ -362,7 +344,7 @@ mod_tools_household_server <- function(id){
           return(NULL)
         }
 
-        protocol_r()$tools$tool_household_iphra_v2$filter_survey_by_indicator(indicator_codes = indicators_selected$indicator_code)
+        tool$call(field = "filter_survey_by_indicator", indicator_codes = indicators_selected$indicator_code)
 
         phr_touch_module("protocol")
 
@@ -389,17 +371,6 @@ mod_tools_household_server <- function(id){
         ))
 
         }, step = "mod_tools_household_server/observeEvent_preset_obj/Core Logic")
-        if (phrutils::phr_failed(result)) return(result)
-
-
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-
-        result <- phrutils::phr_try_step({
-          phrutils::phr_message(
-          phrutils::phr_txt("Preset Objectives selection completed."),
-          origin = phrutils::phr_txt("Household Tool: Preset Objectives")
-        )
-        }, step = "mod_tools_household_server/observeEvent_preset_obj/Result Handling")
         if (phrutils::phr_failed(result)) return(result)
 
       },
@@ -483,10 +454,12 @@ mod_tools_household_server <- function(id){
           }, error = function(e) data.frame())
         }
 
+        tool <- protocol_r()$get(field = "tools", role = "tool_household_iphra_v2")
+
         sheets <- list(
-          survey   = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_survey),
-          choices  = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_choices),
-          settings = safe_df(protocol_r()$tools$tool_household_iphra_v2$revised_settings)
+          survey   = safe_df(tool$get(field = "revised_survey")),
+          choices  = safe_df(tool$get(field = "revised_choices")),
+          settings = safe_df(tool$get(field = "revised_settings"))
         )
 
         writexl::write_xlsx(sheets, path = file)

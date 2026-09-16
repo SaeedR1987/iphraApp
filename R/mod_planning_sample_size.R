@@ -439,10 +439,6 @@ mod_planning_sample_size_server <- function(id) {
 
     protocol_r <- phr_get_module_reactive("protocol", session)
 
-
-
-
-
     # INITIALIZATION
 
     updating_dropdown <- reactiveVal(FALSE)  # new flag to prevent re-entry loops
@@ -450,35 +446,15 @@ mod_planning_sample_size_server <- function(id) {
     # Initialize master data frame with all fields
 
     samples <- reactive({
-      protocol_r()$sample_object$sample_table
+      protocol_r()$get(field = "sample_object", member = "sample_table")
     })
 
     sampling_frame_data <- reactive({
-      protocol_r()$sampling_frame$get(field = "log_df")
-    })
-
-    observe({
-      print("sampling_frame_data updated")
-      print(dim(sampling_frame_data()))
+      protocol_r()$get(field = "sampling_frame", member = "log_df")
     })
 
     sample_results_data <- reactive({
-      protocol_r()$sampling_frame$drawn_sample_full
-    })
-
-    observe({
-
-      x <- sample_results_data()
-
-      cat("\n*** sample_results_data invalidated ***\n")
-
-      if (is.null(x)) {
-        cat("Current value: NULL\n")
-      } else {
-        cat("Rows:", nrow(x), "\n")
-        cat("Cols:", ncol(x), "\n")
-      }
-
+      protocol_r()$get(field = "sampling_frame", member = "drawn_sample_full")
     })
 
     pop_sample_size <- reactiveVal(NULL)
@@ -626,25 +602,14 @@ mod_planning_sample_size_server <- function(id) {
         )
     })
 
-    observe({
-      cat("log_df changed\n")
-      print(dim(protocol_r()$sampling_frame$get("log_df")))
-    })
-
-    observe({
-      cat("drawn_sample_full changed\n")
-      print(dim(protocol_r()$sampling_frame$drawn_sample_full))
-    })
-
-
     # ▶️ OBSERVE - ADD SAMPLE BUTTON ####
 
     observeEvent(input$add_sample, {
-      iphra_try({
+      phrutils::phr_try({
 
-        protocol_r()$sample_object$add_stratum(
-          # field = "sample_object",
-          # member = "add_stratum",
+        protocol_r()$call(
+          field = "sample_object",
+          member = "add_stratum",
 
           # Core stratum information
           stratum_id = input$population_name,
@@ -699,14 +664,14 @@ mod_planning_sample_size_server <- function(id) {
           rate_fpc = if ("rate" %in% input$sample_to_add) input$rate_fpc else FALSE
         )
 
-        protocol_r()$access_nested(
+        protocol_r()$call(
           field = "sample_object",
           member = "calculate_sample_sizes"
         )
 
         phr_touch_module(module_name = "protocol", session = session)
 
-        iphra_message("New sample added successfully.", origin = "Sample Module: Add Sample")
+        phrutils::phr_message("New sample added successfully.", origin = "Sample Module: Add Sample")
 
       }, on_error = "warn")
     })
@@ -716,9 +681,7 @@ mod_planning_sample_size_server <- function(id) {
 
     # ---- Sync remove_target dropdown with samples()
     observeEvent(samples(), {
-      iphra_try({
-
-
+      phrutils::phr_try({
 
         # 1️⃣ VALIDATION
 
@@ -731,7 +694,6 @@ mod_planning_sample_size_server <- function(id) {
         if (is.null(tbl) || nrow(tbl) == 0) return(NULL)
         }, step = "mod_planning_sample_size_server/unknown/Validation")
         if (iphra_failed(result)) return(result)
-
 
         # 2️⃣ CORE LOGIC
 
@@ -750,22 +712,6 @@ mod_planning_sample_size_server <- function(id) {
         if (iphra_failed(result)) return(result)
 
 
-        # 3️⃣ RESULT HANDLING
-
-        result <- iphra_try_step({
-          iphra_message(
-          paste0(
-            phrutils::phr_txt("Dropdown updated with"),
-            " ",
-            length(choices),
-            " ",
-            phrutils::phr_txt("available population(s).")
-          ),
-          origin = phrutils::phr_txt("Remove Target Dropdown Sync")
-        )
-        }, step = "mod_planning_sample_size_server/unknown/Result Handling")
-        if (iphra_failed(result)) return(result)
-
 },
       on_error = "warn",
       origin = phrutils::phr_txt("Remove Target Dropdown Sync"),
@@ -778,14 +724,14 @@ mod_planning_sample_size_server <- function(id) {
     # ▶️ OBSERVE - REMOVE SAMPLE BUTTON ####
 
     observeEvent(input$remove_sample, {
-      iphra_try({
+      phrutils::phr_try({
 
         # 1️⃣ VALIDATION ----
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
           current <- samples()
         if (is.null(current) || !nrow(current)) {
-          iphra_warning("No rows to remove.",
+          phrutils::phr_warning("No rows to remove.",
                         origin = "Sample Module: Remove Sample",
                         hint = "Add a population first.")
           return(NULL)
@@ -793,19 +739,19 @@ mod_planning_sample_size_server <- function(id) {
 
         target <- trimws(input$remove_target %||% "")
         if (target == "") {
-          iphra_warning("No population selected to remove.",
+          phrutils::phr_warning("No population selected to remove.",
                         origin = "Sample Module: Remove Sample",
                         hint = "Choose a population name from the dropdown.")
           return(NULL)
         }
         }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Validation")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
         # 2️⃣ CORE LOGIC####
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
-          protocol_r()$access_nested(
+          protocol_r()$call(
             field = "sample_object",
             member = "remove_stratum",
             strata_name = input$remove_target
@@ -814,7 +760,7 @@ mod_planning_sample_size_server <- function(id) {
           phr_touch_module(module_name = "protocol", session = session)
 
         }, step = "mod_planning_sample_size_server/observeEvent_remove_sample/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
@@ -828,11 +774,11 @@ mod_planning_sample_size_server <- function(id) {
 
     # ---- Update Design Effect Field State based on Sampling Method
     observeEvent(input$sampling_method_site, {
-      iphra_try({
+      phrutils::phr_try({
 
         # 2️⃣ CORE LOGIC
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
           if (input$sampling_method_site == "cluster") {
           shinyjs::enable(ns("pop_design_effect"))
           shinyjs::enable(ns("ind_design_effect"))
@@ -861,7 +807,7 @@ mod_planning_sample_size_server <- function(id) {
           ))
         }
         }, step = "mod_planning_sample_size_server/observeEvent_sampling_method/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
       },
       on_error = "warn",
@@ -872,7 +818,7 @@ mod_planning_sample_size_server <- function(id) {
 
     observeEvent(input$calculate_all, {
 
-      protocol_r()$access_nested(
+      protocol_r()$call(
         field = "sample_object",
         member = "calculate_sample_sizes"
       )
@@ -883,11 +829,11 @@ mod_planning_sample_size_server <- function(id) {
 
     # ▶️ OBSERVE - CALCULATE HOUSEHOLD SAMPLE ####
     observeEvent(input$pop_calculate, {
-      iphra_try({
+      phrutils::phr_try({
 
         # 2️⃣ CORE LOGIC
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
           if(input$sampling_method_site == "simple_random_even" |
              input$sampling_method_site == "simple_random_proportional" |
@@ -919,17 +865,6 @@ mod_planning_sample_size_server <- function(id) {
         # --- Future: Store result in session state ---
         # session$userData$project$sample$household <- sample
         }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Core Logic")
-        if (iphra_failed(result)) return(result)
-
-
-        # 3️⃣ RESULT HANDLING
-
-        result <- iphra_try_step({
-          iphra_message(
-          phrutils::phr_txt("Household sample size calculation completed successfully."),
-          origin = phrutils::phr_txt("Planning: Household Sample")
-        )
-        }, step = "mod_planning_sample_size_server/observeEvent_pop_calculate/Result Handling")
         if (iphra_failed(result)) return(result)
 
       }, on_error = "warn",
@@ -1063,29 +998,11 @@ mod_planning_sample_size_server <- function(id) {
       )
     })
 
-
-    # ---- Update Selected Population
-    observeEvent(input$update_population, {
-      iphra_try({
-
-
-      }, on_error = "warn",
-      origin = phrutils::phr_txt("Planning: Update Population"),
-      hint = phrutils::phr_txt("Check if population table or selection binding failed.")
-      )
-    })
-
-
     # ▶️ OBSERVE - IMPORT SAMPLING FRAME ####
-
-    observe({
-      print("drawn sample updated")
-      print(protocol_r()$sampling_frame$drawn_sample_full)
-    })
 
     observeEvent(input$import_frame, {
 
-      iphra_try({
+      phrutils::phr_try({
 
         req(input$import_frame)
 
@@ -1180,8 +1097,9 @@ mod_planning_sample_size_server <- function(id) {
           return()
         }
 
-        protocol_r()$sampling_frame$set(
-          field = "log_df",
+        protocol_r()$set(
+          field = "sampling_frame",
+          member = "log_df",
           value = imported_df
         )
 
@@ -1203,84 +1121,38 @@ mod_planning_sample_size_server <- function(id) {
     # ▶️ OBSERVE - DRAW SAMPLE ####
     observeEvent(input$draw_sample, {
 
-      cat("BEFORE draw_sample\n")
+      phrutils::phr_try({
 
-      result <- tryCatch({
-
-        protocol_r()$access_nested(
+        protocol_r()$call(
           field = "sampling_frame",
           member = "draw_sample",
-          strata_table = protocol_r()$get_sample_table(),
+          strata_table = protocol_r()$get(field = "sample_object", member = "sample_table"),
           seed = 987
         )
 
         "SUCCESS"
 
-      }, error = function(e) {
+      },
+      on_error = "warn",
+      origin = "Sample Module: Draw Sample",
+      hint = "Check sampling paramaters."
+      )
 
-        cat("ERROR INSIDE DRAW SAMPLE:\n")
-        print(e)
-
-        e
-
-      })
-
-      cat("AFTER draw_sample\n")
-      print(result)
 
     })
 
-    observeEvent(input$draw_sample, {
-
-      cat("\n====================\n")
-      cat("DRAW SAMPLE CLICKED\n")
-      cat("====================\n")
-      cat("Frame rows: ",
-          nrow(protocol_r()$sampling_frame$get("log_df")),
-          "\n")
-      cat("Sample table rows: ",
-          nrow(protocol_r()$get_sample_table()),
-          "\n")
-
-      # iphra_try({
-
-        cat("Calling draw_sample()...\n")
-
-        protocol_r()$sampling_frame$draw_sample(
-          strata_table = protocol_r()$get_sample_table(),
-          seed = 987
-        )
-
-        cat("Returned from draw_sample()\n")
-
-        result <- protocol_r()$sampling_frame$drawn_sample_full
-
-        cat("drawn_sample_full class:\n")
-        print(class(result))
-
-        cat("drawn_sample_full dimensions:\n")
-        print(dim(result))
-
-        cat("drawn_sample_full preview:\n")
-        print(utils::head(result))
-
-        phr_touch_module(module_name = "protocol", session = session)
-
-      # },
-      # on_error = "warn",
-      # origin = phrutils::phr_txt("Sample Module: Draw Sample"),
-      # hint   = phrutils::phr_txt("Verify sampling frame availability and randomization logic if this fails.")
-      # )
-    })
 
     # ▶️ OBSERVE - SAMPLING FRAME EDIT DETECTION ####
 
     observeEvent(input$sampling_frame, {
-      iphra_try({
+      phrutils::phr_try({
 
         updated_frame <- rhandsontable::hot_to_r(input$sampling_frame)
 
-        protocol_r()$sampling_frame$set(field = "log_df", value = updated_frame)
+        protocol_r()$set(
+          field = "sampling_frame",
+          member = "log_df",
+          value = updated_frame)
 
         phr_touch_module(
           module_name = "protocol",

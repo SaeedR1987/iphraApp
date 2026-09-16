@@ -109,7 +109,7 @@ protocol$.tools_table_df
 
 }
 \section{Super classes}{
-\code{\link[phr:Orchestrator]{phr::Orchestrator}} -> \code{\link[phr:Document]{phr::Document}} -> \code{\link[phr:Protocol]{phr::Protocol}} -> \code{\link[phr:SurveyProtocol]{phr::SurveyProtocol}} -> \code{IPHRAProtocol}
+\code{\link[phr:Asset]{phr::Asset}} -> \code{\link[phr:Document]{phr::Document}} -> \code{\link[phr:Protocol]{phr::Protocol}} -> \code{\link[phr:SurveyProtocol]{phr::SurveyProtocol}} -> \code{IPHRAProtocol}
 }
 \section{Active bindings}{
   \if{html}{\out{<div class="r6-active-bindings">}}
@@ -213,11 +213,11 @@ protocol$.tools_table_df
 }
 \if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="phr" data-topic="Orchestrator" data-id="access_nested"><a href='../../phr/html/Orchestrator.html#method-Orchestrator-access_nested'><code>phr::Orchestrator$access_nested()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="phr" data-topic="Orchestrator" data-id="pre_sync_state"><a href='../../phr/html/Orchestrator.html#method-Orchestrator-pre_sync_state'><code>phr::Orchestrator$pre_sync_state()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="phr" data-topic="Orchestrator" data-id="set"><a href='../../phr/html/Orchestrator.html#method-Orchestrator-set'><code>phr::Orchestrator$set()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="phr" data-topic="Orchestrator" data-id="set_nested"><a href='../../phr/html/Orchestrator.html#method-Orchestrator-set_nested'><code>phr::Orchestrator$set_nested()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="phr" data-topic="Orchestrator" data-id="sync_state"><a href='../../phr/html/Orchestrator.html#method-Orchestrator-sync_state'><code>phr::Orchestrator$sync_state()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="call"><a href='../../phr/html/Asset.html#method-Asset-call'><code>phr::Asset$call()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="get"><a href='../../phr/html/Asset.html#method-Asset-get'><code>phr::Asset$get()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="pre_sync_state"><a href='../../phr/html/Asset.html#method-Asset-pre_sync_state'><code>phr::Asset$pre_sync_state()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="set"><a href='../../phr/html/Asset.html#method-Asset-set'><code>phr::Asset$set()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="sync_state"><a href='../../phr/html/Asset.html#method-Asset-sync_state'><code>phr::Asset$sync_state()</code></a></span></li>
   <li><span class="pkg-link" data-pkg="phr" data-topic="Document" data-id="generate_quarto_doc"><a href='../../phr/html/Document.html#method-Document-generate_quarto_doc'><code>phr::Document$generate_quarto_doc()</code></a></span></li>
   <li><span class="pkg-link" data-pkg="phr" data-topic="Document" data-id="generate_quarto_ppt"><a href='../../phr/html/Document.html#method-Document-generate_quarto_ppt'><code>phr::Document$generate_quarto_ppt()</code></a></span></li>
   <li><span class="pkg-link" data-pkg="phr" data-topic="Protocol" data-id="get_dap_table"><a href='../../phr/html/Protocol.html#method-Protocol-get_dap_table'><code>phr::Protocol$get_dap_table()</code></a></span></li>

@@ -660,9 +660,7 @@ mod_goals_server <- function(id){
     # Reactive reference objectives
     reference_objectives_r <- reactive({
 
-      protocol_r()$framework$master_objectives_schema
-
-      # reference_objectives$objective_code
+      protocol_r()$get(field = "framework", member = "master_objectives_schema")
 
     })
 
@@ -936,7 +934,7 @@ mod_goals_server <- function(id){
 
     # --- Render the initial SVG ---
     output$framework_svg <- renderUI({
-      HTML(protocol_r()$framework$adjusted_svg)
+      HTML(protocol_r()$get(field = "framework", member = "adjusted_svg"))
     })
 
     # Observes ####
@@ -1104,7 +1102,7 @@ mod_goals_server <- function(id){
       proto <- isolate(protocol_r())
       if (is.null(proto)) return()
 
-      meta <- proto$metadata
+      meta <- proto$get(field = "..metadata")
 
       # --- Restore metadata text inputs ---
       if (!is.null(meta)) {
@@ -1169,12 +1167,12 @@ mod_goals_server <- function(id){
       # fields (including framework$primary_objectives) are not reactive, so
       # these accesses do not create any reactive dependencies.
       prim_codes <- as.character(
-        proto$framework$primary_objectives %||% integer(0)
+        proto$get(field = "framework", member = "primary_objectives") %||% integer(0)
       )
       selected(prim_codes)
 
       sec_codes <- as.character(
-        proto$framework$secondary_objectives %||% integer(0)
+        proto$get(field = "framework", member = "secondary_objectives") %||% integer(0)
       )
       selected_sdr(sec_codes)
 
@@ -1194,18 +1192,18 @@ mod_goals_server <- function(id){
       updateCheckboxInput(
         session,
         "goal_secondary_impact",
-        value = isTRUE(proto$framework$secondary_ana_goal)
+        value = isTRUE(proto$get(field = "framework", member = "secondary_ana_goal"))
       )
 
-      if (!is.null(proto$metadata$audience_matrix)) {
+      if (!is.null(proto$get(field = "..metadata", role = "audience_matrix"))) {
         audience_table_data(
-          proto$metadata$audience_matrix
+          proto$get(field = "..metadata", role = "audience_matrix")
         )
       }
 
-      if (!is.null(proto$framework$secondary_data_sources)) {
+      if (!is.null(proto$get(field = "framework", member = "secondary_data_sources"))) {
 
-        restored <- proto$framework$secondary_data_sources
+        restored <- proto$get(field = "framework", member = "secondary_data_sources")
 
         secondary_sources_data(
           data.frame(
@@ -1232,10 +1230,10 @@ mod_goals_server <- function(id){
           selected(codes)
         }
 
-        protocol_r()$framework$set_primary_objectives(objective_codes = codes)
+        protocol_r()$call(field = "framework", member = "set_primary_objectives", objective_codes = codes)
         phr_touch_module("protocol", session)
 
-        iphra_message(
+        phrutils::phr_message(
           paste0(
             phrutils::phr_txt("Selected item(s) updated to: "),
             paste(input$selected, collapse = ", ")
@@ -1250,7 +1248,7 @@ mod_goals_server <- function(id){
     }, ignoreNULL = FALSE)
 
     observeEvent(input$selected_sdr, {
-      iphra_try({
+      phrutils::phr_try({
 
         sdr_codes <- unname(short_to_code_r()[as.character(input$selected_sdr)])
         sdr_codes <- as.character(sdr_codes[!is.na(sdr_codes)])
@@ -1258,10 +1256,10 @@ mod_goals_server <- function(id){
           selected_sdr(sdr_codes)
         }
 
-        protocol_r()$framework$set_secondary_objectives(objective_codes = sdr_codes)
+        protocol_r()$call(field = "framework", member = "set_secondary_objectives", objective_codes = sdr_codes)
         phr_touch_module("protocol", session)
 
-        iphra_message(
+        phrutils::phr_message(
           paste0(
             phrutils::phr_txt("SDR selection updated to: "),
             paste(input$selected_sdr, collapse = ", ")
@@ -1277,7 +1275,7 @@ mod_goals_server <- function(id){
 
     # Core preset
     observeEvent(input$preset_core, {
-      iphra_try({
+      phrutils::phr_try({
 
           # selected(as.character(
           #   reference_objectives |>
@@ -1288,9 +1286,8 @@ mod_goals_server <- function(id){
 
         selected(c("101", "102", "103", "104"))
 
-        protocol_r()$framework$set_primary_objectives(objective_codes = c("101", "102", "103", "104"))
+        protocol_r()$call(field = "framework", member = "set_primary_objectives", objective_codes = c("101", "102", "103", "104"))
         phr_touch_module("protocol", session)
-
 
         },
       on_error = "warn",
@@ -1301,7 +1298,7 @@ mod_goals_server <- function(id){
 
     # SDR Core preset
     observeEvent(input$preset_sdr_core, {
-      iphra_try({
+      phrutils::phr_try({
 
           # selected_sdr(as.character(
           #   reference_objectives |>
@@ -1312,7 +1309,7 @@ mod_goals_server <- function(id){
 
         selected_sdr(c("101", "102", "103", "104"))
 
-        protocol_r()$framework$set_secondary_objectives(objective_codes = c("101", "102", "103", "104"))
+        protocol_r()$call(field = "framework", member = "set_secondary_objectives", objective_codes = c("101", "102", "103", "104"))
         phr_touch_module("protocol", session)
 
         },
@@ -1336,13 +1333,13 @@ mod_goals_server <- function(id){
     # every existing row is removed and every current row (with a non-blank
     # Source) is re-added, one access_nested() call per row.
     sync_secondary_sources_to_protocol <- function(new_df) {
-      iphra_try({
+      phrutils::phr_try({
 
-        existing_df <- protocol_r()$framework$secondary_data_sources
+        existing_df <- protocol_r()$get(field = "framework", member = "secondary_data_sources")
 
         if (!is.null(existing_df) && nrow(existing_df) > 0) {
           for (i in seq_len(nrow(existing_df))) {
-            protocol_r()$access_nested(
+            protocol_r()$call(
               field = "framework",
               member = "remove_secondary_data_source",
               objective = existing_df$objective[i],
@@ -1356,7 +1353,7 @@ mod_goals_server <- function(id){
             source_val <- trimws(new_df$Source[i] %||% "")
             if (source_val == "") next
 
-            protocol_r()$access_nested(
+            protocol_r()$call(
               field = "framework",
               member = "add_secondary_data_source",
               objective = new_df$Objective[i],
@@ -1379,7 +1376,7 @@ mod_goals_server <- function(id){
     # secondary objectives, preserving any Source/Purpose already entered
     # for objectives that remain selected.
     observeEvent(input$refresh_secondary_sources, {
-      iphra_try({
+      phrutils::phr_try({
 
         target_labels <- unname(code_to_text_r()[as.character(selected_sdr())])
         target_labels <- target_labels[!is.na(target_labels)]
@@ -1413,7 +1410,7 @@ mod_goals_server <- function(id){
     # ---- Keep secondary_sources_data() and the protocol object in sync with
     # manual edits made directly in the rhandsontable widget.
     observeEvent(input$secondary_sources_table, {
-      iphra_try({
+      phrutils::phr_try({
 
         new_df <- rhandsontable::hot_to_r(input$secondary_sources_table)
 
@@ -1432,23 +1429,9 @@ mod_goals_server <- function(id){
     # observer guarantees the SVG is rebuilt against the freshly-modified
     # schema instead of racing a separate observer.
     observeEvent(list(selected(), selected_sdr()), {
-      iphra_try({
+      phrutils::phr_try({
 
-        # 1️⃣ VALIDATION & PRECONDITIONS
-
-        result <- iphra_try_step({
-
-          iphra_message(
-            phrutils::phr_txt("Reactive update triggered for framework visualization."),
-            origin = phrutils::phr_txt("Framework SVG Highlighter")
-          )
-
-        }, step = "mod_goals_server/observe/Validation")
-        if (iphra_failed(result)) return(result)
-
-        # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
-
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
           sel     <- as.character(selected())
           sel_sdr <- as.character(selected_sdr())
@@ -1458,16 +1441,18 @@ mod_goals_server <- function(id){
           # a) schema first, so the framework's internal state matches the
           #    codes we are about to render.
 
-          protocol_r()$framework$modify_adjusted_schema(combined)
+          protocol_r()$call(field = "framework", member = "modify_adjusted_schema", objective_codes = combined)
           phr_touch_module("protocol")
 
           # b) push primary/secondary lists onto the framework.
-          protocol_r()$framework$set_primary_objectives(objective_codes = sel)
-          protocol_r()$framework$set_secondary_objectives(objective_codes = sel_sdr)
+          protocol_r()$call(field = "framework", member = "set_primary_objectives", objective_codes = sel)
+          protocol_r()$call(field = "framework", member = "set_secondary_objectives", objective_codes = sel_sdr)
           phr_touch_module("protocol")
 
           # c) rebuild the SVG using the same character codes.
-          protocol_r()$framework$modify_adjusted_svg(
+          protocol_r()$call(
+            field = "framework",
+            member = "modify_adjusted_svg",
             primary_objective_codes   = sel,
             secondary_objective_codes = sel_sdr
           )
@@ -1475,18 +1460,18 @@ mod_goals_server <- function(id){
           phr_touch_module("protocol")
 
         }, step = "mod_goals_server/observe/Core Logic")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
         # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
 
-        result <- iphra_try_step({
+        result <- phrutils::phr_try_step({
 
-          iphra_message(
+          phrutils::phr_message(
             phrutils::phr_txt("Framework visualization updated successfully."),
             origin = phrutils::phr_txt("Framework SVG Highlighter")
           )
         }, step = "mod_goals_server/observe/Result Handling")
-        if (iphra_failed(result)) return(result)
+        if (phrutils::phr_failed(result)) return(result)
 
         },
       on_error = "warn",

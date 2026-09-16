@@ -126,15 +126,10 @@ IPHRAProtocol <- R6::R6Class(
         framework_type = "ana",
         reference_doc_filename = "reach_tor_iphra_template.docx"
       )
-      self$valid_tool_types <- c(
-        "household",
-        "key_informant",
-        "generic"
-      )
-      self$metadata$assessment_title <- assessment_title
-      self$metadata$country_name <- country_name
-      self$metadata$month_year <- month_year
-      self$metadata$framework_type <- "ana"
+      private$..metadata$assessment_title <- assessment_title
+      private$..metadata$country_name <- country_name
+      private$..metadata$month_year <- month_year
+      private$..metadata$framework_type <- "ana"
 
       phrutils::phr_message(
         ("IPHRAProtocol initialized."),
@@ -177,9 +172,18 @@ IPHRAProtocol <- R6::R6Class(
           xlsx_file <- tool_spec$file
 
           # Locate the XLSForm resource file (gracefully handles missing files)
-          tool_path <- system.file("resources", xlsx_file, package = "phr")
+          tool_path <- system.file("resources", xlsx_file, package = "iphraApp")
           if (!nzchar(tool_path) || !file.exists(tool_path)) {
             tool_path <- file.path("resources", xlsx_file)
+          }
+
+          if (!nzchar(tool_path) || !file.exists(tool_path)) {
+            tool_path <- file.path(
+              pkgload::pkg_path(),
+              "inst",
+              "resources",
+              xlsx_file
+            )
           }
 
           tool <- if (identical(tool_class, "HouseholdTool")) {
@@ -370,12 +374,10 @@ IPHRAProtocol <- R6::R6Class(
     get_quarto_params = function() {
       params <- super$get_quarto_params()
 
-
-
       c(
         params,
         list(
-          audience_matrix = private$..sanitize_quarto_df(self$metadata$audience_matrix),
+          audience_matrix = private$..sanitize_quarto_df(private$..metadata$audience_matrix),
           secondary_goal = self$.secondary_goal,
           anf_framework_path = self$.modified_framework_svg,
           tool_household = self$.tool_household_iphra,
@@ -456,7 +458,7 @@ IPHRAProtocol <- R6::R6Class(
         return(invisible(FALSE))
       }
 
-      self$framework$secondary_ana_goal
+      self$get(field = "framework", member = "secondary_ana_goal")
 
     },
 
@@ -663,8 +665,10 @@ IPHRAProtocol <- R6::R6Class(
           ) {
 
             site_labels <- c(
-              simple_random = "Simple random sampling site selection",
-              systematic = "Systematic sampling site selection",
+              simple_random_even = "Simple random sampling site selection with equal sample allocation",
+              simple_random_proportional = "Simple random sampling site selection with proportional sample allocation",
+              systematic_even = "Systematic sampling site selection with equal sample allocation",
+              systematic_proportional = "Systematic sampling site selection with proportional sample allocation",
               cluster = "Cluster PPS with replacement",
               proportional = "Proportional allocation all sites",
               purposive = "Purposive site selection"
@@ -923,7 +927,7 @@ IPHRAProtocol <- R6::R6Class(
       }
 
       hh_codes <- tryCatch(
-        self$access_nested(
+        self$call(
           field = "tools",
           role = "household",
           member = "get_indicator_codes"
@@ -934,7 +938,7 @@ IPHRAProtocol <- R6::R6Class(
       hh_codes <- hh_codes[!is.na(hh_codes) & nzchar(hh_codes)]
 
       ob <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_objectives_schema"
         ),
@@ -949,7 +953,7 @@ IPHRAProtocol <- R6::R6Class(
       }
 
       ib <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_indicator_bank"
         ),
@@ -1025,7 +1029,7 @@ IPHRAProtocol <- R6::R6Class(
       }
 
       ob <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_objectives_schema"
         ),
@@ -1033,7 +1037,7 @@ IPHRAProtocol <- R6::R6Class(
       )
 
       ib <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_indicator_bank"
         ),
@@ -1176,7 +1180,7 @@ IPHRAProtocol <- R6::R6Class(
       }
 
       ob <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_objectives_schema"
         ),
@@ -1184,7 +1188,7 @@ IPHRAProtocol <- R6::R6Class(
       )
 
       ib <- tryCatch(
-        self$access_nested(
+        self$get(
           field = "framework",
           member = "master_indicator_bank"
         ),
@@ -1621,7 +1625,7 @@ IPHRAProtocol <- R6::R6Class(
 
     ..build_kii_obs_tool_table = function(role, tool_label, ib, ob) {
       indicator_codes <- tryCatch(
-        self$access_nested(
+        self$call(
           field = "tools",
           role = role,
           member = "get_indicator_codes"

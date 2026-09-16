@@ -25,22 +25,21 @@ protocol <- IPHRAProtocol$new(
 )
 
 # Inspect initial state
-protocol$metadata
+protocol$get(field = "..metadata", member = "framework_type")
 
 # Validate the objective schema via the protocol method
 # (protocol$validate_objective_schema(protocol$framework$master_schema))
 
 # Test 2: Framework ####
 
-protocol$access_nested(field = "framework", member = "master_objectives_schema")
+protocol$get(field = "framework", member = "master_objectives_schema")
 
-protocol$access_nested(
+protocol$call(
   field = "framework",
-  member = "render_framework_svg",
-  version = "master"
+  member = "render_framework_svg"
 )
 
-protocol$access_nested(
+protocol$call(
   field = "framework",
   member = "set_primary_objectives",
   objective_codes = c(101, 105, 106, 109, 112)
@@ -48,49 +47,50 @@ protocol$access_nested(
 
 # 108, 112, 113, 114, 115, 118, 147
 
-protocol$access_nested(
-  "framework",
+protocol$call(
+  field = "framework",
   member = "set_secondary_objectives",
   objective_codes = c(105, 107, 112)
 )
 
-protocol$access_nested(
+protocol$call(
   "framework",
   member = "modify_adjusted_schema",
   objective_codes = c(101, 105, 106, 109, 112)
 )
 
-protocol$access_nested(
+protocol$call(
   "framework",
   member = "modify_indicator_bank",
   objective_codes = c(101, 105, 106, 109, 112)
 )
 
-(protocol$access_nested(
+(protocol$get(
   field = "framework",
   member = "modified_indicator_bank"
 ))
 
-protocol$access_nested("framework", member = "modify_adjusted_svg")
+protocol$call("framework", member = "modify_adjusted_svg")
 
-protocol$access_nested(
+protocol$call(
   field = "framework",
   member = "render_framework_svg",
   version = "adjusted"
 )
-(protocol$access_nested(
+
+(protocol$get(
   field = "framework",
   member = "modified_objectives_schema"
 ))
 
 # Test 3: Define Strata and Sample Sizes ####
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "get_sample_table"
 )
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "add_stratum",
   stratum_id = "strata_A",
@@ -99,7 +99,7 @@ protocol$access_nested(
 
 )
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "add_stratum",
   stratum_id = "strata_A",
@@ -138,7 +138,7 @@ protocol$access_nested(
 )
 
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "add_stratum",
   stratum_id = "strata_B",
@@ -163,7 +163,7 @@ protocol$access_nested(
   # n_sites = 30
 )
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "add_stratum",
   stratum_id = "strata_C",
@@ -181,11 +181,11 @@ protocol$access_nested(
   n_sites = 10
 )
 
-protocol$access_nested(
+protocol$call(
   field = "sample_object",
   member = "calculate_sample_sizes"
 )
-(protocol$access_nested(
+(protocol$call(
   field = "sample_object",
   member = "get_sample_table"
 ))
@@ -210,9 +210,13 @@ frame_C <- make_psu_frame("strata_C", n_psu = 30, pop_range = c(100, 500))
 
 sampling_frame <- dplyr::bind_rows(frame_A, frame_B, frame_C)
 
-protocol$sampling_frame$set(field = "log_df", value = sampling_frame)
+protocol$set(field = "sampling_frame", member = "log_df", value = sampling_frame)
+
+# protocol$sampling_frame$set(field = "log_df", value = sampling_frame)
 
 protocol$sampling_frame$get(field = "log_df")
+
+protocol$call(field = "sampling_frame", member = "draw_sample", strata_table = protocol$get(field = "sample_object", member = "sample_table"))
 
 protocol$sampling_frame$draw_sample(strata_table = protocol$sample_object$sample_table)
 
@@ -221,19 +225,19 @@ protocol$sampling_frame$validated
 
 # Test 5: Draw Sample ####
 
-protocol$access_nested(
+protocol$call(
   field = "sampling_frame",
   member = "draw_sample",
   strata_table = protocol$get_sample_table(),
   seed = 788
 )
 
-(protocol$access_nested(
+(protocol$get(
   field = "sampling_frame",
   member = "drawn_sample"
 ))
 
-(protocol$access_nested(
+(protocol$get(
   field = "sampling_frame",
   member = "drawn_sample_full"
 ))
@@ -243,7 +247,7 @@ protocol$access_nested(
 #   seed = 788
 # )
 
-(protocol$drawn_sample_full)
+(protocol$get(field = "sampling_frame", member = "drawn_sample_full"))
 
 # Test 6: Testing Tools ####
 
@@ -260,12 +264,12 @@ protocol$add_tools(tool_name = "tool_household_iphra_v2")
 #   language = "Arabic"
 # )
 
-protocol$access_nested(
+protocol$call(
   field = "tools",
   name = "tool_household_iphra_v2",
   member = "filter_survey_by_indicator",
   indicator_codes = unique(as.character(as.integer(
-    protocol$access_nested(
+    protocol$get(
       field = "framework",
       member = "modified_indicator_bank"
     )$indicator_code
@@ -279,19 +283,19 @@ protocol$access_nested(
 # Community KII Tool ####
 protocol$add_tools("tool_kii_community_iphra_v2")
 
-protocol$access_nested(
+protocol$call(
   field = "tools",
   name = "tool_kii_community_iphra_v2",
   member = "filter_survey_by_indicator",
   indicator_codes = unique(as.character(
-    protocol$access_nested(
+    protocol$get(
       field = "framework",
       member = "modified_indicator_bank"
     )$indicator_code
   ))
 )
 
-(protocol$access_nested(
+(protocol$get(
   field = "tools",
   name = "tool_kii_community_iphra_v2",
   member = "revised_survey",

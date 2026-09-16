@@ -1130,8 +1130,23 @@ mod_goals_server <- function(id){
         )
         for (f in date_fields_restore) {
           val <- meta[[f]]
-          if (!is.null(val))
-            updateDateInput(session, f, value = val)
+          if (!is.null(val)) {
+            # Ensure the value is a valid Date object before passing to updateDateInput
+            # This prevents "Couldn't coerce the `value` argument to a date string" warnings
+            # when loading projects where dates might be stored in different formats
+            if (!inherits(val, "Date")) {
+              # Try to convert to Date if not already
+              tryCatch({
+                val <- as.Date(val)
+              }, error = function(e) {
+                # If conversion fails, skip this field to avoid crashing
+                NULL
+              })
+            }
+            if (!is.null(val) && inherits(val, "Date")) {
+              updateDateInput(session, f, value = val)
+            }
+          }
         }
 
         multi_fields_restore <- c(

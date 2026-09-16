@@ -998,7 +998,7 @@ mod_goals_server <- function(id){
     observeEvent(audience_table_data(), {
 
       protocol_r()$set(
-        field = "metadata",
+        field = "..metadata",
         role = "audience_matrix",
         value = audience_table_data()
       )
@@ -1020,7 +1020,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
+            protocol_r()$set(field = "..metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -1043,7 +1043,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
+            protocol_r()$set(field = "..metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -1065,7 +1065,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
+            protocol_r()$set(field = "..metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })
@@ -1084,7 +1084,7 @@ mod_goals_server <- function(id){
         local({
           f <- fld
           observeEvent(input[[f]], {
-            protocol_r()$set(field = "metadata", role = f, value = input[[f]])
+            protocol_r()$set(field = "..metadata", role = f, value = input[[f]])
             phr_touch_module("protocol")
           }, ignoreNULL = FALSE, ignoreInit = TRUE)
         })

@@ -330,7 +330,10 @@ mod_tools_crop_livestock_obs_server <- function(id){
 
         tool <- protocol_r()$tools[["tool_obs_crop_livestock_iphra_v1"]]
         if (!is.null(tool)) {
-          tool$selected_indicator_codes <- as.character(indicators_selected$indicator_code)
+          tool$set(
+            field = "selected_indicator_codes",
+            value = as.character(indicators_selected$indicator_code)
+          )
         }
 
         if (is.null(indicators_selected) || nrow(indicators_selected) == 0) {

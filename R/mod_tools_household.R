@@ -306,17 +306,50 @@ mod_tools_household_server <- function(id){
 
     # OBSERVES ####
 
-    # ---- Restore selected indicators when a project file is loaded ----
+    # ---- Restore filters + selected indicators when a project file is loaded ----
     observeEvent(session$userData$flags$project_loaded, {
       req(isolate(session$userData$flags$project_loaded) > 0)
 
       proto <- isolate(protocol_r())
-      tool  <- proto$get(field = tools, role = "tool_household_iphra_v2")
+      tool  <- proto$get(field = "tools", role = "tool_household_iphra_v2")
       if (is.null(tool)) return()
+
+      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
 
       selected(as.character(tool$get(field = "selected_indicator_codes") %||% character(0)))
 
     }, ignoreInit = TRUE)
+
+    # ---- Keep Tool in sync with the filters ----
+    observeEvent(input$sector_filter, {
+      iphra_save_tool_field(
+        protocol_r()$get(field = "tools", role = "tool_household_iphra_v2"),
+        "selected_sectors", input$sector_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$pillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$get(field = "tools", role = "tool_household_iphra_v2"),
+        "selected_pillars", input$pillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    observeEvent(input$subpillar_filter, {
+      iphra_save_tool_field(
+        protocol_r()$get(field = "tools", role = "tool_household_iphra_v2"),
+        "selected_subpillars", input$subpillar_filter
+      )
+    }, ignoreNULL = FALSE)
+
+    # ---- Keep Tool in sync with the currently available indicators ----
+    observeEvent(filtered_available_indicators(), {
+      iphra_save_tool_field(
+        protocol_r()$get(field = "tools", role = "tool_household_iphra_v2"),
+        "available_indicator_codes",
+        unique(filtered_available_indicators()$indicator_code)
+      )
+    }, ignoreNULL = FALSE)
 
     # ---- Keep Tool in sync with selected
     observeEvent(input$selected, {
@@ -332,11 +365,9 @@ mod_tools_household_server <- function(id){
 
         selected(codes)
 
-        tool <- protocol_r()$get(field = tools, role = "tool_household_iphra_v2")
+        tool <- protocol_r()$get(field = "tools", role = "tool_household_iphra_v2")
 
-        tool$set(field = selected_indicator_codes, value = codes)
-
-        tool$selected_indicator_codes <- codes
+        tool$set(field = "selected_indicator_codes", value = codes)
 
         indicators_selected <- selected_indicators()
 

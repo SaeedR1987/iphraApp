@@ -154,8 +154,11 @@ mod_tools_market_vendor_kii_server <- function(id){
 
     selected <- shiny::reactiveVal(character(0))
 
+    sector_selected <- reactiveVal(character())
+    pillar_selected <- reactiveVal(character())
+    subpillar_selected <- reactiveVal(character())
+
     selected_indicators <- shiny::reactive({
-      selected(as.character(input$selected))
       inds <- all_indicators()
       sel  <- selected()
 
@@ -168,7 +171,7 @@ mod_tools_market_vendor_kii_server <- function(id){
         ns("sector_filter"),
         "Sector",
         choices = sort(unique(objective_filters_r()$sector)),
-        selected = isolate(input$sector_filter),
+        selected = sector_selected(),
         multiple = TRUE
       )
 
@@ -180,7 +183,7 @@ mod_tools_market_vendor_kii_server <- function(id){
         ns("pillar_filter"),
         "Pillar",
         choices = sort(unique(filtered_pillars_r()$pillar)),
-        selected = isolate(input$pillar_filter),
+        selected = pillar_selected(),
         multiple = TRUE
       )
 
@@ -192,7 +195,7 @@ mod_tools_market_vendor_kii_server <- function(id){
         ns("subpillar_filter"),
         "Sub-Pillar",
         choices = sort(unique(filtered_subpillars_r()$sub_pillar)),
-        selected = isolate(input$subpillar_filter),
+        selected = subpillar_selected(),
         multiple = TRUE
       )
 
@@ -268,6 +271,50 @@ mod_tools_market_vendor_kii_server <- function(id){
       rbind(per_indicator, totals)
     })
 
+    # ---- Set reactiveVals when filters change ----
+    observeEvent(input$sector_filter, {
+      sector_selected(input$sector_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "selected_sectors",
+                       value = input$sector_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "available_sectors",
+                       value = sort(unique(objective_filters_r()$sector)))
+
+    })
+
+    observeEvent(input$pillar_filter, {
+      pillar_selected(input$pillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "selected_pillars",
+                       value = input$pillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "available_pillars",
+                       value = sort(unique(objective_filters_r()$pillar)))
+    })
+
+    observeEvent(input$subpillar_filter, {
+      subpillar_selected(input$subpillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "selected_subpillars",
+                       value = input$subpillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_kii_markets_iphra_v2",
+                       member = "available_subpillars",
+                       value = sort(unique(objective_filters_r()$sub_pillar)))
+    })
+
     # OBSERVES ####
 
     # ---- Restore filters + selected indicators when a project file is loaded ----
@@ -278,7 +325,31 @@ mod_tools_market_vendor_kii_server <- function(id){
       tool  <- proto$tools[["tool_kii_markets_iphra_v2"]]
       if (is.null(tool)) return()
 
-      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
+      sectors <- tool$selected_sectors %||% character(0)
+      pillars <- tool$selected_pillars %||% character(0)
+      subs <- tool$selected_subpillars %||% character(0)
+
+      updateSelectInput(
+        session,
+        "sector_filter",
+        selected = sectors
+      )
+
+      updateSelectInput(
+        session,
+        "pillar_filter",
+        selected = pillars
+      )
+
+      updateSelectInput(
+        session,
+        "subpillar_filter",
+        selected = subs
+      )
+
+      sector_selected(as.character(tool$selected_sectors %||% character(0)))
+      pillar_selected(as.character(tool$selected_pillars %||% character(0)))
+      subpillar_selected(as.character(tool$selected_subpillars %||% character(0)))
 
       codes <- as.character(tool$selected_indicator_codes %||% character(0))
       if (length(codes) > 0) {

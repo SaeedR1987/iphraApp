@@ -446,8 +446,22 @@ mod_planning_sample_size_server <- function(id) {
     # Initialize master data frame with all fields
 
     samples <- reactive({
-      protocol_r()$get(field = "sample_object", member = "sample_table")
+      obj <- protocol_r()
+
+      cat("obj class:", class(obj), "\n")
+      cat("has get:", "get" %in% names(obj), "\n")
+
+      print(obj$get)
+
+      obj$get(
+        field = "sample_object",
+        member = "sample_table"
+      )
     })
+
+    # samples <- reactive({
+    #   protocol_r()$get(field = "sample_object", member = "sample_table")
+    # })
 
     sampling_frame_data <- reactive({
       protocol_r()$get(field = "sampling_frame", member = "log_df")

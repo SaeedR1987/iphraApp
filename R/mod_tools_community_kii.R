@@ -359,18 +359,6 @@ mod_tools_community_kii_server <- function(id){
     observeEvent(input$preset_obj_kii, {
       phrutils::phr_try({
 
-        # 1️⃣ VALIDATION & PRECONDITIONS
-
-        result <- phrutils::phr_try_step({
-
-        phrutils::phr_message(
-          phrutils::phr_txt("Validation checks passed (dummy mode)."),
-          origin = phrutils::phr_txt("KII Tool: Preset Objectives")
-        )
-
-
-        }, step = "mod_tools_community_server/observeEvent_preset_obj_kii/Validation")
-        if (phrutils::phr_failed(result)) return(result)
 
 
         # 2️⃣ CORE LOGIC / MAIN FUNCTIONALITY
@@ -397,17 +385,6 @@ mod_tools_community_kii_server <- function(id){
         if (phrutils::phr_failed(result)) return(result)
 
 
-        # 3️⃣ RESULT HANDLING / OUTPUT ACTIONS
-
-        result <- phrutils::phr_try_step({
-
-        phrutils::phr_message(
-          phrutils::phr_txt("KII objectives preset selection completed."),
-          origin = phrutils::phr_txt("KII Tool: Preset Objectives")
-        )
-        }, step = "mod_tools_community_server/observeEvent_preset_obj_kii/Result Handling")
-        if (phrutils::phr_failed(result)) return(result)
-
 },
       on_error = "warn",
       origin = phrutils::phr_txt("KII Tool: Preset Objectives"),
@@ -418,19 +395,6 @@ mod_tools_community_kii_server <- function(id){
     # Preset: Core
     observeEvent(input$preset_core_kii, {
       phrutils::phr_try({
-
-
-
-        # 1️⃣ VALIDATION
-
-        result <- phrutils::phr_try_step({
-          phrutils::phr_message(
-          phrutils::phr_txt("Validation checks passed (dummy mode)."),
-          origin = phrutils::phr_txt("KII Tool: Preset Core")
-        )
-        }, step = "mod_tools_community_server/observeEvent_preset_core_kii/Validation")
-        if (phrutils::phr_failed(result)) return(result)
-
 
         # 2️⃣ CORE LOGIC
 

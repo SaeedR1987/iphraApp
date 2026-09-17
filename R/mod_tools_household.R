@@ -72,6 +72,10 @@ mod_tools_household_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    observe({
+      cat("HOUSEHOLD MODULE INITIALIZED\n")
+    })
+
     # SETUP ####
 
     protocol_r <- phr_get_module_reactive("protocol", session)
@@ -180,6 +184,53 @@ mod_tools_household_server <- function(id){
       inds[inds$indicator_name %in% sel, ]
     })
 
+    sector_selected <- reactiveVal(character())
+    pillar_selected <- reactiveVal(character())
+    subpillar_selected <- reactiveVal(character())
+
+    observeEvent(input$sector_filter, {
+      sector_selected(input$sector_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "selected_sectors",
+                       value = input$sector_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "available_sectors",
+                       value = sort(unique(objective_filters_r()$sector)))
+
+    })
+
+    observeEvent(input$pillar_filter, {
+      pillar_selected(input$pillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "selected_pillars",
+                       value = input$pillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "available_pillars",
+                       value = sort(unique(objective_filters_r()$pillar)))
+    })
+
+    observeEvent(input$subpillar_filter, {
+      subpillar_selected(input$subpillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "selected_subpillars",
+                       value = input$subpillar_filter)
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "available_subpillars",
+                       value = sort(unique(objective_filters_r()$sub_pillar)))
+    })
+
     # OUTPUTS ####
 
     output$sector_filter_ui <- renderUI({
@@ -188,7 +239,7 @@ mod_tools_household_server <- function(id){
         ns("sector_filter"),
         "Sector",
         choices = sort(unique(objective_filters_r()$sector)),
-        selected = isolate(input$sector_filter),
+        selected = sector_selected(),
         multiple = TRUE
       )
 
@@ -200,7 +251,7 @@ mod_tools_household_server <- function(id){
         ns("pillar_filter"),
         "Pillar",
         choices = sort(unique(filtered_pillars_r()$pillar)),
-        selected = isolate(input$pillar_filter),
+        selected = pillar_selected(),
         multiple = TRUE
       )
 
@@ -212,7 +263,7 @@ mod_tools_household_server <- function(id){
         ns("subpillar_filter"),
         "Sub-Pillar",
         choices = sort(unique(filtered_subpillars_r()$sub_pillar)),
-        selected = isolate(input$subpillar_filter),
+        selected = subpillar_selected(),
         multiple = TRUE
       )
 
@@ -314,9 +365,36 @@ mod_tools_household_server <- function(id){
       tool  <- proto$get(field = "tools", role = "tool_household_iphra_v2")
       if (is.null(tool)) return()
 
-      iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
+      # iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
+
+      sectors <- tool$get(field = "selected_sectors") %||% character(0)
+      pillars <- tool$get(field = "selected_pillars") %||% character(0)
+      subs <- tool$get(field = "selected_subpillars") %||% character(0)
+
+      updateSelectInput(
+        session,
+        "sector_filter",
+        selected = sectors
+      )
+
+      updateSelectInput(
+        session,
+        "pillar_filter",
+        selected = pillars
+      )
+
+      updateSelectInput(
+        session,
+        "subpillar_filter",
+        selected = subs
+      )
+
+      sector_selected(as.character(tool$get(field = "selected_sectors") %||% character(0)))
+      pillar_selected(as.character(tool$get(field = "selected_pillars") %||% character(0)))
+      subpillar_selected(as.character(tool$get(field = "selected_subpillars") %||% character(0)))
 
       selected(as.character(tool$get(field = "selected_indicator_codes") %||% character(0)))
+
 
     }, ignoreInit = TRUE)
 
@@ -344,11 +422,13 @@ mod_tools_household_server <- function(id){
 
     # ---- Keep Tool in sync with the currently available indicators ----
     observeEvent(filtered_available_indicators(), {
-      iphra_save_tool_field(
-        protocol_r()$get(field = "tools", role = "tool_household_iphra_v2"),
-        "available_indicator_codes",
-        unique(filtered_available_indicators()$indicator_code)
-      )
+
+      protocol_r()$set(field = "tools",
+                       role = "tool_household_iphra_v2",
+                       member = "available_indicator_codes",
+                       value = unique(filtered_available_indicators()$indicator_code)
+                       )
+
     }, ignoreNULL = FALSE)
 
     # ---- Keep Tool in sync with selected

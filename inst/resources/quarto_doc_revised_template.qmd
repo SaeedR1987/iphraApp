@@ -217,14 +217,14 @@ table_no <- 0
 
 table_caption <- function(caption) {
   table_no <<- table_no + 1
-  glue::glue("**Table {table_no}. {caption}**\n\n")
+  glue::glue("\n\n**Table {table_no}. {caption}**\n\n")
 }
 
 figure_no <- 0
 
 figure_caption <- function(caption) {
   figure_no <<- figure_no + 1
-  glue::glue("**Figure {figure_no}. {caption}**\n\n")
+  glue::glue("\n\n**Figure {figure_no}. {caption}**\n\n")
 }
 
 iphra_dap_flextable <- function(
@@ -252,8 +252,11 @@ iphra_dap_flextable <- function(
   ft <- flextable::color(ft, color = "white", part = "header")
 
   # Merge repeated cells
-ft <- flextable::merge_v(ft, j = "Research Question")
-ft <- flextable::merge_v(ft, j = "Indicator Name")
+ft <- flextable::merge_v(ft, 
+                         j = "Research Question")
+ft <- flextable::merge_v(ft, 
+                         j = "Indicator Name",
+                         target = c("Research Question", "Indicator Name"))
 
 # Merge Disaggregation only within Research Question + Indicator Name groups
 ft <- flextable::merge_v(
@@ -850,8 +853,6 @@ _In order to fill these information gaps, REACH will conduct an Integrated Publi
 
 :::
 
-* Who are the key actors/ what are the key decision-making processes and milestones this research aims to inform?
-* What would be the impact of this research be on at least one of the following: (1) Bringing about positive change in the day-to-day lives of the population of interest (2) Improving understanding of the current situation to inform ongoing or planned humanitarian interventions (3) Improving understanding of the current situation to inform strategic decision-making processes, including funding allocations (4) Contributing towards system-wide change
  
 \newpage
 
@@ -908,8 +909,8 @@ ft <- flextable::fontsize(ft, size = 8, part = "body")
 ft <- flextable::bold(ft, part = "header")
 ft <- flextable::bg(ft, part = "header", bg = "#DDDDDE")
 
-ft <- flextable::width(ft, j = 1, width = 0.75)
-ft <- flextable::width(ft, j = 2, width = 0.75)
+ft <- flextable::width(ft, j = 1, width = 0.86)
+ft <- flextable::width(ft, j = 2, width = 0.86)
 ft <- flextable::width(ft, j = 3, width = 2.44)
 ft <- flextable::width(ft, j = 4, width = 2.44)
 
@@ -973,10 +974,12 @@ if (params$site_selection_srs_even & params$hh_selection_srs) {
 cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be equally distributed between sampled sites. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
 if (params$multiple_methods == TRUE) {
-  cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_even_srs} .\n"))
+  cat(glue::glue("**This methodology applies for the following strata: {params$stratified_strata_names_srs_even_srs}** .\n"))
 }
 
-} else if (params$site_selection_srs_proportional & params$hh_selection_srs) {
+} 
+
+if (params$site_selection_srs_proportional & params$hh_selection_srs) {
   
 cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be proportionately distributed between sampled sites according to relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
@@ -984,140 +987,180 @@ if (params$multiple_methods == TRUE) {
   cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_proportional_srs} .\n\n"))
 }
 
-}  else if (params$site_selection_srs_even & params$hh_selection_systematic) {
+}  
+
+if (params$site_selection_srs_even & params$hh_selection_systematic) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using systematic random sampling of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be evenly distributed between sampled sites. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_even_systematic} .\n"))
   }
 
-} else if (params$site_selection_srs_proportional & params$hh_selection_systematic) {
+} 
+
+if (params$site_selection_srs_proportional & params$hh_selection_systematic) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using systematic random sampling of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be proportionately distributed between sampled sites according to relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_proportional_systematic} .\n"))
   }
 
-} else if (params$site_selection_srs_even & params$hh_selection_rlc) {
+} 
+
+if (params$site_selection_srs_even & params$hh_selection_rlc) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be equally distributed between sampled sites according to relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_even_rlc} .\n"))
   }
 
-} else if (params$site_selection_srs_proportional & params$hh_selection_rlc) {
+} 
+
+if (params$site_selection_srs_proportional & params$hh_selection_rlc) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using simple random sampling from a list of accessible sites and households selected in the second stage using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Sites will have equal probability of selection, and the household sample will be proportionately distributed between sampled sites according to best available estimates of relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_srs_proportional_rlc} .\n"))
   }
 
-} else if (params$site_selection_systematic_even & params$hh_selection_srs) {
+} 
+
+if (params$site_selection_systematic_even & params$hh_selection_srs) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be evenly distributed between sampled sites. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_even_srs} .\n"))
   }
 
-} else if (params$site_selection_systematic_proportional & params$hh_selection_srs) {
+} 
+
+if (params$site_selection_systematic_proportional & params$hh_selection_srs) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be proportionately distributed between sampled sites according to best available estimates of relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_proportional_srs} .\n"))
   }
 
-} else if (params$site_selection_systematic_even & params$hh_selection_systematic) {
+} 
+
+if (params$site_selection_systematic_even & params$hh_selection_systematic) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using systematic random sampling of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be evenly distributed between sampled sites. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_even_systematic} .\n\n"))
   }
 
-} else if (params$site_selection_systematic_proportional & params$hh_selection_systematic) {
+} 
+
+if (params$site_selection_systematic_proportional & params$hh_selection_systematic) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using systematic random sampling of households. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be proportionately distributed between sampled sites according to best available estimates of relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_proportional_systematic} .\n\n"))
   }
 
-} else if (params$site_selection_systematic_even & params$hh_selection_rlc & !params$multiple_methods) {
+} 
+
+if (params$site_selection_systematic_even & params$hh_selection_rlc & !params$multiple_methods) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be evenly distributed between sampled sites. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_even_rlc} .\n\n"))
   }
 
-} else if (params$site_selection_systematic_proportional & params$hh_selection_rlc & !params$multiple_methods) {
+} 
+
+if (params$site_selection_systematic_proportional & params$hh_selection_rlc & !params$multiple_methods) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using systematic random sampling from a list of accessible sites, and households selected in the second stage using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Sites will have equal probability of selection due to a lack of reliable population data. The household sample will be proportionately distributed between sampled sites according to best available estimates of relative population size. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of six sites will be either randomly or purposefully selected for assessment. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_systematic_proportional_rlc} .\n\n"))
   }
 
-} else if (params$site_selection_exhaustive & params$hh_selection_srs) {
+} 
+
+if (params$site_selection_exhaustive & params$hh_selection_srs) {
   cat("The household survey component will consist of a one-stage approach sampling strategy with all eligible sites being included and the target sample being allocated across sites proportional to their population size. Household will be done using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_exhaustive_srs} .\n\n"))
   }
 
-} else if (params$site_selection_exhaustive & params$hh_selection_systematic) {
+} 
+
+if (params$site_selection_exhaustive & params$hh_selection_systematic) {
   cat("The household survey component will consist of a one-stage approach sampling strategy with all eligible sites being included and the target sample being allocated across sites proportional to their population size. Household will be done using systematic random sampling of households. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_exhaustive_systematic} .\n\n"))
   }
 
-} else if (params$site_selection_exhaustive & params$hh_selection_rlc) {
+} 
+
+if (params$site_selection_exhaustive & params$hh_selection_rlc) {
   cat("The household survey component will consist of a one-stage approach sampling strategy with all eligible sites being included and the target sample being allocated across sites proportional to their population size. Household will be done using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_exhaustive_rlc} .\n\n"))
   }
 
-} else if (params$site_selection_cluster & params$hh_selection_srs) {
+} 
+
+if (params$site_selection_cluster & params$hh_selection_srs) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using probability proportional to size (PPS) sampling from a list of accessible sites, and households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Primary sampling units (PSU) will be defined as the village, neighbourhood, or camp and the probability of their selection is proportional to their population size. Sampling with replacement will be implemented so more than one cluster may fall within the same site by random chance. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of 25 clusters with similar cluster sizes will be conducted. Results are intended to be generalizable to the population.\n\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_cluster_srs} .\n\n"))
   }
 
-} else if (params$site_selection_cluster & params$hh_selection_systematic) {
+} 
+
+if (params$site_selection_cluster & params$hh_selection_systematic) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using probability proportional to size (PPS) sampling from a list of accessible sites, and households selected in the second stage us using systematic random sampling of households. Primary sampling units (PSU) will be defined as the village, neighbourhood, or camp and the probability of their selection is proportional to their population size. Sampling with replacement will be implemented so more than one cluster may fall within the same site by random chance. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of 25 clusters with similar cluster sizes will be conducted. Results are intended to be generalizable to the population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_cluster_systematic} .\n"))
   }
 
-} else if (params$site_selection_cluster & params$hh_selection_rlc) {
+} 
+
+if (params$site_selection_cluster & params$hh_selection_rlc) {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected in the first stage using probability proportional to size (PPS) sampling from a list of accessible sites, and households selected in the second stage us using random location cluster (RLC) method. Primary sampling units (PSU) will be defined as the village, neighbourhood, or camp and the probability of their selection is proportional to their population size. In RLC sampling, GPS points will be randomly generated over a bounded area of the selected PSUs and an equal number of GPS points will be generated per PSU. Data collection teams will collect household interviews at the closest three households at each GPS point. Sampling with replacement will be implemented so more than one cluster may fall within the same site by random chance. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Within each stratum, a minimum of 25 clusters with similar cluster sizes will be conducted. Results are intended to be generalizable to the population.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_cluster_rlc} .\n"))
   }
 
-} else if (params$site_selection_purposive == "purposive" & params$hh_selection_srs == "srs") {
+} 
+
+if (params$site_selection_purposive == "purposive" & params$hh_selection_srs == "srs") {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected purposively in the first stage based on criteria such as need, accessibility, logistics, or other defined criteria. Households selected in the second stage using appropriate sampling techniques such as simple random sampling from community listing or maps of households. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population and may not be comparable to other sites in the population depending on the purposive selection criteria.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_purposive_srs} .\n"))
   }
 
-} else if (params$site_selection_purposive == "purposive" & params$hh_selection_systematic == "systematic") {
+} 
+
+if (params$site_selection_purposive == "purposive" & params$hh_selection_systematic == "systematic") {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected purposively in the first stage based on criteria such as need, accessibility, logistics, or other defined criteria. Households selected in the second stage using systematic random sampling of households. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population and may not be comparable to other sites in the population depending on the purposive selection criteria.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_purposive_systematic} .\n"))
   }
 
-} else if (params$site_selection_purposive == "purposive" & params$hh_selection_rlc == "rlc") {
+} 
+
+if (params$site_selection_purposive == "purposive" & params$hh_selection_rlc == "rlc") {
   cat("The household survey component will consist of a two-stage approach sampling strategy with sites selected purposively in the first stage based on criteria such as need, accessibility, logistics, or other defined criteria. Households selected in the second stage using random location cluster (RLC) method. In RLC sampling, GPS points will be randomly generated over a bounded area of selected sites and an equal number of GPS points will be generated per site. Data collection teams will collect household interviews at the closest three households at each GPS point. Either a single stratum will be identified representing the target population, or if comparison between multiple groups is necessary than multiple strata will be selected. Results are intended to provide localized results which are not generalizable beyond the assessed population and may not be comparable to other sites in the population depending on the purposive selection criteria.\n")
 
   if (params$multiple_methods == TRUE) {
     cat(glue::glue("This methodology applies for the following strata: {params$stratified_strata_names_purposive_rlc} .\n"))
   }
 
-} else {
+} 
+
+if (!params$site_selection_cluster & !params$site_selection_exhaustive & !params$site_selection_purposive & !params$site_selection_srs_even & !params$site_selection_srs_proportional & !params$site_selection_systematic_even & !params$site_selection_systematic_proportional) {
   cat("PLEASE SPECIFY METHODOLOGY HERE.\n")
 } 
 
@@ -1145,13 +1188,13 @@ total_population_size_excluded <- params$total_population_size_excluded
 total_population_per_strata_included <- params$total_population_per_strata_included
 geographic_coverage <- params$geographic_coverage
 
-cat(glue::glue("The geographic coverage of the assessment includes: {geographic_coverage}. \n"))
+cat(glue::glue("{geographic_coverage}. \n"))
 
-cat(glue::glue("The total population consists of {total_population_size} people with approximately {total_population_size_included} people included in the survey and approximately {total_population_size_excluded} people excluded from the survey.\n"))               
+cat(glue::glue("The total population consists of {total_population_size} people with approximately {total_population_size_included} people included in the survey and approximately {total_population_size_excluded} people excluded from the survey.\n\n"))               
 
 
 if(params$multiple_strata) {
-  cat(glue::glue("The population will be stratified into the following strata with the following total population per stratum: {params$total_population_per_strata_included}. \n"))
+  cat(glue::glue("\n\nThe population will be stratified into the following strata with the following total population per stratum: {params$total_population_per_strata_included}. \n\n"))
 }
 
 ```
@@ -1389,7 +1432,7 @@ ft <- flextable::border_inner_h(ft, part = "body")
 ft <- flextable::border_inner_v(ft, part = "all")
 
 ft <- flextable::autofit(ft)
-ft <- flextable::fit_to_width(ft, max_width = 8)
+ft <- flextable::fit_to_width(ft, max_width = 6.8)
 
 ft
 
@@ -1798,13 +1841,13 @@ if (params$site_selection_exhaustive & params$multiple_strata) {
   
 if (params$site_selection_cluster & !params$multiple_strata) {
   cat(glue::glue(
-    "\n\n**Probability Proportional to Size (PPS) Sampling:** A total of {params$n_psu} PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. Each PSU/cluster will have a set cluster size of {params$cluster_size} households. \n\n"
+    "\n\n**Probability Proportional to Size (PPS) Cluster Sampling:** A total of {params$n_psu} PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. Each PSU/cluster will have a set cluster size of {params$cluster_size} households. \n\n"
   ))
 }
 
 if (params$site_selection_cluster & params$multiple_strata) {
   cat(glue::glue(
-    "\n\n**Probability Proportional to Size (PPS) Sampling:** The following number of PSUs/clusters will be selected per stratum: {params$n_sites_cluster}.  PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. The cluster size for each stratum is as follows: {params$cluster_size_cluster}. \n\n"
+    "\n\n**Probability Proportional to Size (PPS) Cluster Sampling:** The following number of PSUs/clusters will be selected per stratum: {params$n_sites_cluster}.  PSUs/clusters will be selected using probability proportional to size (PPS) sampling with the probability of selection proportional the population size of the PSU. Sampling with replacement will be used meaning selected PSU may have the chance to have multiple survey clusters. The cluster size for each stratum is as follows: {params$cluster_size_cluster}. \n\n"
   ))
 }
   
@@ -1881,7 +1924,7 @@ if(params$hh_selection_systematic & params$multiple_strata) {
   cat(glue::glue("This household selection method will be applied for the following strata: {params$stratified_strata_names_hh_systematic}. \n\n"))
 } 
 
-if (params$hh_selection_rlc & !params$multiple_strata) {
+if (params$hh_selection_rlc) {
   cat(glue::glue("Within selected sites, households will be selected using Random Location Cluster (RLC) sampling [@rapidWASH2019]. In RLC sampling, random GPS points are generated within the boundary of selected sites. The boundaries and GPS points can be either set beforehand using GIS software, or while in the field with tools like REACH GeoRand. At each generated GPS points, enumerators are to start exactly, or as close as possible, to that point and then select the three physically closest households for interview. The enumerators should interview the selected household and then either (a) take the GPS point of that household or (b) estimate the approximate meters from the initial GPS point to the household. \n\n"))
 }
 
@@ -1976,7 +2019,7 @@ ft <- flextable::merge_v(ft, j = c("Tool", "Pillar"))
 
 ft <- flextable::font(ft, fontname = "Arial Narrow", part = "all")
 ft <- flextable::autofit(ft)
-ft <- flextable::fit_to_width(ft, max_width = 6.5)
+ft <- flextable::fit_to_width(ft, max_width = 7)
 
 ft
 
@@ -2050,7 +2093,7 @@ if(params$tool_market_kii) {
     
     "))
   
-cat(table_caption("\n\nSelected Market Items for Vendor Key Informant Interviews"))
+cat(table_caption("Selected Market Items for Vendor Key Informant Interviews"))
 
   
 survival_needs_df <- data.frame(
@@ -2176,7 +2219,7 @@ ft <- flextable::border_inner_v(ft, part = "all")
 ft <- flextable::merge_v(ft, j = c("Tool", "Pillar"))
 
 ft <- flextable::autofit(ft)
-ft <- flextable::fit_to_width(ft, max_width = 6.5)
+ft <- flextable::fit_to_width(ft, max_width = 7)
 
 ft
 

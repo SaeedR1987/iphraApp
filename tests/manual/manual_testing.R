@@ -197,7 +197,7 @@ make_psu_frame <- function(stratum_id, n_psu, pop_range) {
   tibble::tibble(
     stratum = stratum_id,
     psu = paste0(stratum_id, "_v", seq_len(n_psu)),
-    population_size = sample(pop_range[1]:pop_range[2], n_psu, replace = TRUE),
+    total_population = sample(pop_range[1]:pop_range[2], n_psu, replace = TRUE),
     inclusion = TRUE,
     sampled_psu = NA,
     allocated_sample = NA

@@ -27,6 +27,12 @@ protocol <- IPHRAProtocol$new(
 # Inspect initial state
 protocol$get(field = "..metadata", member = "framework_type")
 
+protocol$get(field = "framework", member = "secondary_ana_goal")
+
+protocol$set(field = "framework", member = "secondary_ana_goal", value = TRUE)
+
+isTRUE(protocol$get(field = "framework", member = "secondary_ana_goal"))
+
 # Validate the objective schema via the protocol method
 # (protocol$validate_objective_schema(protocol$framework$master_schema))
 
@@ -132,7 +138,7 @@ protocol$call(
   avg_interview_time = 30,
   avg_rest_time = 30,
   avg_travel_time = 60,
-  sampling_method_site = "systematic_even",
+  sampling_method_site = "simple_random_even",
   sampling_method_hh = "systematic",
   n_sites = 10
 )

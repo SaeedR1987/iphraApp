@@ -130,7 +130,7 @@ app_ui <- function(request) {
              div(class = "container-fluid",
                  # Brand / title
                  div(class = "navbar-header",
-                     tags$a(class = "navbar-brand", href = "#", "PHR -- menu")
+                     tags$a(class = "navbar-brand", href = "#", "IPHRA -- menu")
                  ),
                  # Dropdown menus
                  tags$ul(class = "nav navbar-nav",
@@ -794,7 +794,7 @@ app_ui <- function(request) {
 
     golem_add_external_resources(),
     fluidPage(
-      titlePanel(phrutils::phr_txt("Public Health R Toolkit")),
+      titlePanel(phrutils::phr_txt("Integrated Public Health Rapid Assessment (IPHRA) App")),
 
       navbarPage(
         title = NULL,

@@ -943,7 +943,7 @@ mod_goals_server <- function(id){
 
       protocol_r()$set(
         field = "framework",
-        role = "secondary_ana_goal",
+        member = "secondary_ana_goal",
         value = isTRUE(
           input$goal_secondary_impact
         )

@@ -448,11 +448,6 @@ mod_planning_sample_size_server <- function(id) {
     samples <- reactive({
       obj <- protocol_r()
 
-      cat("obj class:", class(obj), "\n")
-      cat("has get:", "get" %in% names(obj), "\n")
-
-      print(obj$get)
-
       obj$get(
         field = "sample_object",
         member = "sample_table"

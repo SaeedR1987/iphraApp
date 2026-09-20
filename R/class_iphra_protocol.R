@@ -126,10 +126,11 @@ IPHRAProtocol <- R6::R6Class(
         framework_type = "ana",
         reference_doc_filename = "reach_tor_iphra_template.docx"
       )
-      private$..metadata$assessment_title <- assessment_title
-      private$..metadata$country_name <- country_name
-      private$..metadata$month_year <- month_year
-      private$..metadata$framework_type <- "ana"
+
+      self$set(field = "..metadata", role = "assessment_title", value = assessment_title)
+      self$set(field = "..metadata", role = "country_name", value = country_name)
+      self$set(field = "..metadata", role = "month_year", value = month_year)
+      self$set(field = "..metadata", role = "framework_type", value = "ana")
 
       phrutils::phr_message(
         ("IPHRAProtocol initialized."),

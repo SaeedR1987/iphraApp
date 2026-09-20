@@ -10,9 +10,29 @@ Description: What the package does (one paragraph).
 License: What license is it under?
 Imports: 
     config,
+    DT,
+    dplyr,
+    fs,
+    glue,
     golem,
+    jsonlite,
+    phr,
+    phrutils,
+    pkgload,
+    R6,
+    readxl,
+    rhandsontable,
+    rlang,
     shiny,
+    shinyBS,
+    shinyFiles,
+    shinydashboard,
+    shinyjs,
+    sortable,
     writexl
+Remotes:
+    impact-initiatives/public_health_resources,
+    impact-initiatives/phrutils
 Encoding: UTF-8
 LazyData: true
 Config/roxygen2/version: 8.1.0

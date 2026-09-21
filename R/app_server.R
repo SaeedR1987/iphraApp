@@ -5,25 +5,7 @@
    # other libraries
  })
 
- # Pre-warm translations at package load time (best-effort only).
- # `phrutils` lazily (re-)loads translations on first use via
- # `get_phr_translations()`/`phr_txt()`, so a failure here must never
- # prevent the app from loading - it would otherwise surface as an
- # opaque, unhandled error at `golem::run_dev()`/package-load time.
- phr_translations <- tryCatch(
-   phrutils::phr_load_translations(),
-   error = function(e) {
-     warning(
-       paste0(
-         "[iphraApp] Failed to pre-warm phrutils translations at load time: ",
-         conditionMessage(e),
-         ". Translations will be loaded lazily on first use instead."
-       ),
-       call. = FALSE
-     )
-     NULL
-   }
- )
+
 
  # Placeholder for current language (can later live in session$userData)
  phr_current_lang <- "en"
@@ -37,6 +19,26 @@
 app_server <- function(input, output, session) {
 
   session$userData$lang <- reactiveVal("en")
+
+  # Pre-warm translations at package load time (best-effort only).
+  # `phrutils` lazily (re-)loads translations on first use via
+  # `get_phr_translations()`/`phr_txt()`, so a failure here must never
+  # prevent the app from loading - it would otherwise surface as an
+  # opaque, unhandled error at `golem::run_dev()`/package-load time.
+  phr_translations <- tryCatch(
+    phrutils::phr_load_translations(),
+    error = function(e) {
+      warning(
+        paste0(
+          "[iphraApp] Failed to pre-warm phrutils translations at load time: ",
+          conditionMessage(e),
+          ". Translations will be loaded lazily on first use instead."
+        ),
+        call. = FALSE
+      )
+      NULL
+    }
+  )
 
   observeEvent(input$global_language, {
     phrutils::set_phr_language(

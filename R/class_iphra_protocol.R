@@ -130,7 +130,7 @@ IPHRAProtocol <- R6::R6Class(
       self$set(field = "..metadata", role = "assessment_title", value = assessment_title)
       self$set(field = "..metadata", role = "country_name", value = country_name)
       self$set(field = "..metadata", role = "month_year", value = month_year)
-      self$set(field = "..metadata", role = "framework_type", value = "ana")
+      # self$set(field = "..metadata", role = "framework_type", value = "ana")
 
       phrutils::phr_message(
         ("IPHRAProtocol initialized."),

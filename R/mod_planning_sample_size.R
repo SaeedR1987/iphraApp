@@ -459,7 +459,7 @@ mod_planning_sample_size_server <- function(id) {
     # })
 
     sampling_frame_data <- reactive({
-      protocol_r()$get(field = "sampling_frame", member = "log_df")
+      protocol_r()$get(field = "sampling_frame", member = "..log_df")
     })
 
     sample_results_data <- reactive({
@@ -1108,7 +1108,7 @@ mod_planning_sample_size_server <- function(id) {
 
         protocol_r()$set(
           field = "sampling_frame",
-          member = "log_df",
+          member = "..log_df",
           value = imported_df
         )
 
@@ -1160,7 +1160,7 @@ mod_planning_sample_size_server <- function(id) {
 
         protocol_r()$set(
           field = "sampling_frame",
-          member = "log_df",
+          member = "..log_df",
           value = updated_frame)
 
         phr_touch_module(

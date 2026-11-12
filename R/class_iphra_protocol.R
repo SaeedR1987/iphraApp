@@ -295,7 +295,7 @@ IPHRAProtocol <- R6::R6Class(
           date_obj <- tryCatch(
             as.Date(recall_date),
             error = function(e) {
-              phr_error(
+              phrutils::phr_error(
                 message = glue::glue(
                   "recall_date could not be coerced to a Date: {conditionMessage(e)}"
                 ),
@@ -1572,6 +1572,19 @@ IPHRAProtocol <- R6::R6Class(
   ),
 
   private = list(
+    # Fields reachable via get()/set()/call() beyond the phr defaults.
+    ..additional_get_fields = function() {
+      super$..additional_get_fields()
+    },
+
+    ..additional_set_fields = function() {
+      super$..additional_set_fields()
+    },
+
+    ..additional_call_fields = function() {
+      super$..additional_call_fields()
+    },
+
     # Named list: tool_name -> list(class = <class_name>, file = <xlsx_filename>)
     ..iphra_tools = list(
       tool_household_iphra_v2 = list(

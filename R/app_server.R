@@ -356,6 +356,7 @@ app_server <- function(input, output, session) {
   # GLOBAL ####
 
   # ---- Initialize Session State ----
+  iphra_echo_phr_notifications()
   iphra_check_phr_api()
 
   iphra_session <- iphra_startup_guard(

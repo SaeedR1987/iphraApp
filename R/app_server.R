@@ -364,14 +364,18 @@ app_server <- function(input, output, session) {
     stage = "init_session", session = session
   )
 
+  # The server body is not a reactive context; the newer phr Asset$set()
+  # reads reactive values, so construction must run inside isolate().
   iphra_startup_guard(
-    set_module(module_name = "protocol",
-               module_object = IPHRAProtocol$new(
-                 assessment_title = "IPHRA",
-                 country_name = "TBD",
-                 month_year = "2026-01-01"
-               ),
-               session = session),
+    shiny::isolate(
+      set_module(module_name = "protocol",
+                 module_object = IPHRAProtocol$new(
+                   assessment_title = "IPHRA",
+                   country_name = "TBD",
+                   month_year = "2026-01-01"
+                 ),
+                 session = session)
+    ),
     stage = "IPHRAProtocol$new / set_module", session = session
   )
 

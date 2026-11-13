@@ -1,5 +1,3 @@
- options(warn = -1) # suppress warnings globally
-
  suppressPackageStartupMessages({
    library(shiny)
    # other libraries
@@ -39,13 +37,6 @@ app_server <- function(input, output, session) {
       NULL
     }
   )
-
-  observeEvent(input$global_language, {
-    phrutils::set_phr_language(
-      input$global_language,
-      session
-    )
-  })
 
   volumes <- c(Home = fs::path_home())
 
@@ -365,15 +356,23 @@ app_server <- function(input, output, session) {
   # GLOBAL ####
 
   # ---- Initialize Session State ----
-  iphra_session <- init_session(session, project_name = "IPHRA")
+  iphra_check_phr_api()
 
-  set_module(module_name = "protocol",
-             module_object = IPHRAProtocol$new(
-               assessment_title = "IPHRA",
-               country_name = "TBD",
-               month_year = "2026-01-01"
+  iphra_session <- iphra_startup_guard(
+    init_session(session, project_name = "IPHRA"),
+    stage = "init_session", session = session
+  )
+
+  iphra_startup_guard(
+    set_module(module_name = "protocol",
+               module_object = IPHRAProtocol$new(
+                 assessment_title = "IPHRA",
+                 country_name = "TBD",
+                 month_year = "2026-01-01"
                ),
-             session = session)
+               session = session),
+    stage = "IPHRAProtocol$new / set_module", session = session
+  )
 
   protocol_r <- phr_get_module_reactive("protocol", session)
 

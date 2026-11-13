@@ -12,7 +12,14 @@ iphra_describe_condition <- function(e) {
     msg <- tryCatch(rlang::cnd_message(e), error = function(...) "")
   }
   if (!nzchar(trimws(msg))) {
-    msg <- "<empty condition message>"
+    msg <- if (inherits(e, "shiny.silent.error")) {
+      paste0(
+        "<empty> - silent shiny error (req()/validate()), typically raised by ",
+        "phrutils::phr_error(); see the preceding '[phrutils notification' line"
+      )
+    } else {
+      "<empty condition message>"
+    }
   }
   call_txt <- tryCatch(
     paste(deparse(conditionCall(e), width.cutoff = 120L), collapse = " "),
@@ -23,6 +30,33 @@ iphra_describe_condition <- function(e) {
     "message: ", msg, "\n",
     "call: ", call_txt
   )
+}
+
+#' Echo phrutils notifications to the R console (development only)
+#'
+#' Inside a running Shiny app, `phrutils::phr_error()` shows its message only
+#' as a browser notification and then calls `shiny::req(FALSE)`, which raises a
+#' *silent* error with an empty message. When the session then closes, the
+#' real message is lost. This wraps `phrutils::phr_showNotification()` so the
+#' text is also written to the console. No-op in production.
+#'
+#' @noRd
+iphra_echo_phr_notifications <- function() {
+  if (isTRUE(golem::app_prod())) return(invisible(FALSE))
+  ns <- asNamespace("phrutils")
+  if (!exists("phr_showNotification", envir = ns, inherits = FALSE)) {
+    return(invisible(FALSE))
+  }
+  original <- get("phr_showNotification", envir = ns, inherits = FALSE)
+  if (isTRUE(attr(original, "iphra_echo"))) return(invisible(TRUE))
+
+  wrapper <- function(message, type = "default") {
+    base::message("[phrutils notification (", type, ")] ", message)
+    original(message, type = type)
+  }
+  attr(wrapper, "iphra_echo") <- TRUE
+  utils::assignInNamespace("phr_showNotification", wrapper, ns = "phrutils")
+  invisible(TRUE)
 }
 
 #' Run an expression, logging full details on failure

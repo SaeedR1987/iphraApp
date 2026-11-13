@@ -229,7 +229,7 @@ phr_sync_state <- function(module_id, key, reactive_expr,
 #' }
 iphra_get_settings <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$settings)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$settings
 }
@@ -251,7 +251,7 @@ iphra_get_settings <- function(session = shiny::getDefaultReactiveDomain()) {
 #' }
 iphra_get_project <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$project)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$project
 }
@@ -272,7 +272,7 @@ iphra_get_project <- function(session = shiny::getDefaultReactiveDomain()) {
 #' }
 phr_get_modules <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$modules)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$modules
 }
@@ -315,7 +315,7 @@ set_module <- function(module_name, module_object,
 #' @keywords internal
 .iphra_module_version <- function(module_name, session) {
   if (is.null(session$userData$modules_version)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   if (is.null(session$userData$modules_version[[module_name]])) {
     session$userData$modules_version[[module_name]] <- shiny::reactiveVal(0)
@@ -455,7 +455,7 @@ iphra_get_indicator_bank <- function(session = shiny::getDefaultReactiveDomain()
 #' @export
 iphra_get_ui <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$ui)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$ui
 }
@@ -470,7 +470,7 @@ iphra_get_ui <- function(session = shiny::getDefaultReactiveDomain()) {
 #' @export
 iphra_get_flags <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$flags)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$flags
 }
@@ -485,7 +485,7 @@ iphra_get_flags <- function(session = shiny::getDefaultReactiveDomain()) {
 #' @export
 iphra_get_temp <- function(session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session$userData$temp)) {
-    iphra_init_session(session)
+    init_session(session)
   }
   session$userData$temp
 }

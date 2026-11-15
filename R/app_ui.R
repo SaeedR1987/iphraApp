@@ -236,7 +236,8 @@ app_ui <- function(request) {
         # ── 4+. Placeholder steps (modules to be added) ─────────────────
         tabPanel(textOutput("tab_title_import", inline = TRUE), value = "import",
                  mod_data_import_ui("data_import")),
-        iphra_placeholder_tab("standardization"),
+        tabPanel(textOutput("tab_title_standardization", inline = TRUE), value = "standardization",
+                 mod_data_standardization_ui("data_standardization")),
         iphra_placeholder_tab("quality"),
         iphra_placeholder_tab("cleaning"),
         iphra_placeholder_tab("analysis_quant"),

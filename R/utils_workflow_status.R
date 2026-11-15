@@ -19,7 +19,7 @@ iphra_workflow_steps <- function() {
                "glyphicon-import", FALSE),
     standardization = s("Data Standardization",
                         "Standardize the imported data to the expected structure and variables.",
-                        "glyphicon-sort-by-attributes"),
+                        "glyphicon-sort-by-attributes", FALSE),
     quality = s("Quality Reports", "Review quality reports on the imported data.",
                 "glyphicon-check"),
     cleaning = s("Data Cleaning", "Clean the data and resolve quality issues.",

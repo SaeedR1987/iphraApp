@@ -111,6 +111,11 @@ app_server <- function(input, output, session) {
   )
   mod_data_import_server("data_import", lang_r)
 
+  output$tab_title_standardization <- renderText(
+    phrutils::phr_txt("Data Standardization", lang = lang_r(), default = "Data Standardization")
+  )
+  mod_data_standardization_server("data_standardization", lang_r)
+
   # ---- Quick Save Handler ----
   # The "Save Project" menu item sets `input$save_project_btn` on click. If
   # the project has already been saved to a known path (recorded in

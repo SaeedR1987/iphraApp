@@ -1,0 +1,71 @@
+/* IPHRA layout (Stage 2, styling only): restyles the existing navbar, tabs and workspace. No markup changes. */
+
+.container-fluid { max-width: 1600px; }
+
+/* Top menu bar */
+.navbar.navbar-default {
+  background: var(--phr-white);
+  border: 0;
+  border-bottom: 3px solid var(--phr-coral);
+  border-radius: 0;
+  box-shadow: var(--phr-shadow-sm);
+  margin-bottom: var(--phr-space-4);
+}
+.navbar-default .navbar-brand {
+  font-weight: 700;
+  color: var(--phr-coral);
+  letter-spacing: 0.02em;
+}
+.navbar-default .navbar-nav > li > a {
+  color: var(--phr-charcoal);
+  font-weight: 500;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus,
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  color: var(--phr-coral-dark);
+  background: var(--phr-coral-tint);
+}
+
+/* Dropdown menus */
+.navbar .dropdown-menu {
+  border: 1px solid var(--phr-border);
+  border-radius: var(--phr-radius);
+  box-shadow: var(--phr-shadow-menu);
+  padding: var(--phr-space-1) 0;
+}
+.navbar .dropdown-menu > li > a {
+  color: var(--phr-charcoal);
+  padding: var(--phr-space-2) var(--phr-space-4);
+}
+.navbar .dropdown-menu > li > a:hover,
+.navbar .dropdown-menu > li > a:focus {
+  background: var(--phr-coral-tint);
+  color: var(--phr-coral-dark);
+}
+
+/* Workflow tabs (Goals / Tools / Planning) */
+.nav-tabs { border-bottom: 1px solid var(--phr-border); }
+.nav-tabs > li > a {
+  color: var(--phr-charcoal);
+  font-weight: 500;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: var(--phr-radius-sm) var(--phr-radius-sm) 0 0;
+  margin-right: var(--phr-space-1);
+}
+.nav-tabs > li > a:hover {
+  background: var(--phr-coral-tint);
+  border-bottom-color: var(--phr-coral-soft);
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: var(--phr-coral-dark);
+  background: var(--phr-white);
+  border: 0;
+  border-bottom: 3px solid var(--phr-coral);
+}
+.tab-content { padding-top: var(--phr-space-4); }

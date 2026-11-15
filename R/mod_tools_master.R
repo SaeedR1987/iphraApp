@@ -6,7 +6,7 @@
 # Each tool has a pair of buttons stacked vertically (Add on top, Remove
 # below); the tools themselves are laid out horizontally in a scrollable
 # row. The buttons drive the IPHRAProtocol object stored in
-# `session$userData$modules$protocol` via helpers in `utils_session.R`.
+# `phr_get_modules(session)$protocol` via helpers in `utils_session.R`.
 #
 # Since the IPHRAProtocol R6 object is not reactive on its own, every
 # mutation (`protocol$add_tools()` / `protocol$remove_tools()`) is followed
@@ -56,45 +56,28 @@ mod_tools_master_ui <- function(id) {
   # Build one vertical Add/Remove stack per tool.
   tool_cards <- lapply(tools, function(t) {
     shiny::div(
-      class = "iphra-tool-card",
-      style = "
-        display: inline-flex;
-        flex-direction: column;
-        align-items: stretch;
-        min-width: 100px;
-        max-width: 130px;
-        margin: 4px 6px;
-        padding: 6px 8px;
-        border: 1px solid #d0d5db;
-        border-radius: 6px;
-        background-color: #f8f9fa;
-        vertical-align: top;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      ",
+      class = "iphra-tool-card phr-tool-card",
       shiny::div(
-        style = "font-weight: 600; font-size: 11px; text-align: center;
-                 margin-bottom: 8px; line-height: 1.25em;",
+        class = "phr-tool-card__title",
         t$label
       ),
       shiny::div(
-        style = "display: flex; flex-direction: column; gap: 6px;",
+        class = "phr-tool-card__actions",
         shiny::actionButton(
           ns(paste0("add_", t$name)),
           label = "Add Tool",
           icon  = shiny::icon("plus"),
-          class = "btn-success btn-sm",
-          style = "width: 100%;"
+          class = "btn-success btn-sm"
         ),
         shiny::actionButton(
           ns(paste0("remove_", t$name)),
           label = "Remove Tool",
           icon  = shiny::icon("minus"),
-          class = "btn-danger btn-sm",
-          style = "width: 100%;"
+          class = "btn-danger btn-sm"
         )
       ),
       shiny::div(
-        style = "margin-top: 6px; font-size: 11px; text-align: center; color: #666;",
+        class = "phr-tool-card__status",
         shiny::uiOutput(ns(paste0("status_", t$name)), inline = TRUE)
       )
     )
@@ -107,15 +90,9 @@ mod_tools_master_ui <- function(id) {
         shiny::actionButton(ns("export_tools"), "Export All Tools",
                             class = "btn-warning"),
         shiny::br(), shiny::br(),
-        shiny::h4("Tools"),
+        shiny::h4("Tools", class = "phr-section-title"),
         shiny::div(
-          style = "
-            white-space: normal;
-            overflow-x: auto;
-            padding: 6px 2px 12px 2px;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-          ",
+          class = "phr-tool-grid",
           tool_cards
         ),
         shiny::br()

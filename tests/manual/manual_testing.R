@@ -24,8 +24,12 @@ protocol <- IPHRAProtocol$new(
   month_year = month_year
 )
 
+framework <- protocol$get(field = "asd")
+
 # Inspect initial state
 protocol$get(field = "..metadata", member = "framework_type")
+
+
 
 protocol$get(field = "framework", member = "secondary_ana_goal")
 

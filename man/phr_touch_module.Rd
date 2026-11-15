@@ -12,14 +12,13 @@ phr_touch_module(module_name, session = shiny::getDefaultReactiveDomain())
 \item{session}{Shiny session object.}
 }
 \value{
-Invisibly returns the new version number.
+Invisibly returns the new session version number.
 }
 \description{
-Bump the reactive "version" counter associated with a module stored in
-`session$userData$modules`. Call this immediately after mutating an R6
-module object's state (e.g. `protocol$add_tools(...)`) so that any Shiny
-reactive context created via `iphra_get_module_reactive()` is invalidated
-and re-evaluates with the module's latest state.
+Notify dependents that a module registered in the PHRSession changed.
+Call this immediately after mutating an R6 module object's state (e.g.
+`protocol$add_tools(...)`) so that any reactive created via
+`phr_get_module_reactive()` is invalidated and re-evaluates.
 }
 \examples{
 \dontrun{

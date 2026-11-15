@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_session.R
 \name{.iphra_module_version}
 \alias{.iphra_module_version}
-\title{Ensure a Module's Reactive Version Counter Exists}
+\title{Get a Module's Reactive Signal}
 \usage{
 .iphra_module_version(module_name, session)
 }
@@ -15,10 +15,9 @@
 The `shiny::reactiveVal()` function for this module.
 }
 \description{
-Internal helper that lazily creates (if needed) and returns the
-`shiny::reactiveVal()` counter backing a module's reactive signal, without
-wrapping it in a `shiny::reactive()`. Used by `phr_touch_module()`,
-`iphra_get_module_reactive()`, `iphra_has_protocol_tool()`, and
-`iphra_get_indicator_bank()` so they all share one source of truth.
+Internal helper returning the `shiny::reactiveVal()` backing a module's
+reactive signal, without wrapping it in a `shiny::reactive()`. Shared by
+`phr_get_module_reactive()`, `iphra_has_protocol_tool()`, and
+`iphra_get_indicator_bank()`.
 }
 \keyword{internal}

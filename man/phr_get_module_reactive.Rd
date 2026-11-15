@@ -19,15 +19,15 @@ A reactive expression returning the current module object.
 }
 \description{
 Returns a `shiny::reactive()` expression that depends on the module's
-version counter (bumped by `iphra_set_module()` / `phr_touch_module()`)
+version counter (bumped by `set_module()` / `phr_touch_module()`)
 and yields the current module object. Use this instead of reading
-`session$userData$modules[[module_name]]` directly whenever the value
+`phr_get_modules(session)[[module_name]]` directly whenever the value
 needs to stay current inside a `reactive()`, `observe()`, or `render*()`
 block.
 }
 \examples{
 \dontrun{
-protocol_r <- iphra_get_module_reactive("protocol", session)
+protocol_r <- phr_get_module_reactive("protocol", session)
 output$tool_present <- shiny::renderText({
   if ("tool_household_iphra_v2" \%in\% names(protocol_r()$tools)) "true" else "false"
 })

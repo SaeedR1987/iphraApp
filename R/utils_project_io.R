@@ -7,19 +7,21 @@
 # custom extension) containing a snapshot of the serializable parts of
 # `session$userData` established by `init_session()`:
 #
-#   * `phr_session`         — IPHRASession R6 object's serialized state
-#                             (project name, metadata, module state)
-#   * `settings`            — user preferences (language, theme, livelihoods
-#                             mapping, ...)
-#   * `project`             — project-level reactiveValues (name, description,
-#                             data pointers, indicators, summary, params, ...)
-#   * `modules`             — module-specific R6 objects such as the
-#                             `IPHRAProtocol` (with its metadata, framework
+#   * `phr_session`         — PHRSession R6 object's serialized state
+#                             (project name, metadata, change log and the
+#                             registered module objects such as the
+#                             `IPHRAProtocol`, with its metadata, framework
 #                             SVGs, tools, sample table, objectives, ...).
 #                             R6 objects are saved directly via `saveRDS()`;
 #                             they round-trip through R6 provided their class
 #                             generator (e.g. `phr::IPHRAProtocol`) is loaded
-#                             at read time.
+#                             at read time. Files written by version 1.x kept
+#                             modules in a separate top-level `modules` list;
+#                             the loader still accepts that layout.
+#   * `settings`            — user preferences (language, theme, livelihoods
+#                             mapping, ...)
+#   * `project`             — project-level reactiveValues (name, description,
+#                             data pointers, indicators, summary, params, ...)
 #   * `ui$active_tab`       — remembers the last active tab so a re-opened
 #                             project lands the user back where they were.
 #
@@ -29,7 +31,7 @@
 # each loaded module via `set_module()` / `phr_touch_module()`.
 
 # Current on-disk version tag for the .iphra format. Bump on breaking changes.
-.IPHRA_FILE_VERSION <- "1.0.0"
+.IPHRA_FILE_VERSION <- "2.0.0"
 
 # Canonical file extension for iphraApp project files.
 .IPHRA_FILE_EXT <- "iphra"
@@ -81,23 +83,15 @@ iphra_build_project_snapshot <- function(session = shiny::getDefaultReactiveDoma
     list()
   }
 
-  # `modules` is a plain list of R6 (or plain) objects — save them as-is.
-  # R6 objects round-trip through saveRDS/readRDS as long as their class
-  # generator is available at read time.
-  modules_snap <- if (is.list(session$userData$modules)) {
-    session$userData$modules
-  } else {
-    list()
-  }
-
+  # `modules` (e.g. the IPHRAProtocol R6 object) now live inside the
+  # PHRSession and are written by `phr_session$serialize()`.
   list(
     iphra_file_version = .IPHRA_FILE_VERSION,
     saved_at           = Sys.time(),
     phr_session        = phr_session$serialize(),
     settings           = settings_snap,
     project            = project_snap,
-    ui                 = ui_snap,
-    modules            = modules_snap
+    ui                 = ui_snap
   )
 }
 
@@ -198,7 +192,8 @@ iphra_load_project_file <- function(path,
 
   phr_session <- get_session(session)
 
-  # 1. PHRSession serialized state
+  # 1. PHRSession serialized state (project metadata + modules). Legacy
+  #    (1.x) payloads carry no modules here; they are restored by step 5.
   if (!is.null(snapshot$phr_session) && is.list(snapshot$phr_session)) {
     phr_session$deserialize(snapshot$phr_session, merge = FALSE)
   }
@@ -224,9 +219,10 @@ iphra_load_project_file <- function(path,
     session$userData$ui$active_tab <- snapshot$ui$active_tab
   }
 
-  # 5. Module R6 objects (IPHRAProtocol, ...). Re-register via set_module()
-  #    so their reactive version signals are (re)created and bumped, causing
-  #    any `phr_get_module_reactive()` consumers to re-read the new object.
+  # 5. Legacy (file version 1.x) snapshots stored modules in a top-level
+  #    `modules` list; register them in the PHRSession (this bumps their
+  #    reactive signals). Newer files carry modules inside `phr_session`,
+  #    restored by `deserialize()` above.
   if (is.list(snapshot$modules)) {
     for (module_name in names(snapshot$modules)) {
       module_obj <- snapshot$modules[[module_name]]

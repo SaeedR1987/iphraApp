@@ -1,0 +1,80 @@
+/* IPHRA design tokens (Stage 1). Variables only – no selectors other than :root. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Brand */
+  --phr-coral: #EE5859;
+  --phr-coral-dark: #D94344;
+  --phr-coral-soft: #F49A9B;
+  --phr-coral-tint: #FDECEC;
+  --phr-teal: #287D78;
+  --phr-teal-dark: #1F6460;
+  --phr-teal-tint: #E3F1F0;
+  --phr-charcoal: #58585A;
+  --phr-ink: #3A3A3C;
+  --phr-ivory: #F5F3EF;
+  --phr-white: #FFFFFF;
+
+  /* Neutrals */
+  --phr-border: #E2DFD9;
+  --phr-border-strong: #C9C5BD;
+  --phr-muted: #6F6F72;
+
+  /* Functional (distinct from brand colours) */
+  --phr-success: #2E7D32;
+  --phr-success-bg: #E8F3E9;
+  --phr-warning: #B26A00;
+  --phr-warning-bg: #FFF3DC;
+  --phr-error: #B3261E;
+  --phr-error-bg: #FBE9E7;
+  --phr-info: #1F5F99;
+  --phr-info-bg: #E6F0FA;
+
+  /* Typography */
+  --phr-font: "Inter", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --phr-font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --phr-text-xs: 0.75rem;
+  --phr-text-sm: 0.8125rem;
+  --phr-text-base: 0.875rem;
+  --phr-text-lg: 1rem;
+  --phr-text-xl: 1.25rem;
+  --phr-text-2xl: 1.5rem;
+  --phr-leading: 1.5;
+
+  /* Spacing (4px scale) */
+  --phr-space-1: 4px;
+  --phr-space-2: 8px;
+  --phr-space-3: 12px;
+  --phr-space-4: 16px;
+  --phr-space-5: 20px;
+  --phr-space-6: 24px;
+  --phr-space-8: 32px;
+  --phr-space-10: 40px;
+
+  /* Shape and elevation */
+  --phr-radius-sm: 6px;
+  --phr-radius: 8px;
+  --phr-radius-lg: 12px;
+  --phr-shadow-sm: 0 1px 2px rgba(58, 58, 60, 0.06);
+  --phr-shadow: 0 1px 3px rgba(58, 58, 60, 0.10);
+  --phr-shadow-menu: 0 4px 12px rgba(58, 58, 60, 0.15);
+
+  /* Focus */
+  --phr-focus-ring: 0 0 0 3px rgba(40, 125, 120, 0.45);
+}

@@ -1,0 +1,83 @@
+/* IPHRA components (Stage 3 start, styling only): restyles existing Bootstrap 3 controls. */
+
+.btn {
+  border-radius: var(--phr-radius-sm);
+  font-weight: 500;
+  box-shadow: none;
+}
+.btn-primary, .btn-success {
+  background: var(--phr-coral);
+  border-color: var(--phr-coral);
+  color: var(--phr-white);
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+.btn-success:hover, .btn-success:focus, .btn-success:active {
+  background: var(--phr-coral-dark);
+  border-color: var(--phr-coral-dark);
+  color: var(--phr-white);
+}
+.btn-default {
+  background: var(--phr-white);
+  border-color: var(--phr-border-strong);
+  color: var(--phr-charcoal);
+}
+.btn-default:hover, .btn-default:focus {
+  background: var(--phr-ivory);
+  border-color: var(--phr-charcoal);
+  color: var(--phr-ink);
+}
+.btn-info { background: var(--phr-teal); border-color: var(--phr-teal); color: var(--phr-white); }
+.btn-info:hover, .btn-info:focus { background: var(--phr-teal-dark); border-color: var(--phr-teal-dark); color: var(--phr-white); }
+
+.form-control {
+  border: 1px solid var(--phr-border-strong);
+  border-radius: var(--phr-radius-sm);
+  box-shadow: none;
+  color: var(--phr-ink);
+}
+.form-control:focus {
+  border-color: var(--phr-teal);
+  box-shadow: var(--phr-focus-ring);
+}
+label, .control-label { font-weight: 600; color: var(--phr-ink); }
+
+.well, .panel {
+  background: var(--phr-white);
+  border: 1px solid var(--phr-border);
+  border-radius: var(--phr-radius-lg);
+  box-shadow: var(--phr-shadow);
+}
+.panel-heading {
+  background: var(--phr-ivory);
+  border-bottom: 1px solid var(--phr-border);
+  border-radius: var(--phr-radius-lg) var(--phr-radius-lg) 0 0;
+  font-weight: 600;
+}
+
+/* Notifications */
+.shiny-notification {
+  border: 1px solid var(--phr-border);
+  border-left: 4px solid var(--phr-info);
+  border-radius: var(--phr-radius);
+  background: var(--phr-white);
+  color: var(--phr-ink);
+  box-shadow: var(--phr-shadow-menu);
+  opacity: 1;
+}
+.shiny-notification-message { border-left-color: var(--phr-info); }
+.shiny-notification-warning { border-left-color: var(--phr-warning); background: var(--phr-warning-bg); }
+.shiny-notification-error   { border-left-color: var(--phr-error);   background: var(--phr-error-bg); }
+
+/* Modals */
+.modal-content { border-radius: var(--phr-radius-lg); border: 1px solid var(--phr-border); }
+.modal-header { border-bottom: 1px solid var(--phr-border); }
+.modal-footer { border-top: 1px solid var(--phr-border); }
+
+/* Tables (DT / htmlTable) */
+table.dataTable thead th, .table > thead > tr > th {
+  background: var(--phr-ivory);
+  color: var(--phr-ink);
+  border-bottom: 2px solid var(--phr-border-strong);
+}
+.table > tbody > tr > td { border-top: 1px solid var(--phr-border); }
+.table-hover > tbody > tr:hover { background: var(--phr-coral-tint); }

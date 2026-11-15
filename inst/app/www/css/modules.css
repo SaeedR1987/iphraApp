@@ -1,0 +1,100 @@
+/* IPHRA module-level styling (Stage 4 prototype): Tools master and Planning sample size. */
+
+/* ---- Tools master ---- */
+.phr-tool-grid {
+  display: flex; flex-wrap: wrap; gap: var(--phr-space-3);
+  padding: var(--phr-space-3) 0;
+}
+.phr-tool-card {
+  display: flex; flex-direction: column; align-items: stretch;
+  width: 150px;
+  padding: var(--phr-space-3);
+  background: var(--phr-white);
+  border: 1px solid var(--phr-border);
+  border-top: 3px solid var(--phr-teal);
+  border-radius: var(--phr-radius);
+  box-shadow: var(--phr-shadow-sm);
+}
+.phr-tool-card__title {
+  font-weight: 600; font-size: var(--phr-text-sm); line-height: 1.3;
+  text-align: center; color: var(--phr-ink);
+  margin-bottom: var(--phr-space-2);
+  min-height: 2.6em;
+}
+.phr-tool-card__actions { display: flex; flex-direction: column; gap: var(--phr-space-2); }
+.phr-tool-card__actions .btn { width: 100%; }
+.phr-tool-card__status {
+  margin-top: var(--phr-space-2);
+  font-size: var(--phr-text-xs); text-align: center; color: var(--phr-muted);
+}
+
+/* ---- Planning sample size ---- */
+.phr-calc-panel { padding: var(--phr-space-3) var(--phr-space-4); font-size: var(--phr-text-sm); }
+.phr-calc-col { min-width: 300px; }
+.phr-section-title {
+  font-size: var(--phr-text-lg); font-weight: 600;
+  margin: 0 0 var(--phr-space-3);
+}
+.phr-result-title { margin-top: var(--phr-space-3); font-weight: 600; }
+
+.phr-sampling-layout {
+  display: flex; flex-wrap: nowrap; align-items: flex-start;
+  gap: var(--phr-space-5);
+  width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden;
+}
+.phr-sampling-col { box-sizing: border-box; }
+.phr-sampling-col--controls { flex: 0 0 25%; min-width: 260px; }
+.phr-sampling-col--table { flex: 1 1 37.5%; min-width: 380px; }
+.phr-table-frame {
+  max-height: 500px; overflow: auto;
+  padding: var(--phr-space-2);
+  background: var(--phr-white);
+  border: 1px solid var(--phr-border);
+  border-radius: var(--phr-radius);
+}
+.phr-table-frame--tall { max-height: 800px; }
+
+/* ---- Rollout to legacy modules (Goals, tools master) without touching their code ---- */
+/* shinyBS collapse panels (style = "primary") */
+.panel-primary { border-color: var(--phr-border); }
+.panel-primary > .panel-heading {
+  background: var(--phr-ivory); color: var(--phr-ink);
+  border-color: var(--phr-border); border-top: 3px solid var(--phr-coral);
+}
+.panel-primary > .panel-heading a { color: var(--phr-ink); font-weight: 600; }
+
+/* Goals tables: legacy grey header rows and red action buttons */
+[style*="background-color:#f5f5f5"] { background-color: var(--phr-ivory) !important; }
+[style*="background-color:#f88"] {
+  background-color: var(--phr-white) !important;
+  color: var(--phr-error) !important;
+  border: 1px solid var(--phr-error) !important;
+}
+.table-bordered, .table-bordered > thead > tr > th, .table-bordered > tbody > tr > td {
+  border-color: var(--phr-border);
+}
+
+/* Tools master status labels: add a non-colour cue and readable contrast */
+[style*="color: #2b8a3e"] { color: var(--phr-success) !important; }
+[style*="color: #2b8a3e"]::before { content: "\2713\00a0"; }
+[style*="color: #868e96"] { color: var(--phr-muted) !important; }
+[style*="color: #868e96"]::before { content: "\2013\00a0"; }
+
+/* rhandsontable: harmonise appearance, keep behaviour */
+.handsontable { font-family: var(--phr-font); font-size: var(--phr-text-sm); color: var(--phr-ink); }
+.handsontable th { background: var(--phr-ivory); color: var(--phr-ink); font-weight: 600; }
+.handsontable td, .handsontable th { border-color: var(--phr-border); }
+.handsontable td.area, .handsontable td.area-1 { background: var(--phr-teal-tint); }
+
+/* Extra Bootstrap variants used by modules */
+.btn-warning { background: var(--phr-white); border-color: var(--phr-warning); color: var(--phr-warning); }
+.btn-warning:hover, .btn-warning:focus { background: var(--phr-warning-bg); border-color: var(--phr-warning); color: var(--phr-warning); }
+.btn-danger { background: var(--phr-white); border-color: var(--phr-error); color: var(--phr-error); }
+.btn-danger:hover, .btn-danger:focus { background: var(--phr-error-bg); border-color: var(--phr-error); color: var(--phr-error); }
+
+/* Data import manager */
+.phr-import-table .form-group { margin-bottom: 0; }
+.phr-import-table .form-control,
+.phr-import-table .selectize-input { font-size: 12px; min-height: 32px; height: 32px; }
+.phr-import-table td { vertical-align: middle !important; }
+#data_import-toolbar .btn, .phr-toolbar .btn { font-size: 13px; }

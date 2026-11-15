@@ -1,0 +1,37 @@
+/* IPHRA base styles (Stage 1): typography, surface, links, focus. Styling only. */
+
+body {
+  font-family: var(--phr-font);
+  font-size: var(--phr-text-base);
+  line-height: var(--phr-leading);
+  color: var(--phr-charcoal);
+  background-color: var(--phr-ivory);
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--phr-font);
+  font-weight: 600;
+  color: var(--phr-ink);
+}
+h1 { font-size: var(--phr-text-2xl); }
+h2 { font-size: var(--phr-text-xl); }
+h3 { font-size: var(--phr-text-lg); }
+h4, h5, h6 { font-size: var(--phr-text-base); }
+
+a { color: var(--phr-teal); }
+a:hover, a:focus { color: var(--phr-teal-dark); }
+
+/* Visible keyboard focus everywhere */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--phr-focus-ring);
+}
+
+::selection { background: var(--phr-coral-soft); color: var(--phr-ink); }

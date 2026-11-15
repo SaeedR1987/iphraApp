@@ -3,10 +3,12 @@
    # other libraries
  })
 
+phrutils::phr_load_translations(
+ path = system.file("resources", "translations.json", package = "iphraApp")
+)
 
-
- # Placeholder for current language (can later live in session$userData)
- phr_current_lang <- "en"
+# Placeholder for current language (can later live in session$userData)
+phr_current_lang <- "en"
 
 #' The application server-side
 #'
@@ -18,25 +20,20 @@ app_server <- function(input, output, session) {
 
   session$userData$lang <- reactiveVal("en")
 
-  # Pre-warm translations at package load time (best-effort only).
-  # `phrutils` lazily (re-)loads translations on first use via
-  # `get_phr_translations()`/`phr_txt()`, so a failure here must never
-  # prevent the app from loading - it would otherwise surface as an
-  # opaque, unhandled error at `golem::run_dev()`/package-load time.
-  phr_translations <- tryCatch(
-    phrutils::phr_load_translations(),
-    error = function(e) {
-      warning(
-        paste0(
-          "[iphraApp] Failed to pre-warm phrutils translations at load time: ",
-          conditionMessage(e),
-          ". Translations will be loaded lazily on first use instead."
-        ),
-        call. = FALSE
-      )
-      NULL
-    }
-  )
+  # Active UI language. All translatable UI (navbar menu, titles, tab
+  # labels, tool tabs) renders from this, so changing it never reloads the
+  # page or touches session state.
+  lang_r <- reactive({
+    lang <- input$global_language
+    if (is.null(lang) || !lang %in% c("en", "fr", "es", "ar")) lang <- "en"
+    # Set here (not only in the observer) so any output that depends on
+    # `lang_r()` and calls `phr_txt()` without `lang` sees the new language.
+    phr_env <- get(".phr_env", envir = asNamespace("phrutils"))
+    phr_env$current_lang <- lang
+    lang
+  })
+
+  # Translations are loaded once at package load in `.onLoad()` (R/zzz.R).
 
   volumes <- c(Home = fs::path_home())
 
@@ -78,14 +75,41 @@ app_server <- function(input, output, session) {
     # a no-op and only exists to swallow any legacy click events.
   })
 
+  # Language selector (navbar dropdown): record the choice in
+  # `session$userData$lang`, the project settings and the phrutils
+  # environment. The translated UI re-renders reactively via `lang_r()`.
   observeEvent(input$global_language, {
+    lang <- lang_r()
 
-    phrutils::set_phr_language(
-      input$global_language,
-      session
-    )
+    phrutils::set_phr_language(lang, session)
 
-  })
+    settings <- session$userData$settings
+    if (!is.null(settings)) {
+      settings$language <- lang
+    }
+
+    phr_env <- get(".phr_env", envir = asNamespace("phrutils"))
+    phr_env$current_lang <- lang
+  }, ignoreInit = TRUE)
+
+  output$app_menu <- renderUI(iphra_menu_ui(lang_r()))
+  output$app_title <- renderText(phrutils::phr_txt(
+    "Integrated Public Health Rapid Assessment (IPHRA) App", lang = lang_r()
+  ))
+  output$tab_title_goals <- renderText(
+    phrutils::phr_txt("Goals and Objectives", lang = lang_r())
+  )
+  output$tab_title_tools <- renderText(
+    phrutils::phr_txt("Tool Design", lang = lang_r())
+  )
+  output$tab_title_planning <- renderText(
+    phrutils::phr_txt("Planning and Sampling", lang = lang_r())
+  )
+
+  output$tab_title_import <- renderText(
+    phrutils::phr_txt("Data Import", lang = lang_r(), default = "Data Import")
+  )
+  mod_data_import_server("data_import", lang_r)
 
   # ---- Quick Save Handler ----
   # The "Save Project" menu item sets `input$save_project_btn` on click. If
@@ -377,6 +401,9 @@ app_server <- function(input, output, session) {
 
   protocol_r <- phr_get_module_reactive("protocol", session)
 
+  iphra_workflow_status_server(input, output, session, iphra_session, lang_r)
+
+
 
   # ────────────────────────────────────────────────────────────────────────────
   # REACH Terms of Reference — Export via generate_quarto_doc()
@@ -474,7 +501,7 @@ app_server <- function(input, output, session) {
 
 
   # NOTE: `set_module()` above registers the protocol's reactive
-  # "version" signal (`session$userData$modules_version[["protocol"]]`).
+  # "version" signal (`phr_session$get_module_signal("protocol")`).
   # Any code that mutates the protocol object (e.g. `protocol$add_tools()`)
   # must call `phr_touch_module("protocol", session)` afterwards so
   # dependent modules re-evaluate. Read the protocol reactively via
@@ -520,6 +547,7 @@ app_server <- function(input, output, session) {
 
   output$tool_tabs <- renderUI({
 
+    lang_r()  # re-render tab titles when the language changes
     protocol <- protocol_r()
 
     tabs <- list()

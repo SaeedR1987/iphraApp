@@ -118,10 +118,10 @@ mod_planning_sample_size_ui <- function(id) {
                  fluidRow(
 
                    # Household-level
-                   column(width = 3, style = "min-width: 300px;",
+                   column(width = 3, class = "phr-calc-col",
                           wellPanel(
-                            style = "padding: 10px; font-size: 12px;",
-                            h4("Household-level Sample Size", style = "font-size:14px;"),
+                            class = "phr-calc-panel",
+                            h4("Household-level Sample Size", class = "phr-section-title"),
                             selectInput(ns("pop_indicator"), "Select Indicator:",
                                         choices = c("General", "Other")),
                             numericInput(ns("pop_expected_prevalence"),
@@ -141,10 +141,10 @@ mod_planning_sample_size_ui <- function(id) {
                    ),
 
                    # Individual-level
-                   column(width = 3, style = "min-width: 300px;",
+                   column(width = 3, class = "phr-calc-col",
                           wellPanel(
-                            style = "padding: 10px; font-size: 12px;",
-                            h4("Individual-level Sample Size", style = "font-size:14px;"),
+                            class = "phr-calc-panel",
+                            h4("Individual-level Sample Size", class = "phr-section-title"),
                             selectInput(ns("ind_indicator"), "Select Indicator:",
                                         choices = c("GAM by MUAC", "Other"),
                                         selected = "GAM by MUAC"),
@@ -173,10 +173,10 @@ mod_planning_sample_size_ui <- function(id) {
                    ),
 
                    # Rate-level
-                   column(width = 3, style = "min-width: 300px;",
+                   column(width = 3, class = "phr-calc-col",
                           wellPanel(
-                            style = "padding: 10px; font-size: 12px;",
-                            h4("Rate Sample Size", style = "font-size:14px;"),
+                            class = "phr-calc-panel",
+                            h4("Rate Sample Size", class = "phr-section-title"),
                             selectInput(ns("rate_indicator"), "Select Indicator:",
                                         choices = c("Crude Death Rate", "Other"),
                                         selected = "Crude Death Rate"),
@@ -209,14 +209,14 @@ mod_planning_sample_size_ui <- function(id) {
                    # Plan level
                    column(
                      width = 3,
-                     style = "min-width: 300px;",
+                     class = "phr-calc-col",
 
                      wellPanel(
-                       style = "padding: 10px; font-size: 12px;",
+                       class = "phr-calc-panel",
 
                        h4(
                          "Data Collection Planning",
-                         style = "font-size:14px;"
+                         class = "phr-section-title"
                        ),
 
                        numericInput(
@@ -316,23 +316,12 @@ mod_planning_sample_size_ui <- function(id) {
 
                  # ---- Main Flex Layout: Three-column structure ----
                  div(
-                   style = "
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: flex-start;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;    /* prevents bleed into right section */
-      box-sizing: border-box;
-      flex-wrap: nowrap;
-    ",
+                   class = "phr-sampling-layout",
 
                    # Left column (≈25%)
                    div(
-                     style = "flex: 0 0 25%; min-width: 260px; box-sizing: border-box;",
-                     h4("Sampling Controls", style = "font-size:14px; font-weight:600; margin-bottom:10px;"),
+                     class = "phr-sampling-col phr-sampling-col--controls",
+                     h4("Sampling Controls", class = "phr-section-title"),
                      fileInput(
                        ns("import_frame"),
                        "Import Sampling Frame",
@@ -344,8 +333,8 @@ mod_planning_sample_size_ui <- function(id) {
                        width = "100%"
                      ),
                      wellPanel(
-                       style = "padding:10px; margin-top:10px;",
-                       h5("Reserve Clusters", style = "font-weight:600;"),
+                     class = "well phr-calc-panel",
+                       h5("Reserve Clusters", class = "phr-result-title"),
                        checkboxInput(ns("include_reserves"), "Include reserve clusters", value = FALSE),
                        numericInput(ns("n_reserves"), "Number per strata", value = 0, min = 0)
                      ),
@@ -355,36 +344,20 @@ mod_planning_sample_size_ui <- function(id) {
 
                    # Middle column (≈37.5%)
                    div(
-                     style = "flex: 0 0 37.5%; min-width: 380px; box-sizing: border-box;",
-                     h4("Imported Sampling Frame", style = "font-size:14px; font-weight:600; margin-bottom:10px;"),
+                     class = "phr-sampling-col phr-sampling-col--table",
+                     h4("Imported Sampling Frame", class = "phr-section-title"),
                      div(
-                       style = "
-          max-height: 500px;
-          overflow-y: auto;
-          overflow-x: auto;
-          border: 1px solid #ddd;
-          border-radius: 6px;
-          padding: 5px;
-          background: #fff;
-        ",
+                       class = "phr-table-frame",
                        rhandsontable::rHandsontableOutput(ns('sampling_frame'))
                      )
                    ),
 
                    # Right column (≈37.5%)
                    div(
-                     style = "flex: 0 0 37.5%; min-width: 380px; box-sizing: border-box;",
-                     h4("Sample Results", style = "font-size:14px; font-weight:600; margin-bottom:10px;"),
+                     class = "phr-sampling-col phr-sampling-col--table",
+                     h4("Sample Results", class = "phr-section-title"),
                      div(
-                       style = "
-          max-height: 500px;
-          overflow-y: auto;
-          overflow-x: auto;
-          border: 1px solid #ddd;
-          border-radius: 6px;
-          padding: 5px;
-          background: #fff;
-        ",
+                       class = "phr-table-frame",
                        rhandsontable::rHandsontableOutput(ns('sample_results'))
                      )
                    )

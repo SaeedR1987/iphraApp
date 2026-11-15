@@ -10,9 +10,9 @@ get_session(session = shiny::getDefaultReactiveDomain())
 \item{session}{Shiny session object.}
 }
 \value{
-The IPHRASession object.
+The PHRSession object.
 }
 \description{
-Retrieve the IPHRASession R6 object from the current Shiny session.
+Retrieve the PHRSession R6 object from the current Shiny session.
 If the session has not been initialized, this will initialize it.
 }

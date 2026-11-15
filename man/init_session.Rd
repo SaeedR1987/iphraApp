@@ -22,10 +22,9 @@ all session components are available to modules.
 The session structure includes:
 - `session_id`: Unique session identifier
 - `session_start`: Session start timestamp
-- `phr_session`: IPHRASession R6 object for serializable project state
+- `phr_session`: PHRSession R6 object (module registry + project state)
 - `settings`: reactiveValues for user preferences (language, theme, etc.)
 - `project`: reactiveValues for project-level data pointers
-- `modules`: List for module-specific R6 or reactive objects
 - `ui`: reactiveValues for UI/interaction state
 - `flags`: reactiveValues for runtime status flags
 - `temp`: reactiveValues for temporary/cached data

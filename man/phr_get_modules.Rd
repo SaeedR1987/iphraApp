@@ -10,16 +10,16 @@ phr_get_modules(session = shiny::getDefaultReactiveDomain())
 \item{session}{Shiny session object.}
 }
 \value{
-The modules list.
+A named list of module objects.
 }
 \description{
-Get the modules list for storing module-specific R6 or reactive objects.
-Use this to register and retrieve module instances.
+Get the named list of module objects registered in the PHRSession.
+This is a non-reactive snapshot; use `phr_get_module_reactive()` for
+reactive access and `set_module()` to register modules.
 }
 \examples{
 \dontrun{
 modules <- phr_get_modules(session)
-modules$sample <- SampleModule$new()
-sample_mod <- modules$sample
+protocol <- modules[["protocol"]]
 }
 }

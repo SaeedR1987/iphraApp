@@ -4,44 +4,54 @@
 \alias{PHRSession}
 \title{PHR Session State Object}
 \description{
-R6 class for managing session state across multiple modules.
-Provides methods for state storage, retrieval, serialization (save),
-and deserialization (load) of project files.
+R6 class (inheriting from `phr::Asset`) managing the project-level state of
+the app: the registry of module objects, project metadata, reactive
+change signals, and serialization (save/load) of project files.
+}
+\section{Super class}{
+\code{\link[phr:Asset]{phr::Asset}} -> \code{PHRSession}
 }
 \section{Methods}{
 \subsection{Public methods}{
   \itemize{
-    \item \href{#method-IPHRASession-initialize}{\code{IPHRASession$new()}}
-    \item \href{#method-IPHRASession-get_version_signal}{\code{IPHRASession$get_version_signal()}}
-    \item \href{#method-IPHRASession-register_module}{\code{IPHRASession$register_module()}}
-    \item \href{#method-IPHRASession-set}{\code{IPHRASession$set()}}
-    \item \href{#method-IPHRASession-get}{\code{IPHRASession$get()}}
-    \item \href{#method-IPHRASession-get_module_state}{\code{IPHRASession$get_module_state()}}
-    \item \href{#method-IPHRASession-has_module}{\code{IPHRASession$has_module()}}
-    \item \href{#method-IPHRASession-has_key}{\code{IPHRASession$has_key()}}
-    \item \href{#method-IPHRASession-remove}{\code{IPHRASession$remove()}}
-    \item \href{#method-IPHRASession-clear_module}{\code{IPHRASession$clear_module()}}
-    \item \href{#method-IPHRASession-clear_all}{\code{IPHRASession$clear_all()}}
-    \item \href{#method-IPHRASession-get_project_name}{\code{IPHRASession$get_project_name()}}
-    \item \href{#method-IPHRASession-set_project_name}{\code{IPHRASession$set_project_name()}}
-    \item \href{#method-IPHRASession-get_metadata}{\code{IPHRASession$get_metadata()}}
-    \item \href{#method-IPHRASession-serialize}{\code{IPHRASession$serialize()}}
-    \item \href{#method-IPHRASession-deserialize}{\code{IPHRASession$deserialize()}}
-    \item \href{#method-IPHRASession-save_project}{\code{IPHRASession$save_project()}}
-    \item \href{#method-IPHRASession-load_project}{\code{IPHRASession$load_project()}}
-    \item \href{#method-IPHRASession-list_modules}{\code{IPHRASession$list_modules()}}
-    \item \href{#method-IPHRASession-print}{\code{IPHRASession$print()}}
-    \item \href{#method-IPHRASession-clone}{\code{IPHRASession$clone()}}
+    \item \href{#method-PHRSession-initialize}{\code{PHRSession$new()}}
+    \item \href{#method-PHRSession-version_signal}{\code{PHRSession$version_signal()}}
+    \item \href{#method-PHRSession-set_module}{\code{PHRSession$set_module()}}
+    \item \href{#method-PHRSession-get_module}{\code{PHRSession$get_module()}}
+    \item \href{#method-PHRSession-touch_module}{\code{PHRSession$touch_module()}}
+    \item \href{#method-PHRSession-get_module_reactive}{\code{PHRSession$get_module_reactive()}}
+    \item \href{#method-PHRSession-get_module_signal}{\code{PHRSession$get_module_signal()}}
+    \item \href{#method-PHRSession-has_module}{\code{PHRSession$has_module()}}
+    \item \href{#method-PHRSession-list_modules}{\code{PHRSession$list_modules()}}
+    \item \href{#method-PHRSession-remove_module}{\code{PHRSession$remove_module()}}
+    \item \href{#method-PHRSession-get_project_name}{\code{PHRSession$get_project_name()}}
+    \item \href{#method-PHRSession-set_project_name}{\code{PHRSession$set_project_name()}}
+    \item \href{#method-PHRSession-serialize}{\code{PHRSession$serialize()}}
+    \item \href{#method-PHRSession-deserialize}{\code{PHRSession$deserialize()}}
+    \item \href{#method-PHRSession-save_project}{\code{PHRSession$save_project()}}
+    \item \href{#method-PHRSession-load_project}{\code{PHRSession$load_project()}}
+    \item \href{#method-PHRSession-print}{\code{PHRSession$print()}}
+    \item \href{#method-PHRSession-clone}{\code{PHRSession$clone()}}
   }
 }
+\if{html}{\out{<details><summary>Inherited methods</summary>
+<ul>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="call"><a href='../../phr/html/Asset.html#method-Asset-call'><code>phr::Asset$call()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="get"><a href='../../phr/html/Asset.html#method-Asset-get'><code>phr::Asset$get()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="post_sync_state"><a href='../../phr/html/Asset.html#method-Asset-post_sync_state'><code>phr::Asset$post_sync_state()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="pre_sync_state"><a href='../../phr/html/Asset.html#method-Asset-pre_sync_state'><code>phr::Asset$pre_sync_state()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="set"><a href='../../phr/html/Asset.html#method-Asset-set'><code>phr::Asset$set()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="phr" data-topic="Asset" data-id="sync_state"><a href='../../phr/html/Asset.html#method-Asset-sync_state'><code>phr::Asset$sync_state()</code></a></span></li>
+</ul>
+</details>}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-initialize}{}}}
-\subsection{\code{IPHRASession$new()}}{
+\if{html}{\out{<a id="method-PHRSession-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-initialize}{}}}
+\subsection{\code{PHRSession$new()}}{
   Initialize a new PHRSession object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$new(project_name = NULL)}
+    \preformatted{PHRSession$new(project_name = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -57,17 +67,15 @@ and deserialization (load) of project files.
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-get_version_signal"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-get_version_signal}{}}}
-\subsection{\code{IPHRASession$get_version_signal()}}{
-  Get the reactive version signal for this session object. Calling the
-returned function inside a Shiny reactive context (`reactive()`,
-`observe()`, `render*()`) creates a dependency that invalidates
-whenever the session state changes (i.e. whenever `set()`/`deserialize()`
-/`clear_module()`/etc. are called).
+\if{html}{\out{<a id="method-PHRSession-version_signal"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-version_signal}{}}}
+\subsection{\code{PHRSession$version_signal()}}{
+  Session-wide reactive signal. Calling the returned function inside a
+reactive context creates a dependency on ANY change to the session
+(it mirrors `..metadata$version`).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$get_version_signal()}
+    \preformatted{PHRSession$version_signal()}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
@@ -76,87 +84,61 @@ whenever the session state changes (i.e. whenever `set()`/`deserialize()`
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-register_module"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-register_module}{}}}
-\subsection{\code{IPHRASession$register_module()}}{
-  Register a module with its default state structure.
-This should be called during module initialization.
+\if{html}{\out{<a id="method-PHRSession-set_module"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-set_module}{}}}
+\subsection{\code{PHRSession$set_module()}}{
+  Register (or replace) a module object and notify dependents.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$register_module(module_id, defaults = list(), serializable = TRUE)}
+    \preformatted{PHRSession$set_module(module_id, object, serializable = TRUE)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{module_id}}{Character string identifying the module.}
-      \item{\code{defaults}}{Named list of default values for the module's state.}
-      \item{\code{serializable}}{Logical vector or named list indicating which keys
-should be serialized when saving. Default is TRUE (all keys serializable).}
+      \item{\code{object}}{The module object (typically an R6 object).}
+      \item{\code{serializable}}{Logical; whether the module is saved with the project.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    Invisibly returns the module object.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-set"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-set}{}}}
-\subsection{\code{IPHRASession$set()}}{
-  Set a state value for a specific module.
+\if{html}{\out{<a id="method-PHRSession-get_module"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-get_module}{}}}
+\subsection{\code{PHRSession$get_module()}}{
+  Get a registered module object (non-reactive).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$set(module_id, key, value)}
+    \preformatted{PHRSession$get_module(module_id, default = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{module_id}}{Character string identifying the module.}
-      \item{\code{key}}{Character string identifying the state key.}
-      \item{\code{value}}{The value to store.}
+      \item{\code{default}}{Value returned if the module is not registered.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    The module object, or `default`.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-get"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-get}{}}}
-\subsection{\code{IPHRASession$get()}}{
-  Get a state value for a specific module.
+\if{html}{\out{<a id="method-PHRSession-touch_module"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-touch_module}{}}}
+\subsection{\code{PHRSession$touch_module()}}{
+  Notify dependents that a module's state changed. Call after mutating
+the module object (e.g. `protocol$add_tools()`).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$get(module_id, key, default = NULL)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{module_id}}{Character string identifying the module.}
-      \item{\code{key}}{Character string identifying the state key.}
-      \item{\code{default}}{Default value to return if key is not found.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    The stored value, or the default if not found.
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-get_module_state"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-get_module_state}{}}}
-\subsection{\code{IPHRASession$get_module_state()}}{
-  Get all state values for a specific module.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$get_module_state(module_id)}
+    \preformatted{PHRSession$touch_module(module_id)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -167,18 +149,63 @@ should be serialized when saving. Default is TRUE (all keys serializable).}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Named list of all state values for the module, or empty list.
+    Invisibly returns the new session version.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-has_module"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-has_module}{}}}
-\subsection{\code{IPHRASession$has_module()}}{
+\if{html}{\out{<a id="method-PHRSession-get_module_reactive"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-get_module_reactive}{}}}
+\subsection{\code{PHRSession$get_module_reactive()}}{
+  Reactive accessor for a module: depends on the module's signal and
+yields the current module object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PHRSession$get_module_reactive(module_id)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{module_id}}{Character string identifying the module.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A `shiny::reactive()` returning the module object (or `NULL`).
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PHRSession-get_module_signal"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-get_module_signal}{}}}
+\subsection{\code{PHRSession$get_module_signal()}}{
+  Get the reactive signal backing a module (created lazily).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PHRSession$get_module_signal(module_id)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{module_id}}{Character string identifying the module.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A `shiny::reactiveVal()` function.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PHRSession-has_module"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-has_module}{}}}
+\subsection{\code{PHRSession$has_module()}}{
   Check if a module has been registered.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$has_module(module_id)}
+    \preformatted{PHRSession$has_module(module_id)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -189,64 +216,33 @@ should be serialized when saving. Default is TRUE (all keys serializable).}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Logical indicating whether the module is registered.
+    Logical.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-has_key"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-has_key}{}}}
-\subsection{\code{IPHRASession$has_key()}}{
-  Check if a specific key exists for a module.
+\if{html}{\out{<a id="method-PHRSession-list_modules"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-list_modules}{}}}
+\subsection{\code{PHRSession$list_modules()}}{
+  List registered module IDs.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$has_key(module_id, key)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{module_id}}{Character string identifying the module.}
-      \item{\code{key}}{Character string identifying the state key.}
-    }
+    \preformatted{PHRSession$list_modules()}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Logical indicating whether the key exists.
+    Character vector.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-remove"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-remove}{}}}
-\subsection{\code{IPHRASession$remove()}}{
-  Remove a state key from a module.
+\if{html}{\out{<a id="method-PHRSession-remove_module"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-remove_module}{}}}
+\subsection{\code{PHRSession$remove_module()}}{
+  Remove a module from the session and notify dependents.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$remove(module_id, key)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{module_id}}{Character string identifying the module.}
-      \item{\code{key}}{Character string identifying the state key.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Invisibly returns self for method chaining.
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-clear_module"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-clear_module}{}}}
-\subsection{\code{IPHRASession$clear_module()}}{
-  Clear all state for a specific module.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$clear_module(module_id)}
+    \preformatted{PHRSession$remove_module(module_id)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -257,133 +253,101 @@ should be serialized when saving. Default is TRUE (all keys serializable).}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    Invisibly returns self.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-clear_all"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-clear_all}{}}}
-\subsection{\code{IPHRASession$clear_all()}}{
-  Clear all session state.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$clear_all()}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Invisibly returns self for method chaining.
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-get_project_name"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-get_project_name}{}}}
-\subsection{\code{IPHRASession$get_project_name()}}{
+\if{html}{\out{<a id="method-PHRSession-get_project_name"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-get_project_name}{}}}
+\subsection{\code{PHRSession$get_project_name()}}{
   Get the project name.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$get_project_name()}
+    \preformatted{PHRSession$get_project_name()}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Character string with the project name.
+    Character string.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-set_project_name"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-set_project_name}{}}}
-\subsection{\code{IPHRASession$set_project_name()}}{
+\if{html}{\out{<a id="method-PHRSession-set_project_name"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-set_project_name}{}}}
+\subsection{\code{PHRSession$set_project_name()}}{
   Set the project name.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$set_project_name(name)}
+    \preformatted{PHRSession$set_project_name(name)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{name}}{Character string for the project name.}
+      \item{\code{name}}{Non-empty character string.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    Invisibly returns self.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-get_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-get_metadata}{}}}
-\subsection{\code{IPHRASession$get_metadata()}}{
-  Get session metadata.
+\if{html}{\out{<a id="method-PHRSession-serialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-serialize}{}}}
+\subsection{\code{PHRSession$serialize()}}{
+  Serialize the session (project metadata, change log and serializable
+modules) to a list suitable for `saveRDS()`.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$get_metadata()}
+    \preformatted{PHRSession$serialize()}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Named list with session metadata.
+    Named list.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-serialize"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-serialize}{}}}
-\subsection{\code{IPHRASession$serialize()}}{
-  Serialize the session state to a list suitable for saving.
-Only includes keys marked as serializable.
+\if{html}{\out{<a id="method-PHRSession-deserialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-deserialize}{}}}
+\subsection{\code{PHRSession$deserialize()}}{
+  Restore the session from a list produced by `serialize()` (legacy
+`iphra_session_version` / `state` payloads are also accepted).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$serialize()}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Named list with serializable session data.
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-deserialize"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-deserialize}{}}}
-\subsection{\code{IPHRASession$deserialize()}}{
-  Deserialize session state from a loaded list.
-This replaces the current state with the loaded state.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$deserialize(data, merge = FALSE)}
+    \preformatted{PHRSession$deserialize(data, merge = FALSE)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{data}}{Named list with session data (from serialize or load_project).}
-      \item{\code{merge}}{Logical. If TRUE, merge with existing state. If FALSE,
-replace existing state completely. Default is FALSE.}
+      \item{\code{data}}{Named list.}
+      \item{\code{merge}}{Logical. If `TRUE`, keep modules not present in `data`.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    Invisibly returns self.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-save_project"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-save_project}{}}}
-\subsection{\code{IPHRASession$save_project()}}{
-  Save the session to a file.
+\if{html}{\out{<a id="method-PHRSession-save_project"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-save_project}{}}}
+\subsection{\code{PHRSession$save_project()}}{
+  Save the session to an `.rds` file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$save_project(path)}
+    \preformatted{PHRSession$save_project(path)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{path}}{Character string with the file path.
-File extension determines format: .rds for R binary, .json for JSON.}
+      \item{\code{path}}{Character string with the file path.}
     }
     \if{html}{\out{</div>}}
   }
@@ -393,63 +357,48 @@ File extension determines format: .rds for R binary, .json for JSON.}
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-load_project"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-load_project}{}}}
-\subsection{\code{IPHRASession$load_project()}}{
-  Load session state from a file.
+\if{html}{\out{<a id="method-PHRSession-load_project"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-load_project}{}}}
+\subsection{\code{PHRSession$load_project()}}{
+  Load the session from an `.rds` file written by `save_project()`.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$load_project(path, merge = FALSE)}
+    \preformatted{PHRSession$load_project(path, merge = FALSE)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{path}}{Character string with the file path.}
-      \item{\code{merge}}{Logical. If TRUE, merge with existing state. Default is FALSE.}
+      \item{\code{merge}}{Logical; see `deserialize()`.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    Invisibly returns self for method chaining.
+    Invisibly returns self.
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-list_modules"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-list_modules}{}}}
-\subsection{\code{IPHRASession$list_modules()}}{
-  Get a list of all registered modules.
+\if{html}{\out{<a id="method-PHRSession-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-print}{}}}
+\subsection{\code{PHRSession$print()}}{
+  Print a summary of the session.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$list_modules()}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Character vector of module IDs.
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-print"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-print}{}}}
-\subsection{\code{IPHRASession$print()}}{
-  Print a summary of the session state.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$print()}
+    \preformatted{PHRSession$print()}
     \if{html}{\out{</div>}}
   }
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IPHRASession-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-IPHRASession-clone}{}}}
-\subsection{\code{IPHRASession$clone()}}{
+\if{html}{\out{<a id="method-PHRSession-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PHRSession-clone}{}}}
+\subsection{\code{PHRSession$clone()}}{
   The objects of this class are cloneable with this method.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{IPHRASession$clone(deep = FALSE)}
+    \preformatted{PHRSession$clone(deep = FALSE)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{

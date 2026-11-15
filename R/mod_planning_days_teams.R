@@ -44,12 +44,12 @@ mod_planning_days_teams_ui <- function(id) {
       # Left: Sample table
       column(
         6,
-        style="min-width: 300px;",
-        h4("Sample Table", style="font-size:14px;"),
+        class = "phr-calc-col",
+        h4("Sample Table", class = "phr-section-title"),
         actionButton(ns("remove_sample"), "Remove Selected Row(s)", class = "btn-danger"),
         br(), br(),
         div(
-          style = "max-height:300px; overflow-y: auto;",
+          class = "phr-table-frame",
           DT::DTOutput(ns("samples_table"))
         )
       ),

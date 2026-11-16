@@ -116,6 +116,12 @@ app_server <- function(input, output, session) {
   )
   mod_data_standardization_server("data_standardization", lang_r)
 
+  output$tab_title_quality <- renderText(
+    phrutils::phr_txt("Data Monitoring and Quality", lang = lang_r(),
+                      default = "Data Monitoring and Quality")
+  )
+  mod_data_quality_server("data_quality", lang_r)
+
   # ---- Quick Save Handler ----
   # The "Save Project" menu item sets `input$save_project_btn` on click. If
   # the project has already been saved to a known path (recorded in

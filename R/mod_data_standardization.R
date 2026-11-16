@@ -27,6 +27,8 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
     datasets <- shiny::reactive(datasets_r() %||% list())
     refresh <- shiny::reactiveVal(0L)
 
+    iphra_schema_repair_server(input, output, session, iphra_session, datasets, tx)
+
     current <- shiny::reactive({
       ds <- datasets()
       nm <- input$dataset
@@ -52,7 +54,9 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
                             icon = shiny::icon("sort-by-attributes", lib = "glyphicon"),
                             class = "btn-primary"),
         shiny::actionButton(ns("diagnose"), tx("Run Diagnostics"),
-                            icon = shiny::icon("stethoscope"), class = "btn-default")
+                            icon = shiny::icon("stethoscope"), class = "btn-default"),
+        shiny::actionButton(ns("repair"), tx("Repair Mappings"),
+                            icon = shiny::icon("wrench"), class = "btn-default")
       )
     })
 
@@ -67,15 +71,27 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
     run_method <- function(method, label) {
       obj <- current()
       shiny::req(obj)
-      res <- tryCatch({
-        obj[[method]]()
-        NULL
-      }, error = function(e) e)
-      if (inherits(res, "error")) {
-        shiny::showNotification(paste0(label, ": ", conditionMessage(res)),
-                                type = "error", duration = 15)
+      if (identical(method, "data_diagnose")) {
+        # Re-map schema variables so schema edits are reflected in the maps
+        tryCatch(
+          obj$.__enclos_env__$private$..map_schema_vars(stage = "raw"),
+          error = function(e) shiny::showNotification(
+            paste0(tx("Mapping schema variables"), ": ", conditionMessage(e)),
+            type = "warning", duration = 10
+          )
+        )
+      }
+      res <- tryCatch(obj[[method]](), error = function(e) e)
+      failed <- inherits(res, "error") ||
+        (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
+      if (failed) {
+        msg <- if (inherits(res, "error")) conditionMessage(res) else tx("the step reported a failure, see the log.")
+        shiny::showNotification(paste0(label, ": ", msg), type = "error", duration = 15)
       } else {
-        shiny::showNotification(paste0(label, ": ", tx("done")), type = "message")
+        extra <- if (identical(method, "data_diagnose") && is.data.frame(res)) {
+          paste0(" (", nrow(res), " ", tx("rows"), ")")
+        } else ""
+        shiny::showNotification(paste0(label, ": ", tx("done"), extra), type = "message")
         iphra_session$touch_module("datasets")
       }
       refresh(refresh() + 1L)

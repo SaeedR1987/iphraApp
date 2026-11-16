@@ -92,7 +92,9 @@
 .phr-sidebar__group.has-active > .phr-sidebar__group-toggle { color: var(--phr-coral-dark); font-weight: 600; }
 .phr-sidebar__sub { list-style: none; margin: 0; padding: 0 0 0 var(--phr-space-5); }
 .phr-sidebar__group:not(.open) > .phr-sidebar__sub { display: none; }
-.phr-sidebar { max-height: calc(100vh - 2 * var(--phr-space-4)); overflow-y: auto; }
+.phr-sidebar { min-height: 660px; max-height: calc(100vh - 2 * var(--phr-space-4)); overflow-y: auto; }
+.phr-sidebar__link, .phr-sidebar__group-toggle { font-size: 16px; padding-top: var(--phr-space-3); padding-bottom: var(--phr-space-3); }
+.phr-sidebar__sub .phr-sidebar__link { font-size: 15px; }
 body.phr-sidebar-collapsed .phr-sidebar__chevron { display: none; }
 body.phr-sidebar-collapsed .phr-sidebar__sub { padding-left: 0; }
 body.phr-sidebar-collapsed .phr-sidebar__group:not(.open) > .phr-sidebar__sub { display: block; }

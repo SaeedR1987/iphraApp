@@ -11,6 +11,7 @@ License: What license is it under?
 Imports: 
     config,
     DT,
+    leaflet,
     dplyr,
     fs,
     glue,

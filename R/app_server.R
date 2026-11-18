@@ -122,6 +122,11 @@ app_server <- function(input, output, session) {
   )
   mod_data_quality_server("data_quality", lang_r)
 
+  output$tab_title_cleaning <- renderText(
+    phrutils::phr_txt("Data Cleaning", lang = lang_r(), default = "Data Cleaning")
+  )
+  mod_data_cleaning_server("data_cleaning", lang_r)
+
   # ---- Quick Save Handler ----
   # The "Save Project" menu item sets `input$save_project_btn` on click. If
   # the project has already been saved to a known path (recorded in

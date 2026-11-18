@@ -24,7 +24,7 @@ iphra_workflow_steps <- function() {
                 "Monitor data collection and review data quality checks.",
                 "glyphicon-check", FALSE),
     cleaning = s("Data Cleaning", "Clean the data and resolve quality issues.",
-                 "glyphicon-filter"),
+                 "glyphicon-filter", FALSE),
     analysis_quant = s("Quantitative Data Analysis", "Analyse the quantitative data.",
                        "glyphicon-stats"),
     analysis_qual = s("Qualitative Data Analysis", "Analyse the qualitative data.",

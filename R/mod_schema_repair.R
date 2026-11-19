@@ -98,6 +98,42 @@ iphra_schema_read_file <- function(path, name) {
   }
 }
 
+#' Stages ("raw", "standardized", "clean") for which the Data object holds a
+#' non-empty data frame.
+#' @noRd
+iphra_available_stages <- function(obj) {
+  if (is.null(obj)) return(character(0))
+  fields <- c(raw = "..raw_data", standardized = "..standardized_data", clean = "..clean_data")
+  keep <- vapply(fields, function(f) {
+    x <- tryCatch(obj$get(field = f), error = function(e) NULL)
+    is.data.frame(x) && nrow(x) > 0
+  }, logical(1))
+  names(fields)[keep]
+}
+
+#' Column / unique-value summary of a data frame, optionally filtered by a
+#' case-insensitive substring on the column name or any unique value.
+#' @noRd
+iphra_data_reference <- function(df, q = "", max_values = 50L) {
+  q <- tolower(trimws(q %||% ""))
+  rows <- lapply(names(df), function(cl) {
+    u <- unique(as.character(df[[cl]]))
+    u <- sort(u[!is.na(u) & nzchar(u)])
+    name_hit <- !nzchar(q) || grepl(q, tolower(cl), fixed = TRUE)
+    val_hit <- grepl(q, tolower(u), fixed = TRUE)
+    if (!name_hit && !any(val_hit)) return(NULL)
+    shown <- if (name_hit) u else c(u[val_hit], u[!val_hit])
+    extra <- length(shown) - max_values
+    txt <- paste(utils::head(shown, max_values), collapse = " | ")
+    if (extra > 0) txt <- paste0(txt, " | (+", extra, " more)")
+    data.frame(column = cl, n_unique = length(u), unique_values = txt,
+               stringsAsFactors = FALSE)
+  })
+  rows <- rows[!vapply(rows, is.null, logical(1))]
+  if (!length(rows)) return(NULL)
+  do.call(rbind, rows)
+}
+
 iphra_schema_modal <- function(ns, tx, choices, selected) {
   shiny::modalDialog(
     title = tx("Repair Mappings"), size = "l", easyClose = FALSE,
@@ -138,9 +174,20 @@ iphra_schema_modal <- function(ns, tx, choices, selected) {
       ),
       shiny::column(
         4,
-        shiny::h4(tx("Tool reference")),
-        shiny::uiOutput(ns("rm_ref_ui")),
-        rhandsontable::rHandsontableOutput(ns("rm_ref_table"), width = "100%", height = "auto")
+        shiny::tabsetPanel(
+          shiny::tabPanel(
+            tx("Tool reference"),
+            shiny::br(),
+            shiny::uiOutput(ns("rm_ref_ui")),
+            rhandsontable::rHandsontableOutput(ns("rm_ref_table"), width = "100%", height = "auto")
+          ),
+          shiny::tabPanel(
+            tx("Data reference"),
+            shiny::br(),
+            shiny::uiOutput(ns("rm_data_ui")),
+            rhandsontable::rHandsontableOutput(ns("rm_data_table"), width = "100%", height = "auto")
+          )
+        )
       )
     ),
     footer = shiny::modalButton(tx("Close"))
@@ -299,6 +346,46 @@ iphra_schema_repair_server <- function(input, output, session, iphra_session, da
       }
     }
   )
+
+  # ---- data reference -------------------------------------------------------
+  rm_stages <- shiny::reactive({
+    ds <- datasets()
+    nm <- input$rm_dataset
+    if (is.null(nm) || !nm %in% names(ds)) return(character(0))
+    iphra_available_stages(ds[[nm]])
+  })
+
+  output$rm_data_ui <- shiny::renderUI({
+    st <- rm_stages()
+    if (!length(st)) {
+      return(phr_info_panel(tx("This dataset has no data available."), title = tx("No data")))
+    }
+    sel <- shiny::isolate(input$rm_data_stage)
+    if (is.null(sel) || !sel %in% st) sel <- st[1]
+    shiny::tagList(
+      shiny::radioButtons(ns("rm_data_stage"), label = NULL, inline = TRUE,
+                          choices = stats::setNames(st, vapply(st, tx, character(1))),
+                          selected = sel),
+      shiny::textInput(ns("rm_data_search"), label = NULL, width = "100%",
+                       placeholder = tx("Filter by column or value..."))
+    )
+  })
+
+  output$rm_data_table <- rhandsontable::renderRHandsontable({
+    ds <- datasets()
+    nm <- input$rm_dataset
+    st <- input$rm_data_stage
+    shiny::req(nm, st, nm %in% names(ds), st %in% rm_stages())
+    df <- tryCatch(ds[[nm]]$get_data(st), error = function(e) NULL)
+    shiny::req(is.data.frame(df))
+    ref <- iphra_data_reference(df, input$rm_data_search)
+    shiny::req(!is.null(ref))
+    rhandsontable::rhandsontable(
+      ref, readOnly = TRUE, rowHeaders = NULL, height = 480, stretchH = "all", width = NULL,
+      colWidths = c(140, 70, 400)
+    ) |>
+      rhandsontable::hot_cols(manualColumnResize = TRUE, columnSorting = TRUE)
+  })
 
   # ---- tool reference -------------------------------------------------------
   tool <- shiny::reactive({

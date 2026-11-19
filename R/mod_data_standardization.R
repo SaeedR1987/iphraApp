@@ -36,6 +36,25 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       ds[[nm]]
     })
 
+    available_stages <- shiny::reactive({
+      datasets()
+      refresh()
+      iphra_available_stages(current())
+    })
+
+    output$stage_ui <- shiny::renderUI({
+      st <- available_stages()
+      if (!length(st)) return(NULL)
+      sel <- shiny::isolate(input$stage)
+      if (is.null(sel) || !sel %in% st) sel <- st[1]
+      shiny::div(
+        style = "display:inline-block; vertical-align:middle; margin:0 8px;",
+        shiny::radioButtons(ns("stage"), label = NULL, inline = TRUE,
+                            choices = stats::setNames(st, vapply(st, tx, character(1))),
+                            selected = sel)
+      )
+    })
+
     output$toolbar <- shiny::renderUI({
       ds <- datasets()
       if (!length(ds)) return(NULL)
@@ -53,6 +72,10 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
         shiny::actionButton(ns("standardize"), tx("Standardize"),
                             icon = shiny::icon("sort-by-attributes", lib = "glyphicon"),
                             class = "btn-primary"),
+        shiny::actionButton(ns("standardize_all"), tx("Standardize All"),
+                            icon = shiny::icon("sort-by-attributes-alt", lib = "glyphicon"),
+                            class = "btn-primary"),
+        shiny::uiOutput(ns("stage_ui"), inline = TRUE),
         shiny::actionButton(ns("diagnose"), tx("Run Diagnostics"),
                             icon = shiny::icon("stethoscope"), class = "btn-default"),
         shiny::actionButton(ns("repair"), tx("Repair Mappings"),
@@ -71,17 +94,21 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
     run_method <- function(method, label) {
       obj <- current()
       shiny::req(obj)
+      stage <- if (!is.null(input$stage) && input$stage %in% available_stages()) input$stage else "raw"
       if (identical(method, "data_diagnose")) {
         # Re-map schema variables so schema edits are reflected in the maps
         tryCatch(
-          obj$.__enclos_env__$private$..map_schema_vars(stage = "raw"),
+          obj$.__enclos_env__$private$..map_schema_vars(stage = stage),
           error = function(e) shiny::showNotification(
             paste0(tx("Mapping schema variables"), ": ", conditionMessage(e)),
             type = "warning", duration = 10
           )
         )
       }
-      res <- tryCatch(obj[[method]](), error = function(e) e)
+      res <- tryCatch(
+        if (identical(method, "data_diagnose")) obj$data_diagnose(stage = stage) else obj[[method]](),
+        error = function(e) e
+      )
       failed <- inherits(res, "error") ||
         (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
       if (failed) {
@@ -99,6 +126,27 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
 
     shiny::observeEvent(input$validate, run_method("validate", tx("Validate")))
     shiny::observeEvent(input$standardize, run_method("standardize", tx("Standardize")))
+    shiny::observeEvent(input$standardize_all, {
+      ds <- datasets()
+      shiny::req(length(ds))
+      failed <- character(0)
+      for (nm in names(ds)) {
+        res <- tryCatch(ds[[nm]]$standardize(), error = function(e) e)
+        bad <- inherits(res, "error") ||
+          (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
+        if (bad) failed <- c(failed, nm)
+      }
+      iphra_session$touch_module("datasets")
+      if (length(failed)) {
+        shiny::showNotification(
+          paste0(tx("Standardize All"), ": ", tx("failed for"), " ", paste(failed, collapse = ", ")),
+          type = "error", duration = 15)
+      } else {
+        shiny::showNotification(
+          paste0(tx("Standardize All"), ": ", tx("done"), " (", length(ds), ")"), type = "message")
+      }
+      refresh(refresh() + 1L)
+    })
     shiny::observeEvent(input$diagnose, run_method("data_diagnose", tx("Run Diagnostics")))
 
     output$diagnostics <- rhandsontable::renderRHandsontable({

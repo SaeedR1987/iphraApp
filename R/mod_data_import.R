@@ -20,6 +20,7 @@ mod_data_import_ui <- function(id) {
     ),
     shiny::uiOutput(ns("toolbar")),
     shiny::uiOutput(ns("empty")),
+    shiny::uiOutput(ns("filters")),
     rhandsontable::rHandsontableOutput(ns("table"), height = "auto")
   )
 }
@@ -84,9 +85,9 @@ iphra_guess_type <- function(sheet_name, n_sheets) {
   "skip"
 }
 
-# Imported (raw stage) table of a Data object.
-iphra_dataset_frame <- function(obj) {
-  df <- obj$get_data("raw")
+# Table of a Data object at the given stage (raw = as imported).
+iphra_dataset_frame <- function(obj, stage = "raw") {
+  df <- obj$get_data(stage)
   if (is.null(df)) NULL else as.data.frame(df)
 }
 
@@ -146,6 +147,7 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
                                 icon = shiny::icon("trash"), class = "btn-default")
           )
         },
+        if (length(ds)) shiny::uiOutput(ns("stage_ui"), inline = TRUE),
         if (length(ds)) shiny::span(class = "phr-toolbar__info", shiny::textOutput(ns("dataset_info"), inline = TRUE))
       )
     })
@@ -165,11 +167,93 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
       ds[[nm]]
     })
 
+    available_stages <- shiny::reactive({
+      datasets()
+      iphra_available_stages(current())
+    })
+
+    output$stage_ui <- shiny::renderUI({
+      st <- available_stages()
+      if (!length(st)) return(NULL)
+      sel <- shiny::isolate(input$stage)
+      if (is.null(sel) || !sel %in% st) sel <- st[1]
+      shiny::div(
+        style = "display:inline-block; vertical-align:middle; margin:0 8px;",
+        shiny::radioButtons(ns("stage"), label = NULL, inline = TRUE,
+                            choices = stats::setNames(st, vapply(st, tx, character(1))),
+                            selected = sel)
+      )
+    })
+
+    stage <- shiny::reactive({
+      if (!is.null(input$stage) && input$stage %in% available_stages()) input$stage else "raw"
+    })
+
+    # Stage table with the object's UUID column moved to the far left.
+    stage_frame <- shiny::reactive({
+      obj <- current()
+      shiny::req(obj)
+      df <- iphra_dataset_frame(obj, stage())
+      shiny::req(df)
+      uuid <- tryCatch(obj$get(field = "..uuid"), error = function(e) NULL)
+      if (is.character(uuid) && length(uuid) == 1L && uuid %in% names(df)) {
+        df <- df[, c(uuid, setdiff(names(df), uuid)), drop = FALSE]
+      } else uuid <- NULL
+      attr(df, "uuid") <- uuid
+      df
+    })
+
+    output$filters <- shiny::renderUI({
+      if (!length(datasets())) return(NULL)
+      cols <- names(stage_frame())
+      shiny::div(
+        style = "display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;",
+        shiny::div(
+          style = "min-width:240px; flex:1;",
+          shiny::textInput(ns("col_search"), label = NULL, width = "100%",
+                           value = shiny::isolate(input$col_search) %||% "",
+                           placeholder = tx("Search columns..."))
+        ),
+        shiny::div(
+          style = "min-width:200px;",
+          shiny::selectInput(
+            ns("filter_col"), label = NULL, width = "100%",
+            choices = c(stats::setNames("", tx("Filter rows by column...")), cols),
+            selected = shiny::isolate(input$filter_col)
+          )
+        ),
+        shiny::div(
+          style = "min-width:240px; flex:1;",
+          shiny::textInput(ns("filter_val"), label = NULL, width = "100%",
+                           value = shiny::isolate(input$filter_val) %||% "",
+                           placeholder = tx("Value contains..."))
+        )
+      )
+    })
+
+    # Columns narrowed by the column search (UUID always kept), rows by value filter.
+    view_frame <- shiny::reactive({
+      df <- stage_frame()
+      uuid <- attr(df, "uuid")
+      fc <- input$filter_col %||% ""
+      fv <- trimws(input$filter_val %||% "")
+      if (nzchar(fc) && nzchar(fv) && fc %in% names(df)) {
+        hit <- grepl(tolower(fv), tolower(as.character(df[[fc]])), fixed = TRUE)
+        df <- df[which(hit), , drop = FALSE]
+      }
+      q <- tolower(trimws(input$col_search %||% ""))
+      if (nzchar(q)) {
+        keep <- grepl(q, tolower(names(df)), fixed = TRUE) | names(df) %in% uuid
+        df <- df[, keep, drop = FALSE]
+      }
+      attr(df, "uuid") <- uuid
+      df
+    })
+
     output$dataset_info <- shiny::renderText({
       obj <- current()
       shiny::req(obj)
-      df <- iphra_dataset_frame(obj)
-      shiny::req(df)
+      df <- view_frame()
       paste0(class(obj)[1], " \u2022 ", format(nrow(df), big.mark = ","), " ", tx("rows"),
              " \u00d7 ", ncol(df), " ", tx("columns"),
              if (nrow(df) > max_rows) paste0(" \u2022 ", tx("showing first"), " ",
@@ -177,17 +261,20 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
     })
 
     output$table <- rhandsontable::renderRHandsontable({
-      obj <- current()
-      shiny::req(obj)
-      df <- iphra_dataset_frame(obj)
-      shiny::req(df)
+      df <- view_frame()
+      shiny::req(ncol(df) > 0)
+      fixed <- if (!is.null(attr(df, "uuid"))) 1L else 0L
       df <- iphra_display_frame(utils::head(df, max_rows))
-      rhandsontable::rhandsontable(
+      tbl <- rhandsontable::rhandsontable(
         df, readOnly = TRUE, height = 520, rowHeaders = NULL,
         highlightRow = TRUE, highlightCol = TRUE, stretchH = "none"
       ) |>
-        rhandsontable::hot_cols(columnSorting = TRUE, manualColumnResize = TRUE,
-                                format = "0.[########]")
+        rhandsontable::hot_cols(manualColumnResize = TRUE,
+                                format = "0.[########]", fixedColumnsLeft = fixed)
+      # Sort arrow in each header (new Handsontable: indicator; old: sortIndicator)
+      tbl$x$columnSorting <- list(indicator = TRUE, headerAction = TRUE, sortEmptyCells = TRUE)
+      tbl$x$sortIndicator <- TRUE
+      tbl
     })
 
     # ---- file selection -> Import Manager ----------------------------------

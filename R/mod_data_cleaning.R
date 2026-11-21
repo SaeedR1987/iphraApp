@@ -70,6 +70,8 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
           shiny::selectInput(ns("dataset"), label = NULL, choices = choices,
                              selected = shiny::isolate(input$dataset), width = "100%")
         ),
+        shiny::div(style = "display:inline-block; vertical-align:middle; margin:0 8px;",
+                   shiny::uiOutput(ns("gen_stage_ui"), inline = TRUE)),
         shiny::actionButton(ns("gen_one"), tx("Generate Cleaning Log"),
                             icon = shiny::icon("list-alt"), class = "btn-primary"),
         shiny::actionButton(ns("gen_all"), tx("Generate All Cleaning Logs"),
@@ -85,8 +87,29 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
       )
     })
 
+    output$gen_stage_ui <- shiny::renderUI({
+      obj <- current(); shiny::req(obj)
+      avail <- intersect(c("raw", "standardized"), iphra_available_stages(obj))
+      if (!length(avail)) avail <- c("raw", "standardized")
+      labels <- c(raw = tx("Raw"), standardized = tx("Standardized"))
+      sel <- shiny::isolate(input$gen_stage)
+      if (is.null(sel) || !sel %in% avail) {
+        sel <- if ("standardized" %in% avail) "standardized" else avail[1]
+      }
+      shiny::radioButtons(ns("gen_stage"), NULL, inline = TRUE,
+                          choices = stats::setNames(avail, labels[avail]), selected = sel)
+    })
+
+    gen_stage <- function() {
+      st <- input$gen_stage
+      if (is.null(st) || !st %in% c("raw", "standardized")) "standardized" else st
+    }
+
     generate <- function(obj, label) {
-      res <- tryCatch(obj$generate_cleaning_log(), error = function(e) e)
+      stage <- gen_stage()
+      avail <- intersect(c("raw", "standardized"), iphra_available_stages(obj))
+      if (length(avail) && !stage %in% avail) stage <- avail[1]
+      res <- tryCatch(obj$generate_cleaning_log(stage = stage), error = function(e) e)
       failed <- inherits(res, "error") ||
         isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE))
       if (failed) {
@@ -99,7 +122,16 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
     shiny::observeEvent(input$gen_one, {
       obj <- current(); shiny::req(obj)
       if (generate(obj, input$dataset)) {
-        shiny::showNotification(paste0(tx("Cleaning log"), ": ", tx("done")), type = "message")
+        n_of <- function(field) {
+          lg <- tryCatch(obj$get(field = field), error = function(e) NULL)
+          df <- if (is.null(lg)) NULL else tryCatch(lg$get("log_df"), error = function(e) NULL)
+          if (is.data.frame(df)) nrow(df) else 0L
+        }
+        n_clean <- n_of("..cleaning_log"); n_del <- n_of("..deletion_log")
+        shiny::showNotification(
+          paste0(tx("Cleaning log"), ": ", n_clean, " / ", tx("Deletion Log"), ": ", n_del),
+          type = if (n_clean + n_del > 0) "message" else "warning"
+        )
       }
       iphra_session$touch_module("datasets")
       refresh(refresh() + 1L)
@@ -127,7 +159,7 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
       refresh()
       obj <- current(); shiny::req(obj)
       lg <- tryCatch(obj$get(field = field), error = function(e) NULL)
-      df <- if (is.null(lg)) NULL else tryCatch(lg$log_df, error = function(e) NULL)
+      df <- if (is.null(lg)) NULL else tryCatch(lg$get("log_df"), error = function(e) NULL)
       shiny::req(is.data.frame(df), nrow(df) > 0)
       rhandsontable::rhandsontable(
         iphra_display_frame(utils::head(as.data.frame(df), max_rows)),

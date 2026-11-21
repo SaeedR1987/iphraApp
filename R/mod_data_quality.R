@@ -86,6 +86,7 @@ iphra_flatten_items <- function(x, path = character()) {
 
 iphra_item_choices <- function(items) {
   keys <- names(items)
+  if (length(items) == 0L || is.null(keys)) return(character(0))
   labels <- vapply(keys, function(k) {
     gsub("/", " \u203a ", tools::toTitleCase(gsub("_", " ", k)), fixed = TRUE)
   }, character(1))
@@ -411,6 +412,9 @@ mod_data_quality_server <- function(id, lang_r = function() "en") {
 
     output$viz_select <- shiny::renderUI({
       items <- viz_items()
+      if (length(items) == 0L) {
+        return(shiny::div(class = "text-muted", tx("No visualizations available.")))
+      }
       shiny::selectInput(ns("viz_choice"), tx("Visualization"),
                          choices = iphra_item_choices(items), width = "100%")
     })
@@ -423,6 +427,9 @@ mod_data_quality_server <- function(id, lang_r = function() "en") {
 
     output$tbl_select <- shiny::renderUI({
       items <- tbl_items()
+      if (length(items) == 0L) {
+        return(shiny::div(class = "text-muted", tx("No tables available.")))
+      }
       shiny::selectInput(ns("tbl_choice"), tx("Plausibility table"),
                          choices = iphra_item_choices(items), width = "100%")
     })

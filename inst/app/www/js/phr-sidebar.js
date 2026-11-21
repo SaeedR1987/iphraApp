@@ -2,6 +2,29 @@
 (function () {
   var COLLAPSED_KEY = "phr_sidebar_collapsed";
 
+  var statuses = {};
+  var STATUS_TITLES = { red: "Not started", yellow: "In progress", green: "Complete", grey: "No status yet" };
+
+  function applyStatus() {
+    $(".phr-sidebar__link[data-phr-tab]").each(function () {
+      var v = $(this).attr("data-phr-tab");
+      var s = statuses[v];
+      if (!s) { return; }
+      var dot = $(this).children(".phr-status-dot");
+      if (!dot.length) {
+        dot = $('<span class="phr-status-dot" aria-hidden="true"></span>').prependTo(this);
+      }
+      dot.attr("class", "phr-status-dot phr-status-dot--" + s).attr("title", STATUS_TITLES[s] || "");
+    });
+  }
+
+  $(document).on("shiny:connected", function () {
+    Shiny.addCustomMessageHandler("phr_step_status", function (msg) {
+      statuses = msg || {};
+      applyStatus();
+    });
+  });
+
   function syncLabels() {
     $(".phr-sidebar__link[data-phr-label-from]").each(function () {
       var src = document.getElementById($(this).attr("data-phr-label-from"));

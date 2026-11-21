@@ -61,11 +61,105 @@ iphra_sidebar_items <- function() {
   )
 }
 
+#' Read / write a Log field, trying both the plain and the `..`-prefixed name.
+#' @noRd
+iphra_log_get <- function(lg, field) {
+  for (f in c(paste0("..", field), field)) {
+    v <- tryCatch(lg$get(f), error = function(e) NULL)
+    if (!is.null(v)) return(v)
+  }
+  NULL
+}
+
+iphra_log_set <- function(lg, field, value) {
+  err <- NULL
+  for (f in c(paste0("..", field), field)) {
+    r <- tryCatch({ lg$set(f, value); TRUE }, error = function(e) { err <<- e; FALSE })
+    if (isTRUE(r)) return(NULL)
+  }
+  err
+}
+
+#' Status of one log of a Data object: "red" not generated, "yellow" generated
+#' but not marked complete, "green" marked complete.
+#' @noRd
+iphra_log_status <- function(obj, kind = c("cleaning", "deletion")) {
+  kind <- match.arg(kind)
+  lg <- tryCatch(obj$get(field = paste0("..", kind, "_log")), error = function(e) NULL)
+  if (is.null(lg)) return("red")
+  md <- iphra_log_get(lg, "metadata")
+  if (is.list(md) && isTRUE(md$complete)) return("green")
+  df <- iphra_log_get(lg, "log_df")
+  if (is.data.frame(df) && nrow(df) > 0L) "yellow" else "red"
+}
+
+#' Overall status per workflow step (named character vector). Steps without
+#' criteria yet are "grey".
+#' @noRd
+iphra_step_status <- function(datasets, steps) {
+  out <- stats::setNames(rep("grey", length(steps)), names(steps))
+  ds <- datasets %||% list()
+  if (length(ds)) out["import"] <- "green" else out["import"] <- "red"
+
+  std <- vapply(ds, function(o) "standardized" %in% tryCatch(iphra_available_stages(o), error = function(e) character(0)),
+                logical(1))
+  out["standardization"] <- if (!length(ds) || !any(std)) "red" else if (all(std)) "green" else "yellow"
+
+  st <- unlist(lapply(ds, function(o) c(iphra_log_status(o, "cleaning"), iphra_log_status(o, "deletion"))))
+  out["cleaning"] <- if (!length(st) || all(st == "red")) "red"
+  else if (all(st == "green")) "green" else "yellow"
+  out
+}
+
 #' @noRd
 iphra_workflow_status_server <- function(input, output, session, iphra_session, lang_r) {
   tx <- function(x) phrutils::phr_txt(x, lang = lang_r(), default = gsub("\\{", "{{", x))
   steps <- iphra_workflow_steps()
   project <- session$userData$project
+
+  ds_r <- tryCatch(iphra_session$get_module_reactive("datasets"), error = function(e) function() NULL)
+  datasets <- shiny::reactive(ds_r() %||% list())
+
+  shiny::observe({
+    st <- tryCatch(iphra_step_status(datasets(), steps), error = function(e) NULL)
+    if (!is.null(st)) session$sendCustomMessage("phr_step_status", as.list(st))
+  })
+
+  output$phr_log_status <- shiny::renderUI({
+    if ((input$workflow_nav %||% "goals") != "cleaning") return(NULL)
+    ds <- datasets()
+    if (!length(ds)) return(NULL)
+    col <- c(red = "#c62828", yellow = "#f9a825", green = "#2e7d32")
+    ttl <- c(red = tx("Not generated"), yellow = tx("Not marked complete"), green = tx("Marked complete"))
+    dot <- function(s) {
+      shiny::span(title = ttl[[s]], style = paste0("display:inline-block; width:12px; height:12px; border-radius:50%; background:", col[[s]], ";"))
+    }
+    cell <- "text-align:center; padding:2px 6px; vertical-align:middle;"
+    shiny::tags$table(
+      style = "margin-top:6px; font-size:12px; border-collapse:collapse;",
+      shiny::tags$thead(shiny::tags$tr(
+        shiny::tags$th(style = cell),
+        lapply(names(ds), function(nm) {
+          shiny::tags$th(
+            style = paste0(cell, "vertical-align:bottom; font-weight:600;"),
+            shiny::span(title = nm,
+                        style = "display:inline-block; writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap; max-height:120px; overflow:hidden; text-overflow:ellipsis;",
+                        nm)
+          )
+        })
+      )),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          shiny::tags$td(style = paste0(cell, "text-align:right;"), tx("Cleaning")),
+          lapply(names(ds), function(nm) shiny::tags$td(style = cell, dot(iphra_log_status(ds[[nm]], "cleaning"))))
+        ),
+        shiny::tags$tr(
+          shiny::tags$td(style = paste0(cell, "text-align:right;"), tx("Deletion")),
+          lapply(names(ds), function(nm) shiny::tags$td(style = cell, dot(iphra_log_status(ds[[nm]], "deletion"))))
+        )
+      )
+    )
+  })
 
   output$tab_title_analysis <- shiny::renderText(tx("Data Analysis"))
   for (key in names(steps)[vapply(steps, function(x) isTRUE(x$placeholder), logical(1))]) {
@@ -136,7 +230,8 @@ iphra_workflow_status_server <- function(input, output, session, iphra_session, 
         class = "phr-guidance__text",
         shiny::div(class = "phr-guidance__title",
                    sprintf("%s %d/%d: %s", tx("Step"), idx, length(steps), tx(s$title))),
-        shiny::div(class = "phr-guidance__hint", tx(s$hint))
+        shiny::div(class = "phr-guidance__hint", tx(s$hint)),
+        if (key == "cleaning") shiny::uiOutput("phr_log_status")
       ),
       phr_progress(round(100 * idx / length(steps)), class = "phr-guidance__progress"),
       if (!is.null(s$nxt)) {

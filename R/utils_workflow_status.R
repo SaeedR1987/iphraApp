@@ -26,7 +26,7 @@ iphra_workflow_steps <- function() {
     cleaning = s("Data Cleaning", "Clean the data and resolve quality issues.",
                  "glyphicon-filter", FALSE),
     analysis_quant = s("Quantitative Data Analysis", "Analyse the quantitative data.",
-                       "glyphicon-stats"),
+                       "glyphicon-stats", FALSE),
     analysis_qual = s("Qualitative Data Analysis", "Analyse the qualitative data.",
                       "glyphicon-comment"),
     analysis_integrated = s("Integrated Analysis",

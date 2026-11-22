@@ -242,7 +242,8 @@ app_ui <- function(request) {
                  mod_data_quality_ui("data_quality")),
         tabPanel(textOutput("tab_title_cleaning", inline = TRUE), value = "cleaning",
                  mod_data_cleaning_ui("data_cleaning")),
-        iphra_placeholder_tab("analysis_quant"),
+        tabPanel(textOutput("tab_title_analysis_quant", inline = TRUE), value = "analysis_quant",
+                 mod_analysis_quant_ui("analysis_quant")),
         iphra_placeholder_tab("analysis_qual"),
         iphra_placeholder_tab("analysis_integrated"),
         iphra_placeholder_tab("reporting")

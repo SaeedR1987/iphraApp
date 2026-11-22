@@ -127,6 +127,11 @@ app_server <- function(input, output, session) {
   )
   mod_data_cleaning_server("data_cleaning", lang_r)
 
+  mod_analysis_quant_server("analysis_quant", lang_r)
+  output$tab_title_analysis_quant <- renderText(
+    phrutils::phr_txt("Quantitative Data Analysis", lang = lang_r(), default = "Quantitative Data Analysis")
+  )
+
   # ---- Quick Save Handler ----
   # The "Save Project" menu item sets `input$save_project_btn` on click. If
   # the project has already been saved to a known path (recorded in

@@ -22,32 +22,21 @@ mod_data_standardization_ui <- function(id) {
   )
 }
 
-#' Calculated variables of a Data object and whether each is mapped.
+#' Indicator mapping status of a Data object.
 #'
-#' Unique `variable` values with `question_type == "CALCULATED"` in the
-#' variable schema, flagged by presence in the variable and value maps; fully
-#' mapped variables sort first.
+#' Rebuilds and returns the private `..indicator_status` table (phr Data
+#' class): indicator name, variables found / not found in the variable map,
+#' whether all variables are in the value map, and a green / yellow / red row
+#' status.
 #' @noRd
-iphra_calculated_status <- function(obj) {
-  empty <- data.frame(variable = character(0), variable_map = character(0),
-                      value_map = character(0), status = character(0), stringsAsFactors = FALSE)
-  sch <- tryCatch(obj$get(field = "..variable_schema"), error = function(e) NULL)
-  if (!is.data.frame(sch) || !all(c("variable", "question_type") %in% names(sch))) return(empty)
-  vars <- unique(as.character(sch$variable[!is.na(sch$question_type) &
-                                             toupper(sch$question_type) == "CALCULATED"]))
-  vars <- vars[!is.na(vars) & nzchar(vars)]
-  if (!length(vars)) return(empty)
-  vm <- as.character(names(tryCatch(obj$get(field = "..variable_map"), error = function(e) NULL)))
-  vl <- as.character(names(tryCatch(obj$get(field = "..value_map"), error = function(e) NULL)))
-  in_vm <- vars %in% vm
-  in_vl <- vars %in% vl
-  out <- data.frame(variable = vars, variable_map = as.character(in_vm),
-                    value_map = as.character(in_vl),
-                    status = ifelse(in_vm & in_vl, "ok", "will not calculate"),
-                    stringsAsFactors = FALSE)
-  out[order(!(in_vm & in_vl), out$variable), , drop = FALSE]
+iphra_indicator_status <- function(obj, stage = "raw") {
+  priv <- tryCatch(obj$.__enclos_env__$private, error = function(e) NULL)
+  if (!is.null(priv) && is.function(priv$..build_indicator_status)) {
+    try(priv$..build_indicator_status(stage = stage), silent = TRUE)
+  }
+  out <- tryCatch(obj$get(field = paste0("..indicator_status_", stage)), error = function(e) NULL)
+  if (is.data.frame(out)) out else NULL
 }
-
 mod_data_standardization_server <- function(id, lang_r = function() "en") {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -165,24 +154,38 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       )
     })
 
+    sel_stage <- function() {
+      st <- available_stages()
+      if (!is.null(input$stage) && input$stage %in% st) input$stage else "raw"
+    }
+
     run_method <- function(method, label) {
       obj <- current()
       shiny::req(obj)
       stage <- if (!is.null(input$stage) && input$stage %in% available_stages()) input$stage else "raw"
       if (identical(method, "data_diagnose")) {
-        # Re-map schema variables so schema edits are reflected in the maps
-        tryCatch(
-          obj$.__enclos_env__$private$..map_schema_vars(stage = stage),
-          error = function(e) shiny::showNotification(
-            paste0(tx("Mapping schema variables"), ": ", conditionMessage(e)),
-            type = "warning", duration = 10
+        stages <- intersect(c("raw", "standardized", "clean"), iphra_available_stages(obj))
+        if (!length(stages)) stages <- "raw"
+        res <- NULL
+        for (st in stages) {
+          tryCatch(
+            obj$.__enclos_env__$private$..map_schema_vars(stage = st),
+            error = function(e) shiny::showNotification(
+              paste0(tx("Mapping schema variables"), ": ", conditionMessage(e)),
+              type = "warning", duration = 10
+            )
           )
-        )
+          r <- tryCatch(obj$data_diagnose(stage = st), error = function(e) e)
+          if (inherits(r, "error") || isTRUE(tryCatch(phrutils::phr_failed(r), error = function(e) FALSE))) {
+            res <- r
+            break
+          }
+          if (identical(st, sel_stage())) res <- r
+          if (is.null(res)) res <- r
+        }
+      } else {
+        res <- tryCatch(obj[[method]](), error = function(e) e)
       }
-      res <- tryCatch(
-        if (identical(method, "data_diagnose")) obj$data_diagnose(stage = stage) else obj[[method]](),
-        error = function(e) e
-      )
       failed <- inherits(res, "error") ||
         (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
       if (failed) {
@@ -264,11 +267,15 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
     }
     shiny::observeEvent(input$validate_all, run_all(tx("Validate All"), function(o) o$validate()))
     shiny::observeEvent(input$diagnose_all, {
-      stage <- if (!is.null(input$stage) && input$stage %in% available_stages()) input$stage else "raw"
       run_all(tx("Diagnose All"), function(o) {
-        st <- if (stage %in% iphra_available_stages(o)) stage else "raw"
-        tryCatch(o$.__enclos_env__$private$..map_schema_vars(stage = st), error = function(e) NULL)
-        o$data_diagnose(stage = st)
+        out <- NULL
+        for (st in intersect(c("raw", "standardized", "clean"), iphra_available_stages(o))) {
+          tryCatch(o$.__enclos_env__$private$..map_schema_vars(stage = st), error = function(e) NULL)
+          r <- o$data_diagnose(stage = st)
+          if (isTRUE(tryCatch(phrutils::phr_failed(r), error = function(e) FALSE))) return(r)
+          out <- r
+        }
+        out
       })
     })
 
@@ -341,28 +348,33 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       datasets()
       obj <- current()
       shiny::req(obj)
-      df <- iphra_calculated_status(obj)
-      shiny::req(nrow(df) > 0)
-      names(df) <- c(tx("Calculated variable"), tx("In variable map"), tx("In value map"), tx("Status"))
+      df <- iphra_indicator_status(obj, sel_stage())
+      shiny::req(is.data.frame(df), nrow(df) > 0)
+      df <- df[, c("indicator_name", "variables_mapped", "variables_not_mapped",
+                   "in_value_map", "status")]
+      names(df) <- c(tx("Indicator Name"), tx("In variable map"), tx("Not in variable map"),
+                     tx("In value map"), "status")
       rend <- "function(instance, td, row, col, prop, value, cellProperties) {
           Handsontable.renderers.TextRenderer.apply(this, arguments);
-          var r = instance.getDataAtRow(row);
-          var good = (col === 0 || col === 3) ? r[3] === 'ok' : value === 'TRUE';
-          td.style.background = good ? '#d4efd6' : '#f8d0d0';
+          var s = instance.getDataAtRow(row)[4];
+          td.style.background = s === 'green' ? '#d4efd6' : (s === 'yellow' ? '#fdf3c4' : '#f8d0d0');
           td.style.color = '#222';
         }"
       hot <- rhandsontable::rhandsontable(
         df, readOnly = TRUE, height = 520, rowHeaders = NULL, stretchH = "none"
       )
-      for (i in 1:4) hot <- rhandsontable::hot_col(hot, i, renderer = rend)
-      rhandsontable::hot_cols(hot, manualColumnResize = TRUE, colWidths = c(200, 100, 100, 130))
+      for (i in 1:5) hot <- rhandsontable::hot_col(hot, i, renderer = rend)
+      hot <- rhandsontable::hot_cols(hot, manualColumnResize = TRUE,
+                                     colWidths = c(170, 200, 200, 90, 1))
+      hot$x$hiddenColumns <- list(columns = list(4L), indicators = FALSE)
+      hot
     })
 
     output$diagnostics <- rhandsontable::renderRHandsontable({
       refresh()
       obj <- current()
       shiny::req(obj)
-      diag <- obj$get(field = "..data_diagnostics")
+      diag <- obj$get(field = paste0("..data_diagnostics_", sel_stage()))
       shiny::req(is.data.frame(diag), nrow(diag) > 0)
       df <- iphra_display_frame(utils::head(as.data.frame(diag), max_rows))
       rhandsontable::rhandsontable(

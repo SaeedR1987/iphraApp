@@ -12,8 +12,40 @@ mod_data_standardization_ui <- function(id) {
   shiny::tagList(
     shiny::uiOutput(ns("toolbar")),
     shiny::uiOutput(ns("empty")),
-    rhandsontable::rHandsontableOutput(ns("diagnostics"), height = "auto")
+    shiny::div(
+      style = "display:flex; gap:12px; align-items:flex-start;",
+      shiny::div(style = "flex:3; min-width:0; overflow:auto;",
+                 rhandsontable::rHandsontableOutput(ns("calc_vars"), height = "auto")),
+      shiny::div(style = "flex:7; min-width:0; overflow:auto;",
+                 rhandsontable::rHandsontableOutput(ns("diagnostics"), height = "auto"))
+    )
   )
+}
+
+#' Calculated variables of a Data object and whether each is mapped.
+#'
+#' Unique `variable` values with `question_type == "CALCULATED"` in the
+#' variable schema, flagged by presence in the variable and value maps; fully
+#' mapped variables sort first.
+#' @noRd
+iphra_calculated_status <- function(obj) {
+  empty <- data.frame(variable = character(0), variable_map = character(0),
+                      value_map = character(0), status = character(0), stringsAsFactors = FALSE)
+  sch <- tryCatch(obj$get(field = "..variable_schema"), error = function(e) NULL)
+  if (!is.data.frame(sch) || !all(c("variable", "question_type") %in% names(sch))) return(empty)
+  vars <- unique(as.character(sch$variable[!is.na(sch$question_type) &
+                                             toupper(sch$question_type) == "CALCULATED"]))
+  vars <- vars[!is.na(vars) & nzchar(vars)]
+  if (!length(vars)) return(empty)
+  vm <- as.character(names(tryCatch(obj$get(field = "..variable_map"), error = function(e) NULL)))
+  vl <- as.character(names(tryCatch(obj$get(field = "..value_map"), error = function(e) NULL)))
+  in_vm <- vars %in% vm
+  in_vl <- vars %in% vl
+  out <- data.frame(variable = vars, variable_map = as.character(in_vm),
+                    value_map = as.character(in_vl),
+                    status = ifelse(in_vm & in_vl, "ok", "will not calculate"),
+                    stringsAsFactors = FALSE)
+  out[order(!(in_vm & in_vl), out$variable), , drop = FALSE]
 }
 
 mod_data_standardization_server <- function(id, lang_r = function() "en") {
@@ -48,7 +80,8 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       sel <- shiny::isolate(input$stage)
       if (is.null(sel) || !sel %in% st) sel <- st[1]
       shiny::div(
-        style = "display:inline-block; vertical-align:middle; margin:0 8px;",
+        style = "display:flex; align-items:center; gap:8px; flex-wrap:wrap;",
+        shiny::span(style = "font-size:13px; font-weight:600;", tx("Data Object Selection")),
         shiny::radioButtons(ns("stage"), label = NULL, inline = TRUE,
                             choices = stats::setNames(st, vapply(st, tx, character(1))),
                             selected = sel)
@@ -61,27 +94,68 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       choices <- stats::setNames(names(ds), vapply(names(ds), function(n) {
         paste0(n, " (", class(ds[[n]])[1], ")")
       }, character(1)))
+      btn <- function(x, color) shiny::tagAppendAttributes(x, class = paste("phr-act", paste0("phr-act--", color)))
       phr_toolbar(
+        shiny::tags$style(shiny::HTML(
+          ".phr-cl-left .form-group{margin-bottom:4px;} .phr-cl-left .radio-inline{font-size:13px;}
+           .phr-act{width:100%; height:100%; min-height:34px; font-size:11px; padding:4px 5px;
+             line-height:1.2; white-space:normal; color:#333; border:1px solid rgba(0,0,0,.15);}
+           .phr-act--blue{background:#d6e8fa;} .phr-act--teal{background:#d3f0ec;}
+           .phr-act--purple{background:#e6dcf5;} .phr-act--yellow{background:#fbf0c4;}
+           .phr-act--orange{background:#fde0c8;} .phr-act--green{background:#d4efd6;}
+           .phr-act--red{background:#f8d0d0;} .phr-act--grey{background:#e4e7ea;}
+           .phr-act:hover,.phr-act:focus{filter:brightness(.95); color:#222;}"
+        )),
         shiny::div(
-          style = "display:inline-block; min-width:320px;",
-          shiny::selectInput(ns("dataset"), label = NULL, choices = choices,
-                             selected = shiny::isolate(input$dataset), width = "100%")
-        ),
-        shiny::actionButton(ns("validate"), tx("Validate"),
-                            icon = shiny::icon("check"), class = "btn-default"),
-        shiny::actionButton(ns("standardize"), tx("Standardize"),
-                            icon = shiny::icon("sort-by-attributes", lib = "glyphicon"),
-                            class = "btn-primary"),
-        shiny::actionButton(ns("standardize_all"), tx("Standardize All"),
-                            icon = shiny::icon("sort-by-attributes-alt", lib = "glyphicon"),
-                            class = "btn-primary"),
-        shiny::uiOutput(ns("stage_ui"), inline = TRUE),
-        shiny::actionButton(ns("diagnose"), tx("Run Diagnostics"),
-                            icon = shiny::icon("stethoscope"), class = "btn-default"),
-        shiny::actionButton(ns("repair"), tx("Repair Mappings"),
-                            icon = shiny::icon("wrench"), class = "btn-default")
+          style = "display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;",
+          shiny::div(
+            class = "phr-cl-left", style = "min-width:300px;",
+            shiny::selectInput(ns("dataset"), label = NULL, choices = choices,
+                               selected = shiny::isolate(input$dataset), width = "100%"),
+            shiny::uiOutput(ns("stage_ui"))
+          ),
+          shiny::div(
+            style = "display:grid; grid-template-columns:repeat(6, minmax(100px, 1fr)); gap:6px; flex:1;",
+            btn(shiny::actionButton(ns("validate"), tx("Validate"), icon = shiny::icon("circle-check")), "yellow"),
+            btn(shiny::actionButton(ns("standardize"), tx("Standardize"), icon = shiny::icon("list-check")), "blue"),
+            btn(shiny::actionButton(ns("diagnose"), tx("Diagnose"), icon = shiny::icon("stethoscope")), "teal"),
+            btn(shiny::actionButton(ns("gen_analytics"), tx("Generate Analytics"), icon = shiny::icon("chart-column")), "purple"),
+            btn(shiny::actionButton(ns("repair"), tx("Repair Mappings"), icon = shiny::icon("wrench")), "orange"),
+            shiny::uiOutput(ns("complete_one_ui"), style = "display:contents;"),
+            btn(shiny::actionButton(ns("validate_all"), tx("Validate All"), icon = shiny::icon("circle-check")), "yellow"),
+            btn(shiny::actionButton(ns("standardize_all"), tx("Standardize All"), icon = shiny::icon("list-check")), "blue"),
+            btn(shiny::actionButton(ns("diagnose_all"), tx("Diagnose All"), icon = shiny::icon("stethoscope")), "teal"),
+            btn(shiny::actionButton(ns("gen_analytics_all"), tx("Generate Analytics All"), icon = shiny::icon("chart-column")), "purple"),
+            shiny::div(),
+            shiny::uiOutput(ns("complete_all_ui"), style = "display:contents;")
+          )
+        )
       )
     })
+
+    # Completion is session-local (not stored on the Data object).
+    completed <- shiny::reactiveVal(character(0))
+    complete_btn <- function(id, all) {
+      ds <- datasets()
+      nms <- if (all) names(ds) else input$dataset
+      done <- length(nms) > 0 && all(nms %in% completed())
+      lab <- if (all) {
+        if (done) tx("Mark All Incomplete") else tx("Mark All Complete")
+      } else {
+        if (done) tx("Mark Incomplete") else tx("Mark Complete")
+      }
+      shiny::actionButton(ns(id), lab, icon = shiny::icon(if (done) "rotate-left" else "flag-checkered"),
+                          class = paste("phr-act", if (done) "phr-act--red" else "phr-act--green"))
+    }
+    output$complete_one_ui <- shiny::renderUI(complete_btn("complete_one", FALSE))
+    output$complete_all_ui <- shiny::renderUI(complete_btn("complete_all", TRUE))
+    toggle_complete <- function(nms) {
+      shiny::req(length(nms) > 0)
+      cur <- completed()
+      completed(if (all(nms %in% cur)) setdiff(cur, nms) else union(cur, nms))
+    }
+    shiny::observeEvent(input$complete_one, toggle_complete(input$dataset))
+    shiny::observeEvent(input$complete_all, toggle_complete(names(datasets())))
 
     output$empty <- shiny::renderUI({
       if (length(datasets())) return(NULL)
@@ -124,8 +198,24 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       refresh(refresh() + 1L)
     }
 
+    # Diagnose the standardized data (used after Standardize / Standardize All)
+    diagnose_standardized <- function(o) {
+      if (!"standardized" %in% tryCatch(iphra_available_stages(o), error = function(e) character(0))) return(invisible(NULL))
+      tryCatch(o$.__enclos_env__$private$..map_schema_vars(stage = "standardized"), error = function(e) NULL)
+      tryCatch(o$data_diagnose(stage = "standardized"), error = function(e) e)
+    }
+
     shiny::observeEvent(input$validate, run_method("validate", tx("Validate")))
-    shiny::observeEvent(input$standardize, run_method("standardize", tx("Standardize")))
+    shiny::observeEvent(input$standardize, {
+      run_method("standardize", tx("Standardize"))
+      obj <- current(); shiny::req(obj)
+      res <- diagnose_standardized(obj)
+      if (inherits(res, "error")) {
+        shiny::showNotification(paste0(tx("Diagnose"), ": ", conditionMessage(res)), type = "error", duration = 15)
+      }
+      iphra_session$touch_module("datasets")
+      refresh(refresh() + 1L)
+    })
     shiny::observeEvent(input$standardize_all, {
       ds <- datasets()
       shiny::req(length(ds))
@@ -134,7 +224,10 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
         res <- tryCatch(ds[[nm]]$standardize(), error = function(e) e)
         bad <- inherits(res, "error") ||
           (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
-        if (bad) failed <- c(failed, nm)
+        if (bad) failed <- c(failed, nm) else {
+          dres <- diagnose_standardized(ds[[nm]])
+          if (inherits(dres, "error")) failed <- c(failed, paste0(nm, " (", tx("Diagnose"), ")"))
+        }
       }
       iphra_session$touch_module("datasets")
       if (length(failed)) {
@@ -147,7 +240,123 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       }
       refresh(refresh() + 1L)
     })
-    shiny::observeEvent(input$diagnose, run_method("data_diagnose", tx("Run Diagnostics")))
+    shiny::observeEvent(input$diagnose, run_method("data_diagnose", tx("Diagnose")))
+
+    run_all <- function(label, fn) {
+      ds <- datasets()
+      shiny::req(length(ds))
+      failed <- character(0)
+      for (nm in names(ds)) {
+        res <- tryCatch(fn(ds[[nm]]), error = function(e) e)
+        bad <- inherits(res, "error") ||
+          (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
+        if (bad) failed <- c(failed, nm)
+      }
+      iphra_session$touch_module("datasets")
+      if (length(failed)) {
+        shiny::showNotification(
+          paste0(label, ": ", tx("failed for"), " ", paste(failed, collapse = ", ")),
+          type = "error", duration = 15)
+      } else {
+        shiny::showNotification(paste0(label, ": ", tx("done"), " (", length(ds), ")"), type = "message")
+      }
+      refresh(refresh() + 1L)
+    }
+    shiny::observeEvent(input$validate_all, run_all(tx("Validate All"), function(o) o$validate()))
+    shiny::observeEvent(input$diagnose_all, {
+      stage <- if (!is.null(input$stage) && input$stage %in% available_stages()) input$stage else "raw"
+      run_all(tx("Diagnose All"), function(o) {
+        st <- if (stage %in% iphra_available_stages(o)) stage else "raw"
+        tryCatch(o$.__enclos_env__$private$..map_schema_vars(stage = st), error = function(e) NULL)
+        o$data_diagnose(stage = st)
+      })
+    })
+
+    # ---- analytics generation ------------------------------------------------
+    analytics_r <- iphra_session$get_module_reactive("analytics")
+    generate_analytics <- function(objs) {
+      store <- analytics_r() %||% list()
+      created <- 0L
+      existing <- 0L
+      problems <- character()
+      shiny::withProgress(message = tx("Generating analytics"), value = 0, {
+        new_keys <- character()
+        for (nm in names(objs)) {
+          obj <- objs[[nm]]
+          types <- tryCatch(names(obj$.__enclos_env__$private$..analytics_registry()),
+                            error = function(e) character())
+          for (type in types) {
+            key <- paste0(nm, " / ", type)
+            if (!is.null(store[[key]])) { existing <- existing + 1L; next }
+            shiny::incProgress(0, detail = key)
+            an <- tryCatch(obj$generate_data_analytics(stage = "standardized", type = type),
+                           error = function(e) e)
+            if (inherits(an, "error")) {
+              problems <- c(problems, paste0(key, ": ", conditionMessage(an)))
+            } else if (inherits(an, "DataAnalytics")) {
+              store[[key]] <- an
+              new_keys <- c(new_keys, key)
+              created <- created + 1L
+            } else {
+              problems <- c(problems, paste0(key, ": ", tx("could not be generated (is the data standardized?)")))
+            }
+          }
+        }
+        n <- max(length(new_keys), 1L)
+        for (key in new_keys) {
+          shiny::incProgress(1 / n, detail = paste(tx("Running quality checks"), key))
+          res <- tryCatch(store[[key]]$run_quality_checks(), error = function(e) e)
+          failed <- inherits(res, "error") ||
+            isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE))
+          if (failed) {
+            problems <- c(problems, paste0(key, ": ", if (inherits(res, "error")) conditionMessage(res)
+                                           else tx("quality checks reported a failure, see the log.")))
+          } else if (is.function(store[[key]]$run_outputs)) {
+            tryCatch(store[[key]]$run_outputs(), error = function(e) {
+              problems <<- c(problems, paste0(key, " (", tx("outputs"), "): ", conditionMessage(e)))
+            })
+          }
+        }
+      })
+      iphra_session$set_module("analytics", store)
+      refresh(refresh() + 1L)
+      shiny::showNotification(
+        paste0(tx("Analytics"), ": ", created, " ", tx("created"), ", ",
+               existing, " ", tx("already existed"), "."),
+        type = "message")
+      for (p in utils::head(problems, 5L)) shiny::showNotification(p, type = "warning", duration = 15)
+    }
+    shiny::observeEvent(input$gen_analytics, {
+      obj <- current(); shiny::req(obj)
+      generate_analytics(stats::setNames(list(obj), input$dataset))
+    })
+    shiny::observeEvent(input$gen_analytics_all, {
+      ds <- datasets()
+      shiny::req(length(ds))
+      generate_analytics(ds)
+    })
+
+    output$calc_vars <- rhandsontable::renderRHandsontable({
+      refresh()
+      datasets()
+      obj <- current()
+      shiny::req(obj)
+      df <- iphra_calculated_status(obj)
+      shiny::req(nrow(df) > 0)
+      names(df) <- c(tx("Calculated variable"), tx("In variable map"), tx("In value map"), tx("Status"))
+      rend <- "function(instance, td, row, col, prop, value, cellProperties) {
+          Handsontable.renderers.TextRenderer.apply(this, arguments);
+          var r = instance.getDataAtRow(row);
+          var good = (col === 0 || col === 3) ? r[3] === 'ok' : value === 'TRUE';
+          td.style.background = good ? '#d4efd6' : '#f8d0d0';
+          td.style.color = '#222';
+        }"
+      hot <- rhandsontable::rhandsontable(
+        df, readOnly = TRUE, height = 520, rowHeaders = NULL, stretchH = "none"
+      )
+      for (i in 1:4) hot <- rhandsontable::hot_col(hot, i, renderer = rend)
+      rhandsontable::hot_cols(hot, manualColumnResize = TRUE, colWidths = c(200, 100, 100, 130))
+    })
 
     output$diagnostics <- rhandsontable::renderRHandsontable({
       refresh()

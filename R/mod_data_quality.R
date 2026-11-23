@@ -3,9 +3,8 @@
 #' Two high-level tabs:
 #' * Monitoring: a leaflet map of household GPS points plus Overall,
 #'   Enumerator and Cluster/Site summaries of the household dataset.
-#' * Quality Checks: generate `phr::DataAnalytics` objects from the stored Data
-#'   objects (via their `..analytics_registry`), run their quality checks, and
-#'   browse the resulting visualizations and plausibility tables.
+#' * Quality Checks: browse the `phr::DataAnalytics` objects (generated in the
+#'   Data Standardization step), their visualizations and plausibility tables.
 #'
 #' Analytics objects are stored in the `"analytics"` session module as a named
 #' list keyed `"<dataset> / <type>"`.
@@ -317,79 +316,16 @@ mod_data_quality_server <- function(id, lang_r = function() "en") {
             choices = if (length(an)) names(an) else stats::setNames("", tx("No analytics objects yet")),
             selected = shiny::isolate(input$analytics_obj), width = "100%"
           )
-        ),
-        shiny::actionButton(ns("generate"), tx("Generate Quality Reports"),
-                            icon = shiny::icon("cogs"), class = "btn-primary")
+        )
       )
     })
 
     output$qc_empty <- shiny::renderUI({
       if (length(datasets())) return(NULL)
       phr_info_panel(
-        tx("Import and standardize a dataset first, then generate quality reports."),
+        tx("Import and standardize a dataset first, then use Generate Analytics in the Data Standardization step."),
         title = tx("No datasets available")
       )
-    })
-
-    shiny::observeEvent(input$generate, {
-      ds <- datasets()
-      if (!length(ds)) {
-        shiny::showNotification(tx("No datasets available"), type = "warning")
-        return()
-      }
-      store <- analytics()
-      created <- 0L
-      existing <- 0L
-      problems <- character()
-      shiny::withProgress(message = tx("Generating quality reports"), value = 0, {
-        for (nm in names(ds)) {
-          obj <- ds[[nm]]
-          types <- tryCatch(names(obj$.__enclos_env__$private$..analytics_registry()),
-                            error = function(e) character())
-          for (type in types) {
-            key <- paste0(nm, " / ", type)
-            if (!is.null(store[[key]])) { existing <- existing + 1L; next }
-            shiny::incProgress(0, detail = key)
-            an <- tryCatch(obj$generate_data_analytics(stage = "standardized", type = type),
-                           error = function(e) e)
-            if (inherits(an, "error")) {
-              problems <- c(problems, paste0(key, ": ", conditionMessage(an)))
-            } else if (inherits(an, "DataAnalytics")) {
-              store[[key]] <- an
-              created <- created + 1L
-            } else {
-              problems <- c(problems, paste0(key, ": ", tx("could not be generated (is the data standardized?)")))
-            }
-          }
-        }
-        n <- max(length(store), 1L)
-        for (i in seq_along(store)) {
-          key <- names(store)[i]
-          shiny::incProgress(1 / n, detail = paste(tx("Running quality checks"), key))
-          res <- tryCatch(store[[i]]$run_quality_checks(), error = function(e) e)
-          failed <- inherits(res, "error") ||
-            isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE))
-          if (failed) {
-            problems <- c(problems, paste0(key, ": ", if (inherits(res, "error")) conditionMessage(res)
-                                           else tx("quality checks reported a failure, see the log.")))
-          } else if (is.function(store[[i]]$run_outputs)) {
-            # Populates the visualizations pane
-            tryCatch(store[[i]]$run_outputs(), error = function(e) {
-              problems <<- c(problems, paste0(key, " (", tx("outputs"), "): ", conditionMessage(e)))
-            })
-          }
-        }
-      })
-      iphra_session$set_module("analytics", store)
-      refresh(refresh() + 1L)
-      shiny::showNotification(
-        paste0(tx("Quality reports"), ": ", created, " ", tx("created"), ", ",
-               existing, " ", tx("already existed"), "."),
-        type = "message"
-      )
-      for (p in utils::head(problems, 5L)) {
-        shiny::showNotification(p, type = "warning", duration = 15)
-      }
     })
 
     current_an <- shiny::reactive({

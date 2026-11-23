@@ -439,6 +439,13 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
           ))
           next
         }
+        diag_res <- tryCatch({
+          tryCatch(obj$.__enclos_env__$private$..map_schema_vars(stage = "raw"), error = function(e) NULL)
+          obj$data_diagnose(stage = "raw")
+        }, error = function(e) e)
+        if (inherits(diag_res, "error")) {
+          problems <- c(problems, paste0(nm, " (", tx("Diagnose"), "): ", conditionMessage(diag_res)))
+        }
         existing[[nm]] <- obj
         added <- c(added, nm)
       }

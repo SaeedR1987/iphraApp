@@ -243,12 +243,11 @@ app_server <- function(input, output, session) {
 
   observeEvent(input$debug_toggle, {
     iphra_try({
-      # Show Debug Console modal
-      showModal(mod_debug_console_ui("debug_console"))
-      mod_debug_console_server("debug_console", parent_session = session)
-      iphra_message("Debug Console opened", origin = "Edit Menu")
-    }, on_error = "warn", origin = "Edit Menu: Debug Console")
+      showModal(mod_log_viewer_ui("log_viewer"))
+      iphra_message("Debug Console opened", origin = "File Menu")
+    }, on_error = "warn", origin = "File Menu: Debug Console")
   })
+  mod_log_viewer_server("log_viewer", open = function() input$debug_toggle)
 
   # View Menu Observers
   observeEvent(input$toggle_sidebar_btn, {

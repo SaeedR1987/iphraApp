@@ -438,6 +438,17 @@ iphra_menu_ui <- function(lang = "en") {
                                            )
                                          ),
                                          tags$li(class = "divider"),
+                                         # Debug Console (change logs viewer)
+                                         tags$li(
+                                           tags$a(
+                                             href = "#",
+                                             id = "debug_toggle",
+                                             onclick = "Shiny.setInputValue('debug_toggle', Date.now());",
+                                             tags$span(class = "glyphicon glyphicon-console"),
+                                             " ", phrutils::phr_txt("Debug Console", lang = lang)
+                                           )
+                                         ),
+                                         tags$li(class = "divider"),
                                          # Exit
                                          tags$li(
                                            tags$a(
@@ -493,16 +504,6 @@ iphra_menu_ui <- function(lang = "en") {
                                              onclick = "Shiny.setInputValue('clear_all_data_btn', Date.now());",
                                              tags$span(class = "glyphicon glyphicon-trash"),
                                              " ", phrutils::phr_txt("Clear All Data", lang = lang)
-                                           )
-                                         ),
-                                         tags$li(class = "divider"),
-                                         tags$li(
-                                           tags$a(
-                                             href = "#",
-                                             id = "debug_toggle",
-                                             onclick = "Shiny.setInputValue('debug_toggle', Date.now());",
-                                             tags$span(class = "glyphicon glyphicon-console"),
-                                             " ", phrutils::phr_txt("Debug Console", lang = lang)
                                            )
                                          ),
                                          tags$li(class = "divider"),

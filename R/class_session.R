@@ -105,20 +105,52 @@ PHRSession <- R6::R6Class(
     #' @param serializable Logical; whether the module is saved with the project.
     #' @return Invisibly returns the module object.
     set_module = function(module_id, object, serializable = TRUE) {
-      private$..assert_module_id(module_id)
-      self$set(
-        field = "..modules",
-        role = module_id,
-        value = object,
-        update_modified = FALSE
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$set_module",
+          message = private$..phr_txt("Starting set_module for '{module_id}'.")
+        )
+
+        private$..assert_module_id(module_id)
+
+        result <- private$..phr_try_step({
+          self$set(
+            field = "..modules",
+            role = module_id,
+            value = object,
+            update_modified = FALSE
+          )
+          private$..serializable[[module_id]] <- isTRUE(serializable)
+        },
+        step = private$..phr_txt("PHRSession$set_module - register module"),
+        hint = private$..phr_txt("Check that '{module_id}' is a valid module id.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$set_module",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+
+        private$..touch(touch = TRUE, log = FALSE)
+        private$..notify(module_id)
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$set_module",
+          message = private$..phr_txt("Registered module '{module_id}'.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$set_module"
       )
-      private$..serializable[[module_id]] <- isTRUE(serializable)
-      private$..touch(
-        log = TRUE,
-        name = module_id,
-        message = private$..phr_txt("Registered module '{module_id}'.")
-      )
-      private$..notify(module_id)
+
       invisible(object)
     },
 
@@ -142,13 +174,30 @@ PHRSession <- R6::R6Class(
     #' @param module_id Character string identifying the module.
     #' @return Invisibly returns the new session version.
     touch_module = function(module_id) {
-      private$..assert_module_id(module_id)
-      private$..touch(
-        log = FALSE,
-        name = module_id,
-        message = private$..phr_txt("Touched module '{module_id}'.")
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$touch_module",
+          message = private$..phr_txt("Starting touch_module for '{module_id}'.")
+        )
+
+        private$..assert_module_id(module_id)
+
+        private$..touch(touch = TRUE, log = FALSE)
+        private$..notify(module_id)
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$touch_module",
+          message = private$..phr_txt("Touched module '{module_id}'.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$touch_module"
       )
-      private$..notify(module_id)
+
       invisible(private$..metadata$version)
     },
 
@@ -202,16 +251,53 @@ PHRSession <- R6::R6Class(
     #' @param module_id Character string identifying the module.
     #' @return Invisibly returns self.
     remove_module = function(module_id) {
-      if (self$has_module(module_id)) {
-        private$..modules[[module_id]] <- NULL
-        private$..serializable[[module_id]] <- NULL
+      private$..phr_try({
+
         private$..touch(
-          log = TRUE,
-          name = module_id,
-          message = private$..phr_txt("Removed module '{module_id}'.")
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$remove_module",
+          message = private$..phr_txt("Starting remove_module for '{module_id}'.")
         )
-        private$..notify(module_id)
-      }
+
+        if (self$has_module(module_id)) {
+          result <- private$..phr_try_step({
+            private$..modules[[module_id]] <- NULL
+            private$..serializable[[module_id]] <- NULL
+          },
+          step = private$..phr_txt("PHRSession$remove_module - remove module"),
+          hint = private$..phr_txt("Check that '{module_id}' is a registered module.")
+          )
+          if (phrutils::phr_failed(result)) {
+            private$..touch(
+              log = TRUE, touch = FALSE, display = TRUE,
+              name = "PHRSession$remove_module",
+              message = result$error,
+              level = "error"
+            )
+            return(invisible(result))
+          }
+
+          private$..touch(touch = TRUE, log = FALSE)
+          private$..notify(module_id)
+
+          private$..touch(
+            log = TRUE, touch = FALSE, display = FALSE,
+            name = "PHRSession$remove_module",
+            message = private$..phr_txt("Removed module '{module_id}'.")
+          )
+        } else {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = FALSE,
+            name = "PHRSession$remove_module",
+            message = private$..phr_txt("Module '{module_id}' is not registered; nothing removed.")
+          )
+        }
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$remove_module"
+      )
+
       invisible(self)
     },
 
@@ -230,14 +316,50 @@ PHRSession <- R6::R6Class(
     #' @param name Non-empty character string.
     #' @return Invisibly returns self.
     set_project_name = function(name) {
-      phrutils::phr_assert(
-        is.character(name) && length(name) == 1L && nzchar(name),
-        message = private$..phr_txt("Project name must be a non-empty character string."),
-        origin = "PHRSession$set_project_name"
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$set_project_name",
+          message = private$..phr_txt("Starting set_project_name.")
+        )
+
+        phrutils::phr_assert(
+          is.character(name) && length(name) == 1L && nzchar(name),
+          message = private$..phr_txt("Project name must be a non-empty character string."),
+          origin = "PHRSession$set_project_name"
+        )
+
+        result <- private$..phr_try_step({
+          self$set(field = "..name", value = name, update_modified = FALSE)
+        },
+        step = private$..phr_txt("PHRSession$set_project_name - set name"),
+        hint = private$..phr_txt("Check that the project name is valid.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$set_project_name",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+
+        private$..touch(touch = TRUE, log = FALSE)
+        private$..notify()
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$set_project_name",
+          message = private$..phr_txt("Project name set to '{name}'.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$set_project_name"
       )
-      self$set(field = "..name", value = name, update_modified = FALSE)
-      private$..touch()
-      private$..notify()
+
       invisible(self)
     },
 
@@ -248,19 +370,57 @@ PHRSession <- R6::R6Class(
     #' modules) to a list suitable for `saveRDS()`.
     #' @return Named list.
     serialize = function() {
-      keep <- vapply(
-        names(private$..modules),
-        function(id) isTRUE(private$..serializable[[id]] %||% TRUE),
-        logical(1)
+      payload <- NULL
+
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$serialize",
+          message = private$..phr_txt("Starting serialize for '{private$..name}'.")
+        )
+
+        result <- private$..phr_try_step({
+          keep <- vapply(
+            names(private$..modules),
+            function(id) isTRUE(private$..serializable[[id]] %||% TRUE),
+            logical(1)
+          )
+          list(
+            phr_session_version = .PHR_SESSION_VERSION,
+            project_name = private$..name,
+            metadata = private$..metadata,
+            app_metadata = private$..app_metadata,
+            change_log = private$..change_log,
+            modules = private$..modules[names(private$..modules)[keep]]
+          )
+        },
+        step = private$..phr_txt("PHRSession$serialize - build payload"),
+        hint = private$..phr_txt("Check that the registered modules are valid.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$serialize",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+        payload <- result
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$serialize",
+          message = private$..phr_txt("Serialized project '{private$..name}'.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$serialize"
       )
-      list(
-        phr_session_version = .PHR_SESSION_VERSION,
-        project_name = private$..name,
-        metadata = private$..metadata,
-        app_metadata = private$..app_metadata,
-        change_log = private$..change_log,
-        modules = private$..modules[names(private$..modules)[keep]]
-      )
+
+      payload
     },
 
     #' @description
@@ -271,53 +431,102 @@ PHRSession <- R6::R6Class(
     #' @param merge Logical. If `TRUE`, keep modules not present in `data`.
     #' @return Invisibly returns self.
     deserialize = function(data, merge = FALSE) {
-      phrutils::phr_assert(
-        is.list(data),
-        message = private$..phr_txt("Data must be a list."),
-        origin = "PHRSession$deserialize"
-      )
-      if (!any(c("phr_session_version", "iphra_session_version") %in% names(data))) {
-        warning(private$..phr_txt(
-          "Missing phr_session_version in loaded data; proceeding with caution"
-        ), call. = FALSE)
-      }
+      private$..phr_try({
 
-      if (!isTRUE(merge)) {
-        for (id in names(private$..modules)) {
-          private$..modules[[id]] <- NULL
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$deserialize",
+          message = private$..phr_txt("Starting deserialize.")
+        )
+
+        phrutils::phr_assert(
+          is.list(data),
+          message = private$..phr_txt("Data must be a list."),
+          origin = "PHRSession$deserialize"
+        )
+        if (!any(c("phr_session_version", "iphra_session_version") %in% names(data))) {
+          msg <- private$..phr_txt(
+            "Missing phr_session_version in loaded data; proceeding with caution"
+          )
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$deserialize",
+            message = msg
+          )
         }
-        private$..serializable <- list()
-      }
 
-      if (!is.null(data$project_name)) {
-        private$..name <- data$project_name
-      }
-      if (is.list(data$app_metadata)) {
-        private$..app_metadata <- data$app_metadata
-      } else if (is.list(data$metadata) && !is.null(data$metadata$app_version)) {
-        private$..app_metadata <- data$metadata
-      }
-      if (is.list(data$metadata) && !is.null(data$metadata$created_datetime)) {
-        private$..metadata$created_datetime <- data$metadata$created_datetime
-      } else if (!is.null(data$created_at)) {
-        private$..metadata$created_datetime <- data$created_at
-      }
-      if (!is.null(data$change_log)) {
-        private$..change_log <- data$change_log
-      }
+        result <- private$..phr_try_step({
+          if (!isTRUE(merge)) {
+            for (id in names(private$..modules)) {
+              private$..modules[[id]] <- NULL
+            }
+            private$..serializable <- list()
+          }
 
-      # Legacy payloads stored plain list state under `state`.
-      modules <- c(data$modules, data$state[setdiff(names(data$state), names(data$modules))])
-      for (id in names(modules)) {
-        self$set_module(id, modules[[id]])
-      }
+          if (!is.null(data$project_name)) {
+            private$..name <- data$project_name
+          }
+          if (is.list(data$app_metadata)) {
+            private$..app_metadata <- data$app_metadata
+          } else if (is.list(data$metadata) && !is.null(data$metadata$app_version)) {
+            private$..app_metadata <- data$metadata
+          }
+          if (is.list(data$metadata) && !is.null(data$metadata$created_datetime)) {
+            private$..metadata$created_datetime <- data$metadata$created_datetime
+          } else if (!is.null(data$created_at)) {
+            private$..metadata$created_datetime <- data$created_at
+          }
+          if (!is.null(data$change_log)) {
+            private$..change_log <- data$change_log
+          }
+        },
+        step = private$..phr_txt("PHRSession$deserialize - restore metadata"),
+        hint = private$..phr_txt("Check that the project file was written by save_project().")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$deserialize",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
 
-      private$..touch(
-        log = TRUE,
-        name = private$..name,
-        message = private$..phr_txt("Deserialized project '{private$..name}'.")
+        result <- private$..phr_try_step({
+          # Legacy payloads stored plain list state under `state`.
+          modules <- c(data$modules, data$state[setdiff(names(data$state), names(data$modules))])
+          for (id in names(modules)) {
+            self$set_module(id, modules[[id]])
+          }
+        },
+        step = private$..phr_txt("PHRSession$deserialize - restore modules"),
+        hint = private$..phr_txt("Check that the saved modules are valid.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$deserialize",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+
+        private$..touch(touch = TRUE, log = FALSE)
+        private$..notify()
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$deserialize",
+          message = private$..phr_txt("Deserialized project '{private$..name}'.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$deserialize"
       )
-      private$..notify()
+
       invisible(self)
     },
 
@@ -327,19 +536,69 @@ PHRSession <- R6::R6Class(
     #' @param path Character string with the file path.
     #' @return Invisibly returns the file path.
     save_project = function(path) {
-      phrutils::phr_assert(
-        is.character(path) && length(path) == 1L,
-        message = private$..phr_txt("Path must be a single character string."),
-        origin = "PHRSession$save_project"
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$save_project",
+          message = private$..phr_txt("Starting save_project.")
+        )
+
+        phrutils::phr_assert(
+          is.character(path) && length(path) == 1L,
+          message = private$..phr_txt("Path must be a single character string."),
+          origin = "PHRSession$save_project"
+        )
+        if (!grepl("\\.rds$", tolower(path))) {
+          path <- paste0(path, ".rds")
+        }
+
+        result <- private$..phr_try_step({
+          dir_path <- dirname(path)
+          if (!dir.exists(dir_path)) {
+            dir.create(dir_path, recursive = TRUE)
+          }
+        },
+        step = private$..phr_txt("PHRSession$save_project - create directory"),
+        hint = private$..phr_txt("Check that you can write to the folder of {path}.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$save_project",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+
+        result <- private$..phr_try_step({
+          saveRDS(self$serialize(), file = path)
+        },
+        step = private$..phr_txt("PHRSession$save_project - write file"),
+        hint = private$..phr_txt("Check that {path} is writable.")
+        )
+        if (phrutils::phr_failed(result)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$save_project",
+            message = result$error,
+            level = "error"
+          )
+          return(invisible(result))
+        }
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$save_project",
+          message = private$..phr_txt("Saved project to {path}.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$save_project"
       )
-      dir_path <- dirname(path)
-      if (!dir.exists(dir_path)) {
-        dir.create(dir_path, recursive = TRUE)
-      }
-      if (!grepl("\\.rds$", tolower(path))) {
-        path <- paste0(path, ".rds")
-      }
-      saveRDS(self$serialize(), file = path)
+
       invisible(path)
     },
 
@@ -350,12 +609,48 @@ PHRSession <- R6::R6Class(
     #' @param merge Logical; see `deserialize()`.
     #' @return Invisibly returns self.
     load_project = function(path, merge = FALSE) {
-      phrutils::phr_assert(
-        file.exists(path),
-        message = private$..phr_txt("File not found: {path}"),
-        origin = "PHRSession$load_project"
+      private$..phr_try({
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$load_project",
+          message = private$..phr_txt("Starting load_project.")
+        )
+
+        phrutils::phr_assert(
+          file.exists(path),
+          message = private$..phr_txt("File not found: {path}"),
+          origin = "PHRSession$load_project"
+        )
+
+        data <- private$..phr_try_step({
+          readRDS(path)
+        },
+        step = private$..phr_txt("PHRSession$load_project - read file"),
+        hint = private$..phr_txt("Check that {path} is a valid project file.")
+        )
+        if (phrutils::phr_failed(data)) {
+          private$..touch(
+            log = TRUE, touch = FALSE, display = TRUE,
+            name = "PHRSession$load_project",
+            message = data$error
+          )
+          return(invisible(data))
+        }
+
+        self$deserialize(data, merge = merge)
+
+        private$..touch(
+          log = TRUE, touch = FALSE, display = FALSE,
+          name = "PHRSession$load_project",
+          message = private$..phr_txt("Loaded project from {path}.")
+        )
+
+      },
+      on_error = "abort",
+      origin = "PHRSession$load_project"
       )
-      self$deserialize(readRDS(path), merge = merge)
+
       invisible(self)
     },
 

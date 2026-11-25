@@ -137,7 +137,6 @@ PHRSession <- R6::R6Class(
           return(invisible(result))
         }
 
-        private$..touch(touch = TRUE, log = FALSE)
         private$..notify(module_id)
 
         private$..touch(
@@ -184,7 +183,6 @@ PHRSession <- R6::R6Class(
 
         private$..assert_module_id(module_id)
 
-        private$..touch(touch = TRUE, log = FALSE)
         private$..notify(module_id)
 
         private$..touch(
@@ -277,7 +275,6 @@ PHRSession <- R6::R6Class(
             return(invisible(result))
           }
 
-          private$..touch(touch = TRUE, log = FALSE)
           private$..notify(module_id)
 
           private$..touch(
@@ -346,7 +343,6 @@ PHRSession <- R6::R6Class(
           return(invisible(result))
         }
 
-        private$..touch(touch = TRUE, log = FALSE)
         private$..notify()
 
         private$..touch(
@@ -513,7 +509,6 @@ PHRSession <- R6::R6Class(
           return(invisible(result))
         }
 
-        private$..touch(touch = TRUE, log = FALSE)
         private$..notify()
 
         private$..touch(
@@ -690,9 +685,10 @@ PHRSession <- R6::R6Class(
     # @field ..module_signals Named list of per-module reactiveVals.
     ..module_signals = list(),
 
-    # Mirror `..metadata$version` (already bumped by `..touch()`) into the
-    # session signal and, optionally, one module's signal.
+    # Bump `..metadata$version` via `..touch()` (no log entry), then mirror it
+    # into the session signal and, optionally, one module's signal.
     ..notify = function(module_id = NULL) {
+      private$..touch(touch = TRUE, log = FALSE)
       version <- private$..metadata$version
       if (!is.null(module_id) && !is.null(private$..module_signals[[module_id]])) {
         private$..module_signals[[module_id]](version)

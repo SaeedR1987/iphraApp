@@ -606,7 +606,7 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
     log_validated <- function(obj, kind) {
       lg <- tryCatch(obj$get(field = log_fields[[kind]]), error = function(e) NULL)
       if (is.null(lg)) return(NA)
-      for (f in c("validated", "..validated")) {
+      for (f in c("..validated")) {
         v <- tryCatch(lg$get(f), error = function(e) NULL)
         if (is.logical(v) && length(v) == 1L) return(v)
       }

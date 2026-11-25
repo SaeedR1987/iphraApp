@@ -1253,8 +1253,9 @@
       "URL": "https://github.com/yonicd/covrpage",
       "BugReports": "https://github.com/yonicd/covrpage/issues",
       "Encoding": "UTF-8",
+      "LazyData": "false",
       "Depends": [
-        "R (>= 4.1.0)"
+        "R (>= 4.0)"
       ],
       "Imports": [
         "utils",
@@ -1276,15 +1277,14 @@
       ],
       "VignetteBuilder": "knitr",
       "Language": "en-US",
+      "Author": "Jonathan Sidi [aut, cre] (ORCID: <https://orcid.org/0000-0002-4222-1819>), Locke Data [fnd] (https://itsalocke.com)",
+      "Maintainer": "Jonathan Sidi <yonicd@gmail.com>",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "covrpage",
       "RemoteUsername": "yonicd",
       "RemoteRef": "HEAD",
-      "RemoteSha": "bafeb195d1999b8c3a48186e26f59cafcdfa3670",
-      "NeedsCompilation": "no",
-      "Author": "Jonathan Sidi [aut, cre] (ORCID: <https://orcid.org/0000-0002-4222-1819>), Locke Data [fnd] (https://itsalocke.com)",
-      "Maintainer": "Jonathan Sidi <yonicd@gmail.com>"
+      "RemoteSha": "bafeb195d1999b8c3a48186e26f59cafcdfa3670"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -1801,7 +1801,8 @@
       "NeedsCompilation": "yes",
       "Author": "David Meyer [aut, cre] (ORCID: <https://orcid.org/0000-0002-5196-3048>), Evgenia Dimitriadou [aut, cph], Kurt Hornik [aut] (ORCID: <https://orcid.org/0000-0003-4198-9911>), Andreas Weingessel [aut], Friedrich Leisch [aut], Chih-Chung Chang [ctb, cph] (libsvm C++-code), Chih-Chen Lin [ctb, cph] (libsvm C++-code)",
       "Maintainer": "David Meyer <David.Meyer@R-project.org>",
-      "Repository": "CRAN"
+      "Repository": "CRAN",
+      "Encoding": "UTF-8"
     },
     "ellipsis": {
       "Package": "ellipsis",
@@ -2894,46 +2895,6 @@
       "NeedsCompilation": "no",
       "Repository": "CRAN",
       "Encoding": "UTF-8"
-    },
-    "iphraApp": {
-      "Package": "iphraApp",
-      "Version": "0.0.0.9000",
-      "Source": "unknown",
-      "Title": "An Amazing Shiny App",
-      "Authors@R": "person(given = \"firstname\", family = \"lastname\", role = c(\"aut\", \"cre\"), email = \"your@email.com\")",
-      "Description": "What the package does (one paragraph).",
-      "License": "What license is it under?",
-      "Imports": [
-        "config",
-        "DT",
-        "dplyr",
-        "fs",
-        "glue",
-        "golem",
-        "jsonlite",
-        "phr",
-        "phrutils",
-        "pkgload",
-        "R6",
-        "readxl",
-        "rhandsontable",
-        "rlang",
-        "shiny",
-        "shinyBS",
-        "shinyFiles",
-        "shinydashboard",
-        "shinyjs",
-        "sortable",
-        "writexl"
-      ],
-      "Encoding": "UTF-8",
-      "Config/roxygen2/version": "8.1.0",
-      "NeedsCompilation": "no",
-      "Author": "firstname lastname [aut, cre]",
-      "Maintainer": "firstname lastname <your@email.com>",
-      "Depends": [
-        "R (>= 4.1.0)"
-      ]
     },
     "isoband": {
       "Package": "isoband",
@@ -4034,13 +3995,14 @@
     },
     "otel": {
       "Package": "otel",
-      "Version": "0.3.0",
+      "Version": "0.2.0",
       "Source": "Repository",
       "Title": "OpenTelemetry R API",
       "Authors@R": "person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\"))",
       "Description": "High-quality, ubiquitous, and portable telemetry to enable effective observability. OpenTelemetry is a collection of tools, APIs, and SDKs used to instrument, generate, collect, and export telemetry data (metrics, logs, and traces) for analysis in order to understand your software's performance and behavior. This package implements the OpenTelemetry API: <https://opentelemetry.io/docs/specs/otel/>. Use this package as a dependency if you want to instrument your R package for OpenTelemetry.",
       "License": "MIT + file LICENSE",
       "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2.9000",
       "Depends": [
         "R (>= 3.6.0)"
       ],
@@ -4049,7 +4011,7 @@
         "cli",
         "glue",
         "jsonlite",
-        "otelsdk (>= 0.2.4)",
+        "otelsdk",
         "processx",
         "shiny",
         "spelling",
@@ -4060,8 +4022,8 @@
       "Config/Needs/website": "tidyverse/tidytemplate",
       "Config/testthat/edition": "3",
       "URL": "https://otel.r-lib.org, https://github.com/r-lib/otel",
+      "Additional_repositories": "https://github.com/r-lib/otelsdk/releases/download/devel",
       "BugReports": "https://github.com/r-lib/otel/issues",
-      "Config/roxygen2/version": "8.1.1",
       "NeedsCompilation": "no",
       "Author": "Gábor Csárdi [aut, cre]",
       "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
@@ -4219,7 +4181,7 @@
       "RemoteRepo": "public_health_resources",
       "RemoteUsername": "impact-initiatives",
       "RemoteRef": "HEAD",
-      "RemoteSha": "6b769a0a55d7f9f6d4fe9f3836979e9ab9ddfa0a",
+      "RemoteSha": "2183b88b7c8102413037fdc41fa71004c7dc2dd2",
       "NeedsCompilation": "no",
       "Author": "Saeed Rahman [aut, cre]",
       "Maintainer": "Saeed Rahman <saeed.rahman0@gmail.com>"
@@ -4516,7 +4478,8 @@
       "URL": "https://www.rforge.net/png/",
       "BugReports": "https://github.com/s-u/png/issues/",
       "NeedsCompilation": "yes",
-      "Repository": "CRAN"
+      "Repository": "CRAN",
+      "Encoding": "UTF-8"
     },
     "pps": {
       "Package": "pps",
@@ -4756,7 +4719,8 @@
       "NeedsCompilation": "yes",
       "Author": "David Meyer [aut, cre] (ORCID: <https://orcid.org/0000-0002-5196-3048>), Christian Buchta [aut]",
       "Maintainer": "David Meyer <David.Meyer@R-project.org>",
-      "Repository": "CRAN"
+      "Repository": "CRAN",
+      "Encoding": "UTF-8"
     },
     "ps": {
       "Package": "ps",
@@ -4955,7 +4919,8 @@
       "NeedsCompilation": "yes",
       "Author": "Robert J. Hijmans [cre, aut] (<https://orcid.org/0000-0001-5872-2872>), Jacob van Etten [ctb], Michael Sumner [ctb], Joe Cheng [ctb], Dan Baston [ctb], Andrew Bevan [ctb], Roger Bivand [ctb], Lorenzo Busetto [ctb], Mort Canty [ctb], Ben Fasoli [ctb], David Forrest [ctb], Aniruddha Ghosh [ctb], Duncan Golicher [ctb], Josh Gray [ctb], Jonathan A. Greenberg [ctb], Paul Hiemstra [ctb], Kassel Hingee [ctb], Alex Ilich [ctb], Institute for Mathematics Applied Geosciences [cph], Charles Karney [ctb], Matteo Mattiuzzi [ctb], Steven Mosher [ctb], Babak Naimi [ctb], Jakub Nowosad [ctb], Edzer Pebesma [ctb], Oscar Perpinan Lamigueiro [ctb], Etienne B. Racine [ctb], Barry Rowlingson [ctb], Ashton Shortridge [ctb], Bill Venables [ctb], Rafael Wueest [ctb]",
       "Maintainer": "Robert J. Hijmans <r.hijmans@gmail.com>",
-      "Repository": "CRAN"
+      "Repository": "CRAN",
+      "Encoding": "UTF-8"
     },
     "rbibutils": {
       "Package": "rbibutils",
@@ -6339,7 +6304,8 @@
       "NeedsCompilation": "yes",
       "Author": "Edzer Pebesma [aut, cre], Roger Bivand [aut], Barry Rowlingson [ctb], Virgilio Gomez-Rubio [ctb], Robert Hijmans [ctb], Michael Sumner [ctb], Don MacQueen [ctb], Jim Lemon [ctb], Finn Lindgren [ctb], Josh O'Brien [ctb], Joseph O'Rourke [ctb], Patrick Hausmann [ctb], Sebastian Meyer [ctb]",
       "Maintainer": "Edzer Pebesma <edzer.pebesma@uni-muenster.de>",
-      "Repository": "CRAN"
+      "Repository": "CRAN",
+      "Encoding": "UTF-8"
     },
     "srvyr": {
       "Package": "srvyr",

@@ -32,6 +32,22 @@ mod_goals_ui <- function(id) {
 
   tagList(
     shiny::fluidRow(
+
+      tags$head(
+        tags$style(HTML("
+      /* Targets all bsCollapse panels on the page */
+      .panel-title {
+        font-size: 12px;
+        font-weight: 400;
+      }
+
+      /* Or target only a specific bsCollapse by its id */
+      #collapse_group .panel-title {
+        font-size: 24px;
+      }
+    "))
+      ),
+
       # Left side (controls in tabset)
       shiny::column(
         width = 6,

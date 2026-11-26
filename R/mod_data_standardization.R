@@ -106,15 +106,15 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
           shiny::div(
             style = "display:grid; grid-template-columns:repeat(6, minmax(100px, 1fr)); gap:6px; flex:1;",
             btn(shiny::actionButton(ns("validate"), tx("Validate"), icon = shiny::icon("circle-check")), "yellow"),
-            btn(shiny::actionButton(ns("standardize"), tx("Standardize"), icon = shiny::icon("list-check")), "blue"),
+            btn(shiny::actionButton(ns("standardize"), tx("Standardize"), icon = shiny::icon("list-check"), class = "iphra-heavy"), "blue"),
             btn(shiny::actionButton(ns("diagnose"), tx("Diagnose"), icon = shiny::icon("stethoscope")), "teal"),
-            btn(shiny::actionButton(ns("gen_analytics"), tx("Generate Analytics"), icon = shiny::icon("chart-column")), "purple"),
+            btn(shiny::actionButton(ns("gen_analytics"), tx("Generate Analytics"), icon = shiny::icon("chart-column"), class = "iphra-heavy"), "purple"),
             btn(shiny::actionButton(ns("repair"), tx("Repair Mappings"), icon = shiny::icon("wrench")), "orange"),
             shiny::uiOutput(ns("complete_one_ui"), style = "display:contents;"),
             btn(shiny::actionButton(ns("validate_all"), tx("Validate All"), icon = shiny::icon("circle-check")), "yellow"),
-            btn(shiny::actionButton(ns("standardize_all"), tx("Standardize All"), icon = shiny::icon("list-check")), "blue"),
+            btn(shiny::actionButton(ns("standardize_all"), tx("Standardize All"), icon = shiny::icon("list-check"), class = "iphra-heavy"), "blue"),
             btn(shiny::actionButton(ns("diagnose_all"), tx("Diagnose All"), icon = shiny::icon("stethoscope")), "teal"),
-            btn(shiny::actionButton(ns("gen_analytics_all"), tx("Generate Analytics All"), icon = shiny::icon("chart-column")), "purple"),
+            btn(shiny::actionButton(ns("gen_analytics_all"), tx("Generate Analytics All"), icon = shiny::icon("chart-column"), class = "iphra-heavy"), "purple"),
             shiny::div(),
             shiny::uiOutput(ns("complete_all_ui"), style = "display:contents;")
           )
@@ -210,9 +210,13 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
 
     shiny::observeEvent(input$validate, run_method("validate", tx("Validate")))
     shiny::observeEvent(input$standardize, {
-      run_method("standardize", tx("Standardize"))
-      obj <- current(); shiny::req(obj)
-      res <- diagnose_standardized(obj)
+      shiny::req(current())
+      res <- shiny::withProgress(
+        message = tx("Standardizing"), detail = input$dataset, value = 0.5, {
+          run_method("standardize", tx("Standardize"))
+          obj <- current(); shiny::req(obj)
+          diagnose_standardized(obj)
+        })
       if (inherits(res, "error")) {
         shiny::showNotification(paste0(tx("Diagnose"), ": ", conditionMessage(res)), type = "error", duration = 15)
       }
@@ -223,15 +227,19 @@ mod_data_standardization_server <- function(id, lang_r = function() "en") {
       ds <- datasets()
       shiny::req(length(ds))
       failed <- character(0)
-      for (nm in names(ds)) {
-        res <- tryCatch(ds[[nm]]$standardize(), error = function(e) e)
-        bad <- inherits(res, "error") ||
-          (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
-        if (bad) failed <- c(failed, nm) else {
-          dres <- diagnose_standardized(ds[[nm]])
-          if (inherits(dres, "error")) failed <- c(failed, paste0(nm, " (", tx("Diagnose"), ")"))
+      shiny::withProgress(message = tx("Standardizing datasets"), value = 0, {
+        for (nm in names(ds)) {
+          shiny::incProgress(0, detail = nm)
+          res <- tryCatch(ds[[nm]]$standardize(), error = function(e) e)
+          bad <- inherits(res, "error") ||
+            (!is.null(res) && isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE)))
+          if (bad) failed <- c(failed, nm) else {
+            dres <- diagnose_standardized(ds[[nm]])
+            if (inherits(dres, "error")) failed <- c(failed, paste0(nm, " (", tx("Diagnose"), ")"))
+          }
+          shiny::incProgress(1 / length(ds))
         }
-      }
+      })
       iphra_session$touch_module("datasets")
       if (length(failed)) {
         shiny::showNotification(

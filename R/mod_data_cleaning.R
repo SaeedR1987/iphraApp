@@ -104,7 +104,7 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
           shiny::div(
             style = "display:grid; grid-template-columns:repeat(7, minmax(100px, 1fr)); gap:6px; flex:1;",
             btn(shiny::actionButton(ns("gen_one"), tx("Generate Log"),
-                                    icon = shiny::icon("list-alt")), "blue"),
+                                    icon = shiny::icon("list-alt"), class = "iphra-heavy"), "blue"),
             btn(shiny::actionButton(ns("save_one"), tx("Save Log"),
                                     icon = shiny::icon("save")), "teal"),
             btn(shiny::actionButton(ns("import_one"), tx("Import Log"),
@@ -116,7 +116,7 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
             btn(shiny::actionButton(ns("clean_one"), tx("Clean"),
                                     icon = shiny::icon("broom")), "grey"),
             btn(shiny::actionButton(ns("gen_all"), tx("Generate All Logs"),
-                                    icon = shiny::icon("list")), "blue"),
+                                    icon = shiny::icon("list"), class = "iphra-heavy"), "blue"),
             btn(shiny::actionButton(ns("save_all"), tx("Save All Logs"),
                                     icon = shiny::icon("floppy-disk")), "teal"),
             btn(shiny::actionButton(ns("import_all"), tx("Import All Logs"),
@@ -191,7 +191,11 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
 
     shiny::observeEvent(input$gen_one, {
       obj <- current(); shiny::req(obj)
-      if (generate(obj, input$dataset)) {
+      ok <- shiny::withProgress(
+        message = tx("Generating cleaning log"), detail = input$dataset, value = 0.5,
+        generate(obj, input$dataset)
+      )
+      if (ok) {
         n_of <- function(field) {
           lg <- tryCatch(obj$get(field = field), error = function(e) NULL)
           df <- if (is.null(lg)) NULL else tryCatch(lg$get("..log_df"), error = function(e) NULL)

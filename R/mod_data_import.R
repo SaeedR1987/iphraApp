@@ -18,6 +18,13 @@ mod_data_import_ui <- function(id) {
         accept = c(".xlsx", ".xls", ".xlsm", ".csv", ".txt")
       )
     ),
+    shiny::div(
+      style = "display:none;",
+      shiny::fileInput(
+        ns("tool_files"), label = NULL, multiple = TRUE,
+        accept = c(".xlsx", ".xls", ".xlsm")
+      )
+    ),
     shiny::uiOutput(ns("toolbar")),
     shiny::uiOutput(ns("empty")),
     shiny::uiOutput(ns("filters")),
@@ -37,10 +44,43 @@ iphra_data_types <- function() {
     health = list(label = "Health (individual)", class = "HealthIndividualData", hh = TRUE),
     nutrition = list(label = "Nutrition (individual)", class = "NutritionIndividualData", hh = TRUE),
     woman = list(label = "Women (individual)", class = "WomanIndividualData", hh = TRUE),
-    water = list(label = "Water containers", class = "WaterContainerData", hh = TRUE),
-    survey = list(label = "Tool: survey sheet", class = NULL, hh = FALSE),
-    choices = list(label = "Tool: choices sheet", class = NULL, hh = FALSE)
+    water = list(label = "Water containers", class = "WaterContainerData", hh = TRUE)
   )
+}
+
+#' Link newly imported datasets to the HouseholdData object.
+#'
+#' Uses the household imported in this batch, or else one already loaded, and
+#' calls `add_linked_dataset()` for every other newly imported dataset.
+#' @param new_objs Named list of `list(type, obj)` created in this import.
+#' @param existing Named list of all loaded datasets.
+#' @return Character vector of problem messages (empty on success).
+#' @noRd
+iphra_link_datasets_to_household <- function(new_objs, existing) {
+  link_names <- c(
+    individual = "roster", death = "deaths", health = "health",
+    nutrition = "nutrition", woman = "women", water = "water_containers"
+  )
+  is_hh <- function(o) inherits(o, "HouseholdData")
+  hh <- Filter(is_hh, lapply(new_objs, `[[`, "obj"))
+  if (!length(hh)) hh <- Filter(is_hh, existing)
+  if (!length(hh)) return(character(0))
+  hh <- hh[[1]]
+
+  problems <- character(0)
+  for (nm in names(new_objs)) {
+    link_name <- link_names[new_objs[[nm]]$type]
+    if (is.na(link_name)) next
+    res <- tryCatch(
+      hh$add_linked_dataset(name = unname(link_name), other_object = new_objs[[nm]]$obj,
+                            by_self_role = "uuid", by_other_role = "hh_uuid"),
+      error = function(e) e
+    )
+    if (inherits(res, "error")) {
+      problems <- c(problems, paste0(nm, " (link to Household data): ", conditionMessage(res)))
+    }
+  }
+  problems
 }
 
 #' Read every sheet of an Excel workbook, or the single table of a CSV.
@@ -74,14 +114,13 @@ iphra_guess_column <- function(cols, patterns) {
 
 iphra_guess_type <- function(sheet_name, n_sheets) {
   nm <- tolower(sheet_name)
-  if (nm %in% c("survey", "choices")) return(nm)
   if (grepl("death|mortal", nm)) return("death")
   if (grepl("water|container", nm)) return("water")
   if (grepl("nutri|muac|child", nm)) return("nutrition")
   if (grepl("wom[ae]n|repro", nm)) return("woman")
   if (grepl("health", nm)) return("health")
   if (grepl("roster|individual|member|person", nm)) return("individual")
-  if (grepl("household|hh|main|survey", nm) || n_sheets == 1L) return("household")
+  if (grepl("household|hh|main", nm) || n_sheets == 1L) return("household")
   "skip"
 }
 
@@ -115,6 +154,9 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
     pending <- shiny::reactiveVal(NULL)
     datasets_r <- iphra_session$get_module_reactive("datasets")
     datasets <- shiny::reactive(datasets_r() %||% list())
+    tools_r <- iphra_session$get_module_reactive("imported_tools")
+    tools_imported <- shiny::reactive(tools_r() %||% list())
+    pending_tools <- shiny::reactiveVal(NULL)
 
     go_to_import <- function() {
       shiny::updateNavbarPage(session$rootScope(), "workflow_nav", selected = "import")
@@ -134,6 +176,16 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
           icon = shiny::icon("upload"), class = "btn-primary",
           onclick = "iphraImportFile(); return false;"
         ),
+        shiny::actionButton(
+          ns("open_tool_import"), tx("Import Data Collection Tool(s)"),
+          icon = shiny::icon("file-import"), class = "btn-primary",
+          onclick = "iphraImportToolFiles(); return false;"
+        ),
+        if (length(tools_imported())) {
+          shiny::span(class = "phr-toolbar__info",
+                      paste0(length(tools_imported()), " ", tx("tool(s) imported:"), " ",
+                             paste(names(tools_imported()), collapse = ", ")))
+        },
         if (length(ds)) {
           shiny::tagList(
             shiny::div(
@@ -301,7 +353,7 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
         stats::setNames(names(types), vapply(types, function(t) tx(t$label), character(1)))
       )
       guesses <- vapply(names(sheets), iphra_guess_type, character(1), n_sheets = length(sheets))
-      for (t in c("household", "survey", "choices")) {
+      for (t in "household") {
         dup <- which(guesses == t)
         if (length(dup) > 1L) guesses[dup[-1L]] <- "skip"
       }
@@ -374,40 +426,17 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
       problems <- character(0)
 
       sel <- vapply(seq_along(p$sheets), function(i) input[[paste0("type_", i)]] %||% "skip", character(1))
-      if (sum(sel == "household") > 1L || sum(sel == "survey") > 1L || sum(sel == "choices") > 1L) {
+      if (sum(sel == "household") > 1L) {
         shiny::showNotification(
-          tx("Only one sheet can be imported as Household data, one as the survey sheet and one as the choices sheet."),
+          tx("Only one sheet can be imported as Household data."),
           type = "error", duration = 10
         )
         return()
       }
-      if (xor("survey" %in% sel, "choices" %in% sel)) {
-        shiny::showNotification(
-          tx("A tool needs both a survey sheet and a choices sheet."),
-          type = "error", duration = 10
-        )
-        return()
-      }
-
-      if (all(c("survey", "choices") %in% sel)) {
-        tool_name <- tools::file_path_sans_ext(p$file)
-        tool <- tryCatch(
-          phr::Tool$new(name = tool_name,
-                        survey = p$sheets[[which(sel == "survey")]],
-                        choices = p$sheets[[which(sel == "choices")]]),
-          error = function(e) e
-        )
-        if (inherits(tool, "error")) {
-          problems <- c(problems, paste0(tool_name, ": ", conditionMessage(tool)))
-        } else {
-          iphra_session$set_module("imported_tool", tool)
-          added <- c(added, paste0(tool_name, " (", tx("tool"), ")"))
-        }
-      }
-
+      new_objs <- list()
       for (i in seq_along(p$sheets)) {
         type <- sel[i]
-        if (type %in% c("skip", "survey", "choices")) next
+        if (type == "skip") next
         spec <- types[[type]]
         df <- p$sheets[[i]]
         nm <- trimws(input[[paste0("name_", i)]] %||% "")
@@ -447,8 +476,11 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
           problems <- c(problems, paste0(nm, " (", tx("Diagnose"), "): ", conditionMessage(diag_res)))
         }
         existing[[nm]] <- obj
+        new_objs[[nm]] <- list(type = type, obj = obj)
         added <- c(added, nm)
       }
+
+      problems <- c(problems, iphra_link_datasets_to_household(new_objs, existing))
 
       if (length(problems)) {
         shiny::showNotification(paste(problems, collapse = "\n"), type = "error", duration = 15)
@@ -465,6 +497,164 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
         shiny::removeModal()
       } else if (!length(problems)) {
         shiny::showNotification(tx("No sheets were selected for import."), type = "warning")
+      }
+    })
+
+    # ---- data collection tool (XLSFORM) import ---------------------------------
+    tool_defs <- iphra_tool_definitions()
+    tool_type_choices <- c(
+      stats::setNames("skip", tx("Do not import")),
+      stats::setNames(vapply(tool_defs, `[[`, "", "name"),
+                      vapply(tool_defs, function(t) tx(t$label), ""))
+    )
+    role_choices <- c(
+      stats::setNames("skip", tx("Do not import")),
+      stats::setNames(c("survey", "choices", "settings"),
+                      c(tx("Survey sheet"), tx("Choices sheet"), tx("Settings sheet")))
+    )
+
+    guess_tool_type <- function(file) {
+      nm <- tolower(tools::file_path_sans_ext(file))
+      keys <- vapply(tool_defs, function(t) sub("_iphra_v[0-9]+$", "", t$name), "")
+      hit <- which(vapply(keys, function(k) grepl(k, nm, fixed = TRUE), logical(1)))
+      if (length(hit)) tool_defs[[hit[1]]]$name else "skip"
+    }
+
+    guess_role <- function(sheet) {
+      nm <- tolower(trimws(sheet))
+      if (nm %in% c("survey", "choices", "settings")) nm else "skip"
+    }
+
+    shiny::observeEvent(input$tool_files, {
+      f <- input$tool_files
+      files <- list()
+      for (i in seq_len(nrow(f))) {
+        parsed <- tryCatch(iphra_read_import_file(f$datapath[i], f$name[i]), error = function(e) e)
+        if (inherits(parsed, "error") || !length(parsed)) {
+          shiny::showNotification(
+            paste(tx("Could not read the file:"), f$name[i],
+                  if (inherits(parsed, "error")) conditionMessage(parsed)
+                  else tx("No data sheets found.")),
+            type = "error", duration = 10
+          )
+          next
+        }
+        files[[length(files) + 1L]] <- list(file = f$name[i], sheets = parsed)
+      }
+      if (!length(files)) return()
+      pending_tools(files)
+      go_to_import()
+      shiny::showModal(tool_import_modal(files))
+    })
+
+    tool_import_modal <- function(files) {
+      blocks <- lapply(seq_along(files), function(i) {
+        fl <- files[[i]]
+        sheet_rows <- lapply(seq_along(fl$sheets), function(j) {
+          df <- fl$sheets[[j]]
+          shiny::tags$tr(
+            shiny::tags$td(
+              shiny::strong(names(fl$sheets)[j]), shiny::tags$br(),
+              shiny::span(class = "text-muted",
+                          paste0(format(nrow(df), big.mark = ","), " ", tx("rows"), " \u00d7 ",
+                                 ncol(df), " ", tx("columns")))
+            ),
+            shiny::tags$td(shiny::selectInput(
+              ns(paste0("trole_", i, "_", j)), NULL, role_choices,
+              selected = guess_role(names(fl$sheets)[j]), width = "100%"
+            ))
+          )
+        })
+        shiny::div(
+          style = "margin-bottom:18px;",
+          shiny::fluidRow(
+            shiny::column(6, shiny::h5(shiny::strong(fl$file))),
+            shiny::column(6, shiny::selectInput(
+              ns(paste0("ttype_", i)), tx("Tool type"), tool_type_choices,
+              selected = guess_tool_type(fl$file), width = "100%"
+            ))
+          ),
+          shiny::tags$table(
+            class = "table table-condensed phr-import-table",
+            shiny::tags$thead(shiny::tags$tr(
+              shiny::tags$th(tx("Sheet")), shiny::tags$th(tx("Sheet role"))
+            )),
+            shiny::tags$tbody(sheet_rows)
+          )
+        )
+      })
+
+      shiny::modalDialog(
+        title = tx("Import Data Collection Tool(s)"),
+        size = "l", easyClose = FALSE,
+        shiny::p(class = "text-muted",
+                 tx("For each file, choose the type of tool and the role of each sheet. Each tool needs one survey sheet and one choices sheet; the settings sheet is optional. Files set to 'Do not import' are ignored.")),
+        blocks,
+        footer = shiny::tagList(
+          shiny::modalButton(tx("Cancel")),
+          shiny::actionButton(ns("confirm_tool_import"), tx("Import"), class = "btn-primary")
+        )
+      )
+    }
+
+    shiny::observeEvent(input$confirm_tool_import, {
+      files <- pending_tools()
+      shiny::req(files)
+      existing <- shiny::isolate(tools_imported())
+      added <- character(0)
+      problems <- character(0)
+      last_tool <- NULL
+
+      for (i in seq_along(files)) {
+        fl <- files[[i]]
+        type <- input[[paste0("ttype_", i)]] %||% "skip"
+        if (identical(type, "skip")) next
+        roles <- vapply(seq_along(fl$sheets),
+                        function(j) input[[paste0("trole_", i, "_", j)]] %||% "skip", "")
+        if (sum(roles == "survey") != 1L || sum(roles == "choices") != 1L || sum(roles == "settings") > 1L) {
+          problems <- c(problems, paste0(
+            fl$file, ": ", tx("assign exactly one survey sheet, one choices sheet and at most one settings sheet.")
+          ))
+          next
+        }
+        settings <- if ("settings" %in% roles) fl$sheets[[which(roles == "settings")]] else NULL
+        tool_name <- tools::file_path_sans_ext(fl$file)
+        tool <- tryCatch(
+          phr::Tool$new(name = tool_name,
+                        survey = fl$sheets[[which(roles == "survey")]],
+                        choices = fl$sheets[[which(roles == "choices")]],
+                        settings = settings),
+          error = function(e) e
+        )
+        if (inherits(tool, "error")) {
+          problems <- c(problems, paste0(fl$file, ": ", conditionMessage(tool)))
+          next
+        }
+        nm <- tool_name
+        k <- 1L
+        while (nm %in% c(names(existing), added)) {
+          k <- k + 1L
+          nm <- paste0(tool_name, " (", k, ")")
+        }
+        existing[[nm]] <- list(tool_type = type, file = fl$file, tool = tool)
+        added <- c(added, nm)
+        last_tool <- tool
+      }
+
+      if (length(problems)) {
+        shiny::showNotification(paste(problems, collapse = "\n"), type = "error", duration = 15)
+      }
+      if (length(added)) {
+        iphra_session$set_module("imported_tools", existing)
+        # Keep the latest tool available to modules that use a single tool.
+        iphra_session$set_module("imported_tool", last_tool)
+        shiny::showNotification(
+          paste(tx("Imported:"), paste(added, collapse = ", ")), type = "message"
+        )
+        pending_tools(NULL)
+        shiny::removeModal()
+      } else if (!length(problems)) {
+        shiny::showNotification(tx("No tools were selected for import."), type = "warning")
       }
     })
 

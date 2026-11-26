@@ -463,3 +463,97 @@ protocol$.audience_table_df
 protocol$generate_quarto_doc(
   output_file = "test_manual_protocol_workflow_tor.docx"
 )
+
+# MANUAL DATA TESTING ####
+
+rm(list = ls())
+
+
+library(tibble)
+library(dplyr)
+library(phrutils)
+library(phrindicators)
+devtools::load_all()
+
+#Install and setup
+
+df_hh <- readxl::read_xlsx(
+  "REACH_DRC_Dataset_IPHRA_Juillet_2026.xlsx",
+  sheet = "clean_data"
+) |>
+  dplyr::mutate(
+    today = phrutils::phr_convert_date(today),
+    start = phrutils::phr_convert_datetime(start),
+    end = phrutils::phr_convert_datetime(end)
+  )
+
+
+df_roster <- readxl::read_xlsx(
+  "REACH_DRC_Dataset_IPHRA_Juillet_2026.xlsx",
+  sheet = "clean_roster"
+)
+# |>
+#   dplyr::mutate(
+#     ind_gender = dplyr::case_when(
+#       ind_gender == "male" ~ "m",
+#       ind_gender == "female" ~ "f",
+#       TRUE ~ NA_character_
+#     )
+#   )
+
+df_death <- readxl::read_xlsx(
+  "REACH_DRC_Dataset_IPHRA_Juillet_2026.xlsx",
+  sheet = "clean_died_member"
+)
+# |>
+#   dplyr::mutate(
+#     sex_died = dplyr::case_when(
+#       sex_died == "m" ~ "m",
+#       sex_died == "f" ~ "f",
+#       TRUE ~ NA_character_
+#     )
+#   )
+
+drc_mort <- phr::HouseholdData$new(
+  data = df_hh,
+  dataset_name = "DRC MSNA 2026 Household"
+)
+
+# write.csv(x = drc_mort$get(field = "..variable_schema"), file = "hh_variable_schema_iphra.csv")
+#
+# drc_mort$set(
+#    field = "..variable_schema",
+#    value = read.csv(file = "hh_variable_schema_iphra.csv")
+# )
+
+roster <- phr::IndividualData$new(
+  data = df_roster,
+  dataset_name = "DRC MSNA 2026 Roster"
+)
+
+# roster$set(
+#   field = "..variable_schema",
+#   value = read.csv(file = "roster_variable_schema.csv")
+# )
+
+deaths <- phr::DeathIndividualData$new(
+  data = df_death,
+  recall_date = "2026-01-01",
+  dataset_name = "DRC MSNA 2026 Deaths",
+  uuid = "index"
+)
+
+
+drc_mort$add_linked_dataset(
+  name = "roster",
+  other_object = roster,
+  by_self_role = "uuid",
+  by_other_role = "uuid"
+)
+
+drc_mort$add_linked_dataset(
+  name = "deaths",
+  other_object = deaths,
+  by_self_role = "uuid",
+  by_other_role = "uuid"
+)

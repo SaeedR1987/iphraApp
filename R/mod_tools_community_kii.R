@@ -15,47 +15,23 @@ mod_tools_community_kii_ui <- function(id) {
       condition = "output.tool_present == 'true'",
       ns = ns,
       shiny::fluidRow(
-        shinydashboard::box(
-          title = "Community Key Informant Tool - Presets",
-          width = 12,
-          shiny::actionButton(ns("preset_obj_kii"), "Match Objectives"),
-          shiny::actionButton(ns("preset_core_kii"), "Core KII"),
-          shiny::actionButton(ns("preset_full_kii"), "Full KII"),
-          shiny::actionButton(ns("export_tool_kii"), "Export Community KII Tool", class = "btn-success"),
-        )
+        shiny::column(4, shiny::uiOutput(ns("sector_filter_ui"))),
+        shiny::column(4, shiny::uiOutput(ns("pillar_filter_ui"))),
+        shiny::column(4, shiny::uiOutput(ns("subpillar_filter_ui")))
       ),
       shiny::fluidRow(
         shiny::column(
-          4,
-          shiny::uiOutput(ns("sector_filter_ui"))
-        ),
-        shiny::column(
-          4,
-          shiny::uiOutput(ns("pillar_filter_ui"))
-        ),
-        shiny::column(
-          4,
-          shiny::uiOutput(ns("subpillar_filter_ui"))
-        ),
-      ),
-      shiny::br(),
-      shiny::fluidRow(
-        shiny::column(
-          4,
-          shiny::uiOutput(ns("available_ui"))
-        ),
-        shiny::column(
-          4,
-          shiny::uiOutput(ns("selected_ui"))
-        ),
-        shiny::column(
-          4,
+          2,
           shinydashboard::box(
-            title = "Summary of Selected Indicators",
+            title = "Presets",
             width = 12,
-            shiny::tableOutput(ns("summary_table"))
+            shiny::actionButton(ns("preset_obj_kii"), "Match Objectives", class = "iphra-preset-btn"),
+            shiny::actionButton(ns("preset_core_kii"), "Core KII", class = "iphra-preset-btn"),
+            shiny::actionButton(ns("preset_full_kii"), "Full KII", class = "iphra-preset-btn")
           )
-        )
+        ),
+        shiny::column(5, shiny::uiOutput(ns("available_ui"))),
+        shiny::column(5, shiny::uiOutput(ns("selected_ui")))
       )
     )
 
@@ -85,42 +61,13 @@ mod_tools_community_kii_server <- function(id){
 
     })
 
-    filtered_pillars_r <- reactive({
-
-      req(input$sector_filter)
-
-      objective_filters_r() |>
-        dplyr::filter(sector %in% input$sector_filter)
-
-    })
-
-    filtered_subpillars_r <- reactive({
-
-      req(input$pillar_filter)
-
-      filtered_pillars_r() |>
-        dplyr::filter(pillar %in% input$pillar_filter)
-
-    })
-
-    filtered_available_indicators <- reactive({
-
-      req(input$subpillar_filter)
-
-      selected_objectives <-
-        filtered_subpillars_r() |>
-        dplyr::filter(
-          sub_pillar %in% input$subpillar_filter
-        ) |>
-        dplyr::pull(objective_code) |>
-        unique()
-
-      all_indicators() |>
-        dplyr::filter(
-          objective_code %in% selected_objectives
-        )
-
-    })
+    filters <- iphra_tool_filters_server(
+      input, output, session,
+      protocol_r = protocol_r,
+      role = "tool_kii_community_iphra_v2",
+      all_indicators_fn = function() all_indicators()
+    )
+    filtered_available_indicators <- filters$available
 
     #OUTPUTS ####
 
@@ -163,41 +110,6 @@ mod_tools_community_kii_server <- function(id){
       inds[inds$indicator_name %in% sel, ]
     })
 
-    output$sector_filter_ui <- renderUI({
-
-      selectInput(
-        ns("sector_filter"),
-        "Sector",
-        choices = sort(unique(objective_filters_r()$sector)),
-        selected = sector_selected(),
-        multiple = TRUE
-      )
-
-    })
-
-    output$pillar_filter_ui <- renderUI({
-
-      selectInput(
-        ns("pillar_filter"),
-        "Pillar",
-        choices = sort(unique(filtered_pillars_r()$pillar)),
-        selected = pillar_selected(),
-        multiple = TRUE
-      )
-
-    })
-
-    output$subpillar_filter_ui <- renderUI({
-
-      selectInput(
-        ns("subpillar_filter"),
-        "Sub-Pillar",
-        choices = sort(unique(filtered_subpillars_r()$sub_pillar)),
-        selected = subpillar_selected(),
-        multiple = TRUE
-      )
-
-    })
 
 
     # ---- UI for available list ----
@@ -323,31 +235,7 @@ mod_tools_community_kii_server <- function(id){
       tool  <- proto$tools[["tool_kii_community_iphra_v2"]]
       if (is.null(tool)) return()
 
-      sectors <- tool$selected_sectors %||% character(0)
-      pillars <- tool$selected_pillars %||% character(0)
-      subs <- tool$selected_subpillars %||% character(0)
-
-      updateSelectInput(
-        session,
-        "sector_filter",
-        selected = sectors
-      )
-
-      updateSelectInput(
-        session,
-        "pillar_filter",
-        selected = pillars
-      )
-
-      updateSelectInput(
-        session,
-        "subpillar_filter",
-        selected = subs
-      )
-
-      sector_selected(as.character(tool$selected_sectors %||% character(0)))
-      pillar_selected(as.character(tool$selected_pillars %||% character(0)))
-      subpillar_selected(as.character(tool$selected_subpillars %||% character(0)))
+      filters$restore()
 
       codes <- as.character(tool$selected_indicator_codes %||% character(0))
       if (length(codes) > 0) {
@@ -554,75 +442,6 @@ mod_tools_community_kii_server <- function(id){
       hint = phrutils::phr_txt("Ensure all_indicators_kii object is properly defined in the environment.")
       )
     })
-
-    # ---- Export Tool ----
-    #
-    # The Export button opens a modal that lets the user save an Excel
-    # workbook containing the household tool's `revised_survey`,
-    # `revised_choices` and `revised_settings` data frames as three sheets.
-    # The actual file writing happens through a `downloadHandler` (which
-    # is what shows the browser's native "save as" dialog); the modal is
-    # only used to surface that download link because the UI-side control
-    # is an `actionButton`, not a `downloadButton`.
-    observeEvent(input$export_tool, {
-      phrutils::phr_try({
-        if (!isTRUE(protocol_r()$.tool_community_kii)) {
-          shiny::showModal(shiny::modalDialog(
-            title = phrutils::phr_txt("Export Community KII Tool"),
-            phrutils::phr_txt("The Community Key Informant tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
-            footer = shiny::modalButton(phrutils::phr_txt("Close")),
-            easyClose = TRUE
-          ))
-          return(NULL)
-        }
-
-        shiny::showModal(shiny::modalDialog(
-          title = phrutils::phr_txt("Export Community KII Tool"),
-          shiny::tagList(
-            shiny::p(phrutils::phr_txt("Click below to save the Community Key Informant tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
-            shiny::downloadButton(ns("download_tool"),
-                                  label = phrutils::phr_txt("Download Excel"),
-                                  class = "btn-success")
-          ),
-          footer = shiny::modalButton(phrutils::phr_txt("Cancel")),
-          easyClose = TRUE
-        ))
-      },
-      on_error = "warn",
-      origin = phrutils::phr_txt("Community KII Tool: Export"),
-      hint = phrutils::phr_txt("Ensure the Community Key Informant tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
-      )
-    })
-
-    output$download_tool <- shiny::downloadHandler(
-      filename = function() {
-        paste0("tool_kii_community_iphra_v2",
-               format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
-      },
-      content = function(file) {
-        safe_df <- function(x) {
-          tryCatch({
-            if (is.null(x)) return(data.frame())
-            if (is.data.frame(x)) return(x)
-            as.data.frame(x)
-          }, error = function(e) data.frame())
-        }
-
-        sheets <- list(
-          survey   = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_survey),
-          choices  = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_choices),
-          settings = safe_df(protocol_r()$tools$tool_kii_community_iphra_v2$revised_settings)
-        )
-
-        writexl::write_xlsx(sheets, path = file)
-
-        phrutils::phr_message(
-          phrutils::phr_txt("Community Key Informant tool exported to Excel."),
-          origin = phrutils::phr_txt("Community KII Tool: Export")
-        )
-      }
-    )
-
 
   })
 

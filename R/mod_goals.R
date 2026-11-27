@@ -31,8 +31,9 @@ mod_goals_ui <- function(id) {
 
 
   tagList(
-    shiny::fluidRow(
-
+    shiny::uiOutput(ns("toolbar")),
+    shiny::div(
+      style = "display:flex; gap:12px; align-items:flex-start;",
       tags$head(
         tags$style(HTML("
       /* Targets all bsCollapse panels on the page */
@@ -49,8 +50,8 @@ mod_goals_ui <- function(id) {
       ),
 
       # Left side (controls in tabset)
-      shiny::column(
-        width = 6,
+      shiny::div(
+        style = "flex:0 0 40%; min-width:0;",
         shiny::tabsetPanel(
           id = ns("tabs"),
 
@@ -557,21 +558,30 @@ mod_goals_ui <- function(id) {
           # ---- Primary Tab ----
           shiny::tabPanel(
             title = phrutils::phr_txt("Primary"),
-            shinydashboard::box(
-              title = phrutils::phr_txt("Objectives Presets"),
-              width = 12,
-              shiny::actionButton(ns("preset_core"), phrutils::phr_txt("Core")),
-              shiny::actionButton(
-                ns("clear_objectives"),
-                phrutils::phr_txt("Clear Objectives"),
-                style = "margin-left:10px; background-color:#f88; color:white;"
-              )
-            ),
-            shiny::uiOutput(ns("dynamic_select_ui")),
-            shiny::br(),
             shiny::fluidRow(
-              shiny::column(width = 6, shiny::uiOutput(ns("available_ui"))),
-              shiny::column(width = 6, shiny::uiOutput(ns("selected_ui")))
+              shiny::column(
+                width = 2,
+                shinydashboard::box(
+                  title = phrutils::phr_txt("Objectives Presets"),
+                  width = 12,
+                  shiny::actionButton(ns("preset_core"), phrutils::phr_txt("Core"), class = "iphra-preset-btn"),
+                  shiny::actionButton(
+                    ns("clear_objectives"),
+                    phrutils::phr_txt("Clear Objectives"),
+                    class = "iphra-preset-btn",
+                    style = "background-color:#f88; color:white;"
+                  )
+                )
+              ),
+              shiny::column(
+                width = 10,
+                shiny::uiOutput(ns("dynamic_select_ui")),
+                shiny::br(),
+                shiny::fluidRow(
+                  shiny::column(width = 6, shiny::uiOutput(ns("available_ui"))),
+                  shiny::column(width = 6, shiny::uiOutput(ns("selected_ui")))
+                )
+              )
             )
           ),
 
@@ -595,16 +605,6 @@ mod_goals_ui <- function(id) {
                 rhandsontable::rHandsontableOutput(ns("secondary_sources_table"))
               )
             ),
-            shinydashboard::box(
-              title = phrutils::phr_txt("Objectives Presets"),
-              width = 12,
-              shiny::actionButton(ns("preset_sdr_core"), phrutils::phr_txt("Core")),
-              shiny::actionButton(
-                ns("clear_sdr_objectives"),
-                phrutils::phr_txt("Clear Objectives"),
-                style = "margin-left:10px; background-color:#f88; color:white;"
-              )
-            ),
             shiny::uiOutput(ns("dynamic_select_sdr_ui")),
             shiny::br(),
             shiny::fluidRow(
@@ -622,13 +622,20 @@ mod_goals_ui <- function(id) {
             shiny::hr(),
             shiny::h4(phrutils::phr_txt("Selected Objectives")),
             shiny::uiOutput(ns("full_objectives_ui"))
+          ),
+
+          # ---- Issues Tab ----
+          shiny::tabPanel(
+            title = phrutils::phr_txt("Issues"),
+            shiny::br(),
+            shiny::uiOutput(ns("issues_ui"))
           )
         )
       ),
 
       # Right side (SVG diagram)
-      shiny::column(
-        width = 6,
+      shiny::div(
+        style = "flex:1 1 60%; min-width:0;",
         # >>> Color Key <<<
         tags$div(
           style = "margin-bottom:10px;",
@@ -651,8 +658,9 @@ mod_goals_ui <- function(id) {
         ),
         tags$div(
           id = ns("framework_container"),
-          style = "border:1px solid #ccc; height:800px; overflow:auto;",
-          uiOutput(ns("framework_svg"))
+          style = "border:1px solid #ccc; height:800px; overflow:auto; cursor:pointer;",
+          title = phrutils::phr_txt("Click the diagram to export it as SVG, PNG or JPEG"),
+          uiOutput(ns("framework_svg"), style = "zoom:0.8;")
         )
       )
     )
@@ -749,48 +757,98 @@ mod_goals_server <- function(id){
       as.character(unique(reference_objectives_r()$objective_code))
     })
 
-    filtered_available_objectives <- reactive({
-      req(input$dynamic_select)  # Ensure input is available
+    # Sector / pillar / sub-pillar filters (all values selected by default)
+    picker_seen <- new.env()
 
-      filtered <- reference_objectives_r()[reference_objectives_r()$pillar %in% input$dynamic_select, ]
-      as.character(unique(filtered$objective_code))
+    filter_objective_codes <- function(suffix) {
+      ref <- reference_objectives_r()
+      keep <- rep(TRUE, nrow(ref))
+      for (col in c("sector", "pillar", "sub_pillar")) {
+        id <- paste0("filter_", col, suffix)
+        sel <- input[[id]]
+        if (is.null(sel)) {
+          # A picker emptied by the user reports NULL; before render it never had a value
+          if (isTRUE(picker_seen[[id]])) keep[] <- FALSE
+          next
+        }
+        picker_seen[[id]] <- TRUE
+        keep <- keep & (as.character(ref[[col]]) %in% sel)
+      }
+      as.character(unique(ref$objective_code[keep]))
+    }
 
-    })
+    filtered_available_objectives <- reactive(filter_objective_codes(""))
+    filtered_available_sdr_objectives <- reactive(filter_objective_codes("_sdr"))
 
-    filtered_available_sdr_objectives <- reactive({
-      req(input$dynamic_select_sdr)  # Ensure input is available
+    objective_filters_ui <- function(suffix) {
+      ref <- reference_objectives_r()
+      mk <- function(col, label) {
+        choices <- sort(unique(as.character(ref[[col]])))
+        choices <- choices[!is.na(choices)]
+        id <- paste0("filter_", col, suffix)
+        shiny::column(
+          width = 4,
+          shinyWidgets::pickerInput(
+            ns(id),
+            label = phrutils::phr_txt(label),
+            choices = choices,
+            selected = isolate(input[[id]]) %||% choices,
+            multiple = TRUE,
+            width = "100%",
+            options = shinyWidgets::pickerOptions(
+              actionsBox = TRUE,
+              selectedTextFormat = "count > 2",
+              countSelectedText = "{0} selected",
+              liveSearch = TRUE
+            )
+          )
+        )
+      }
+      shiny::fluidRow(
+        mk("sector", "Sector"),
+        mk("pillar", "Pillar"),
+        mk("sub_pillar", "Subpillar")
+      )
+    }
 
-      filtered <- reference_objectives_r()[reference_objectives_r()$pillar %in% input$dynamic_select_sdr, ]
-      as.character(unique(filtered$objective_code))
-
-    })
-
+    # Cascade: pillar choices follow selected sectors, sub-pillar choices follow
+    # selected pillars. Newly available values are selected; existing picks kept.
+    setup_filter_cascade <- function(suffix) {
+      prev <- new.env()
+      cascade <- function(child, parent_cols) {
+        id <- paste0("filter_", child, suffix)
+        shiny::observe({
+          ref <- reference_objectives_r()
+          keep <- rep(TRUE, nrow(ref))
+          for (col in parent_cols) {
+            sel <- input[[paste0("filter_", col, suffix)]]
+            if (is.null(sel)) {
+              req(!is.null(prev[[id]]))
+              sel <- character(0)
+            }
+            keep <- keep & (as.character(ref[[col]]) %in% sel)
+          }
+          choices <- sort(unique(as.character(ref[[child]][keep])))
+          choices <- choices[!is.na(choices)]
+          cur <- isolate(input[[id]])
+          old <- prev[[id]] %||% choices
+          sel_new <- union(intersect(cur, choices), setdiff(choices, old))
+          prev[[id]] <- choices
+          shinyWidgets::updatePickerInput(
+            session, id, choices = choices, selected = sel_new
+          )
+        })
+      }
+      cascade("pillar", "sector")
+      cascade("sub_pillar", c("sector", "pillar"))
+    }
+    setup_filter_cascade("")
+    setup_filter_cascade("_sdr")
 
     # Outputs ####
 
-    output$dynamic_select_ui <- renderUI({
-
-      selectInput(
-        ns("dynamic_select"),
-        label = phrutils::phr_txt("Select Pillars"),
-        choices = unique(reference_objectives_r()$pillar),  # Replace with your reactive or static vector
-        selected = isolate(input$dynamic_select %||%
-                           c("Demographics", "HealthStatus")),
-        multiple = TRUE
-      )
-    })
-
-    output$dynamic_select_sdr_ui <- renderUI({
-
-      selectInput(
-        ns("dynamic_select_sdr"),
-        label = phrutils::phr_txt("Select Dimensions"),
-        choices = unique(reference_objectives_r()$pillar),  # Replace with your reactive or static vector
-        selected = isolate(input$dynamic_select_sdr %||%
-                             c("Demographics", "HealthStatus")),
-        multiple = TRUE
-      )
-    })
+    output$dynamic_select_ui <- renderUI(objective_filters_ui(""))
+    output$dynamic_select_sdr_ui <- renderUI(objective_filters_ui("_sdr"))
 
     # output$available_ui <- renderUI({
     #
@@ -951,6 +1009,116 @@ mod_goals_server <- function(id){
     # --- Render the initial SVG ---
     output$framework_svg <- renderUI({
       HTML(protocol_r()$get(field = "framework", member = "adjusted_svg"))
+    })
+
+    # ---- Action toolbar (Validate / Diagnose / Export SVG / Mark Complete) ----
+    goals_complete <- iphra_goals_complete_rv(session)
+    issues_refresh <- shiny::reactiveVal(0L)
+
+    output$toolbar <- shiny::renderUI({
+      btn <- function(x, color) {
+        shiny::tagAppendAttributes(x, class = paste("phr-act", paste0("phr-act--", color)))
+      }
+      done <- isTRUE(goals_complete())
+      phr_toolbar(
+        shiny::tags$style(shiny::HTML(
+          ".phr-act{width:100%; height:100%; min-height:34px; font-size:11px; padding:4px 5px;
+             line-height:1.2; white-space:normal; color:#333; border:1px solid rgba(0,0,0,.15);}
+           .phr-act--teal{background:#d3f0ec;} .phr-act--yellow{background:#fbf0c4;}
+           .phr-act--blue{background:#d6e8fa;} .phr-act--green{background:#d4efd6;}
+           .phr-act--red{background:#f8d0d0;}
+           .phr-act:hover,.phr-act:focus{filter:brightness(.95); color:#222;}"
+        )),
+        shiny::div(
+          style = "display:grid; grid-template-columns:repeat(4, minmax(100px, 1fr)); gap:6px;",
+          btn(shiny::actionButton(ns("validate"), phrutils::phr_txt("Validate"),
+                                  icon = shiny::icon("circle-check")), "yellow"),
+          btn(shiny::actionButton(ns("diagnose"), phrutils::phr_txt("Diagnose Coherence"),
+                                  icon = shiny::icon("stethoscope")), "teal"),
+          btn(shiny::downloadButton(ns("export_svg"), phrutils::phr_txt("Export SVG")), "blue"),
+          btn(shiny::actionButton(
+            ns("complete"),
+            if (done) phrutils::phr_txt("Mark Incomplete") else phrutils::phr_txt("Mark Complete"),
+            icon = shiny::icon(if (done) "rotate-left" else "flag-checkered")
+          ), if (done) "red" else "green")
+        )
+      )
+    })
+
+    shiny::observeEvent(input$complete, {
+      goals_complete(!isTRUE(goals_complete()))
+    })
+
+    shiny::observeEvent(input$validate, {
+      res <- tryCatch({
+        schema <- protocol_r()$get(field = "framework", member = "modified_objectives_schema")
+        if (is.null(schema) || !is.data.frame(schema) || nrow(schema) == 0) {
+          schema <- protocol_r()$get(field = "framework", member = "master_objectives_schema")
+        }
+        protocol_r()$validate_objective_schema(schema = schema)
+      }, error = function(e) e)
+      failed <- inherits(res, "error") || isFALSE(res) ||
+        isTRUE(tryCatch(phrutils::phr_failed(res), error = function(e) FALSE))
+      if (failed) {
+        msg <- if (inherits(res, "error")) conditionMessage(res) else
+          phrutils::phr_txt("the objective schema is not valid, see the log.")
+        shiny::showNotification(paste0(phrutils::phr_txt("Validate"), ": ", msg),
+                                type = "error", duration = 15)
+      } else {
+        shiny::showNotification(
+          paste0(phrutils::phr_txt("Validate"), ": ", phrutils::phr_txt("objective schema is valid")),
+          type = "message")
+      }
+    })
+
+    shiny::observeEvent(input$diagnose, {
+      res <- tryCatch(protocol_r()$diagnose_coherence(), error = function(e) e)
+      issues_refresh(issues_refresh() + 1L)
+      phr_touch_module("protocol", session)
+      if (inherits(res, "error")) {
+        shiny::showNotification(
+          paste0(phrutils::phr_txt("Diagnose Coherence"), ": ", conditionMessage(res)),
+          type = "error", duration = 15)
+      } else {
+        shiny::showNotification(
+          paste0(phrutils::phr_txt("Diagnose Coherence"), ": ", phrutils::phr_txt("done")),
+          type = "message")
+        shiny::updateTabsetPanel(session, "tabs", selected = phrutils::phr_txt("Issues"))
+      }
+    })
+
+    output$export_svg <- shiny::downloadHandler(
+      filename = function() paste0("framework_", format(Sys.Date(), "%Y%m%d"), ".svg"),
+      content = function(file) {
+        svg <- protocol_r()$get(field = "framework", member = "adjusted_svg")
+        writeLines(as.character(svg), file, useBytes = TRUE)
+      },
+      contentType = "image/svg+xml"
+    )
+
+    # ---- Issues tab: issues and coherence issues recorded on the protocol ----
+    output$issues_ui <- shiny::renderUI({
+      issues_refresh()
+      protocol_r()
+      get_f <- function(f) tryCatch(protocol_r()[[f]], error = function(e) NULL)
+      render_issue <- function(x) {
+        if (is.list(x)) {
+          shiny::tags$ul(lapply(names(x) %||% seq_along(x), function(n) {
+            v <- x[[n]]
+            shiny::tags$li(if (!is.numeric(n)) shiny::strong(paste0(n, ": ")), render_issue(v))
+          }))
+        } else {
+          shiny::span(paste(as.character(x), collapse = "; "))
+        }
+      }
+      section <- function(title, x) {
+        if (length(x) == 0) return(NULL)
+        shiny::tagList(shiny::h4(title), render_issue(x))
+      }
+      shiny::tagList(
+        section(phrutils::phr_txt("Issues"), get_f("issues")),
+        section(phrutils::phr_txt("Coherence Issues"), get_f("issues_coherence"))
+      )
     })
 
     # Observes ####
@@ -1207,19 +1375,6 @@ mod_goals_server <- function(id){
       )
       selected_sdr(sec_codes)
 
-      # --- Restore pillar filter selects so the available pool matches ---
-      # (dynamic_select_ui re-renders before this observer fires, so
-      #  updateSelectInput patches the already-recreated DOM element.)
-      ref <- isolate(reference_objectives_r())
-      if (!is.null(ref) && nrow(ref) > 0) {
-        prim_pillars <- unique(ref$pillar[ref$objective_code %in% prim_codes])
-        sec_pillars  <- unique(ref$pillar[ref$objective_code %in% sec_codes])
-        if (length(prim_pillars) > 0)
-          updateSelectInput(session, "dynamic_select", selected = prim_pillars)
-        if (length(sec_pillars) > 0)
-          updateSelectInput(session, "dynamic_select_sdr", selected = sec_pillars)
-      }
-
       updateCheckboxInput(
         session,
         "goal_secondary_impact",
@@ -1327,42 +1482,12 @@ mod_goals_server <- function(id){
       )
     })
 
-    # SDR Core preset
-    observeEvent(input$preset_sdr_core, {
-      phrutils::phr_try({
-
-          # selected_sdr(as.character(
-          #   reference_objectives |>
-          #     dplyr::filter(core %in% c("Core")) |>
-          #     dplyr::pull(objective_code) |>
-          #     unique()
-          # ))
-
-        selected_sdr(c("101", "102", "103", "104"))
-
-        protocol_r()$call(field = "framework", member = "set_secondary_objectives", objective_codes = c("101", "102", "103", "104"))
-        phr_touch_module("protocol", session)
-
-        },
-      on_error = "warn",
-      origin = phrutils::phr_txt("Preset SDR: Core Objectives"),
-      hint = phrutils::phr_txt("Check objective data structure or SDR input binding if this fails.")
-      )
-    })
-
-    # Clear buttons
     observeEvent(input$clear_objectives, {
       selected(character(0))
     })
 
-    observeEvent(input$clear_sdr_objectives, {
-      selected_sdr(character(0))
-    })
-
     # ---- Sync the secondary data sources table onto the stored protocol
-    # object. Because Framework only exposes row-level add/remove methods,
-    # every existing row is removed and every current row (with a non-blank
-    # Source) is re-added, one access_nested() call per row.
+    # object; existing rows are removed and current rows re-added.
     sync_secondary_sources_to_protocol <- function(new_df) {
       phrutils::phr_try({
 

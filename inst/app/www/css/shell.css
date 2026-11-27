@@ -112,3 +112,10 @@ body.phr-sidebar-collapsed .phr-sidebar { flex-basis: 56px; width: 56px; }
 body.phr-sidebar-collapsed .phr-sidebar__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 body.phr-sidebar-collapsed .phr-sidebar__link { justify-content: center; padding-left: 0; padding-right: 0; }
 body.phr-sidebar-collapsed .phr-sidebar__toggle { text-align: center; padding-left: 0; padding-right: 0; }
+
+/* Tool Design group: tool rows with add / remove buttons */
+.phr-sidebar__tool { display: flex; align-items: center; gap: var(--phr-space-2); padding: 0; margin: 0; }
+.phr-sidebar__tool-label { flex: 1 1 auto; min-width: 0; font-size: 10px; line-height: 1.1; }
+.phr-sidebar__tool-actions { flex: 0 0 auto; display: flex; gap: 2px; }
+.phr-sidebar__tool-actions .btn { padding: 0 4px; font-size: 8px; line-height: 1.2; }
+body.phr-sidebar-collapsed .phr-sidebar__tool { display: none; }

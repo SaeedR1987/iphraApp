@@ -223,7 +223,10 @@ app_ui <- function(request) {
         tabPanel(textOutput("tab_title_tools", inline = TRUE), value = "tools",
 
                  mod_tools_master_ui("tools_master"),
-                 uiOutput("tool_tabs"),
+                 shiny::fluidRow(
+                   shiny::column(7, uiOutput("tool_tabs")),
+                   shiny::column(5, mod_tools_preview_ui("tools_preview"))
+                 ),
 
         ),
 

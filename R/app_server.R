@@ -536,7 +536,8 @@ app_server <- function(input, output, session) {
 
   # TOOLS ####
 
-  mod_tools_master_server("tools_master")
+  mod_tools_master_server("tools_master", active_tab = shiny::reactive(input$tool_tabs))
+  mod_tools_preview_server("tools_preview", active_tab = shiny::reactive(input$tool_tabs))
 
   mod_tools_household_server("tools_household")
 
@@ -578,6 +579,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Household Survey"),
+            value = "tool_household_iphra_v2",
             mod_tools_household_ui("tools_household")
           )
         )
@@ -590,6 +592,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Community Key Informant"),
+            value = "tool_kii_community_iphra_v2",
             mod_tools_community_kii_ui("tools_community_kii")
           )
         )
@@ -602,6 +605,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Community Observation"),
+            value = "tool_obs_community_iphra_v2",
             mod_tools_community_obs_ui("tools_community_obs")
           )
         )
@@ -614,6 +618,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("FSL Provider Key Informant"),
+            value = "tool_kii_fsl_service_provider_iphra_v2",
             mod_tools_fsl_kii_ui("tools_fsl_kii")
           )
         )
@@ -626,6 +631,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Market Vendor Key Informant"),
+            value = "tool_kii_markets_iphra_v2",
             mod_tools_market_vendor_kii_ui("tools_market_vendor_kii")
           )
         )
@@ -638,6 +644,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Crop and Livestock Observation"),
+            value = "tool_obs_crop_livestock_iphra_v1",
             mod_tools_crop_livestock_obs_ui("tools_crop_livestock_obs")
           )
         )
@@ -650,6 +657,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Health Facility Key Informant"),
+            value = "tool_kii_health_service_provider_iphra_v2",
             mod_tools_health_kii_ui("tools_health_kii")
           )
         )
@@ -662,6 +670,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Health Facility Observation"),
+            value = "tool_obs_health_facility_iphra_v2",
             mod_tools_health_obs_ui("tools_health_obs")
           )
         )
@@ -674,6 +683,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Nutrition Facility Key Informant"),
+            value = "tool_kii_nutrition_service_provider_iphra_v2",
             mod_tools_nutrition_kii_ui("tools_nutrition_kii")
           )
         )
@@ -686,6 +696,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("WASH Provider Key Informant"),
+            value = "tool_kii_wash_service_provider_iphra_v2",
             mod_tools_wash_kii_ui("tools_wash_kii")
           )
         )
@@ -698,6 +709,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Water Point Observation"),
+            value = "tool_obs_water_point_iphra_v2",
             mod_tools_water_point_obs_ui("tools_water_point_obs")
           )
         )
@@ -710,6 +722,7 @@ app_server <- function(input, output, session) {
         list(
           tabPanel(
             phrutils::phr_txt("Latrine Observation"),
+            value = "tool_obs_latrine_iphra_v2",
             mod_tools_latrine_obs_ui("tools_latrine_obs")
           )
         )

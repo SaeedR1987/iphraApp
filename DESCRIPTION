@@ -29,8 +29,10 @@ Imports:
     shinyFiles,
     shinydashboard,
     shinyjs,
+    shinyWidgets,
     sortable,
-    writexl
+    writexl,
+    zip
 Remotes:
     impact-initiatives/public_health_resources,
     impact-initiatives/phrutils

@@ -502,16 +502,6 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
 
     # ---- data collection tool (XLSFORM) import ---------------------------------
     tool_defs <- iphra_tool_definitions()
-    tool_type_choices <- c(
-      stats::setNames("skip", tx("Do not import")),
-      stats::setNames(vapply(tool_defs, `[[`, "", "name"),
-                      vapply(tool_defs, function(t) tx(t$label), ""))
-    )
-    role_choices <- c(
-      stats::setNames("skip", tx("Do not import")),
-      stats::setNames(c("survey", "choices", "settings"),
-                      c(tx("Survey sheet"), tx("Choices sheet"), tx("Settings sheet")))
-    )
 
     guess_tool_type <- function(file) {
       nm <- tolower(tools::file_path_sans_ext(file))
@@ -548,6 +538,17 @@ mod_data_import_server <- function(id, lang_r = function() "en") {
     })
 
     tool_import_modal <- function(files) {
+      # Built here (not at module setup) because tx() reads the reactive lang_r().
+      tool_type_choices <- c(
+        stats::setNames("skip", tx("Do not import")),
+        stats::setNames(vapply(tool_defs, `[[`, "", "name"),
+                        vapply(tool_defs, function(t) tx(t$label), ""))
+      )
+      role_choices <- c(
+        stats::setNames("skip", tx("Do not import")),
+        stats::setNames(c("survey", "choices", "settings"),
+                        c(tx("Survey sheet"), tx("Choices sheet"), tx("Settings sheet")))
+      )
       blocks <- lapply(seq_along(files), function(i) {
         fl <- files[[i]]
         sheet_rows <- lapply(seq_along(fl$sheets), function(j) {

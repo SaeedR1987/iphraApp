@@ -1,36 +1,9 @@
 /* IPHRA module-level styling (Stage 4 prototype): Tools master and Planning sample size. */
 
-/* ---- Tools master ---- */
-.phr-tool-grid {
-  display: flex; flex-wrap: wrap; gap: var(--phr-space-3);
-  padding: var(--phr-space-3) 0;
-}
-.phr-tool-card {
-  display: flex; flex-direction: column; align-items: stretch;
-  width: 150px;
-  padding: var(--phr-space-3);
-  background: var(--phr-white);
-  border: 1px solid var(--phr-border);
-  border-top: 3px solid var(--phr-teal);
-  border-radius: var(--phr-radius);
-  box-shadow: var(--phr-shadow-sm);
-}
-.phr-tool-card__title {
-  font-weight: 600; font-size: var(--phr-text-sm); line-height: 1.3;
-  text-align: center; color: var(--phr-ink);
-  margin-bottom: var(--phr-space-2);
-  min-height: 2.6em;
-}
-.phr-tool-card__actions { display: flex; flex-direction: column; gap: var(--phr-space-2); }
-.phr-tool-card__actions .btn { width: 100%; }
-.phr-tool-card__status {
-  margin-top: var(--phr-space-2);
-  font-size: var(--phr-text-xs); text-align: center; color: var(--phr-muted);
-}
-
-/* ---- Planning sample size ---- */
 .phr-calc-panel { padding: var(--phr-space-3) var(--phr-space-4); font-size: var(--phr-text-sm); }
 .phr-calc-col { min-width: 300px; }
+
+.iphra-preset-btn { display: block; width: 100%; margin: 0 0 6px 0; white-space: normal; }
 .phr-section-title {
   font-size: var(--phr-text-lg); font-weight: 600;
   margin: 0 0 var(--phr-space-3);

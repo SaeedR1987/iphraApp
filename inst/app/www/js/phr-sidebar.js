@@ -44,6 +44,9 @@
       if (on) { $(this).attr("aria-current", "page"); } else { $(this).removeAttr("aria-current"); }
     });
     $(".phr-sidebar__group").each(function () {
+      var toggle = $(this).children(".phr-sidebar__group-toggle");
+      var gt = toggle.attr("data-phr-group-tab");
+      if (gt) { $(this).toggleClass("has-active", gt === v); return; }
       var has = $(this).find(".phr-sidebar__link.active").length > 0;
       $(this).toggleClass("has-active", has);
       if (has) {
@@ -64,6 +67,8 @@
     var open = !li.hasClass("open");
     li.toggleClass("open", open);
     $(this).attr("aria-expanded", open ? "true" : "false");
+    var gt = $(this).attr("data-phr-group-tab");
+    if (gt && open) { $('#workflow_nav a[data-value="' + gt + '"]').tab("show"); }
   });
   $(document).on("click", ".phr-sidebar__link[data-phr-tab]", function (e) {
     e.preventDefault();

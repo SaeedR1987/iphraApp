@@ -15,52 +15,23 @@ mod_tools_household_ui <- function(id, all_indicators) {
       condition = "output.tool_present == 'true'",
       ns = ns,
       shiny::fluidRow(
-
-        # --- Existing Indicators Preset Box ---
-        shinydashboard::box(
-        title = "Household Tool - Presets",
-        width = 12,
-        shiny::actionButton(ns("preset_obj"), "Match Objectives"),
-        shiny::actionButton(ns("preset_core"), "Core"),
-        shiny::actionButton(ns("export_tool"), "Export Household Tool", class = "btn-success")
-      )
-    ),
-
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("sector_filter_ui"))
-        ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("pillar_filter_ui"))
-        ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("subpillar_filter_ui"))
-        ),
-    ),
-
-    shiny::br(),
-
-    shiny::fluidRow(
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("available_ui"))
+        shiny::column(4, shiny::uiOutput(ns("sector_filter_ui"))),
+        shiny::column(4, shiny::uiOutput(ns("pillar_filter_ui"))),
+        shiny::column(4, shiny::uiOutput(ns("subpillar_filter_ui")))
       ),
-      shiny::column(
-        4,
-        shiny::uiOutput(ns("selected_ui"))
-      ),
-      shiny::column(
-        4,
-        shinydashboard::box(
-          title = "Summary of Selected Indicators",
-          width = 12,
-          shiny::tableOutput(ns("summary_table"))
-        )
+      shiny::fluidRow(
+        shiny::column(
+          2,
+          shinydashboard::box(
+            title = "Presets",
+            width = 12,
+            shiny::actionButton(ns("preset_obj"), "Match Objectives", class = "iphra-preset-btn"),
+            shiny::actionButton(ns("preset_core"), "Core", class = "iphra-preset-btn")
+          )
+        ),
+        shiny::column(5, shiny::uiOutput(ns("available_ui"))),
+        shiny::column(5, shiny::uiOutput(ns("selected_ui")))
       )
-    )
     )  # /conditionalPanel
   )
 }
@@ -95,42 +66,13 @@ mod_tools_household_server <- function(id){
       ]
     })
 
-    filtered_pillars_r <- reactive({
-
-      req(input$sector_filter)
-
-      objective_filters_r() |>
-        dplyr::filter(sector %in% input$sector_filter)
-
-    })
-
-    filtered_subpillars_r <- reactive({
-
-      req(input$pillar_filter)
-
-      filtered_pillars_r() |>
-        dplyr::filter(pillar %in% input$pillar_filter)
-
-    })
-
-    filtered_available_indicators <- reactive({
-
-      req(input$subpillar_filter)
-
-      selected_objectives <-
-        filtered_subpillars_r() |>
-        dplyr::filter(
-          sub_pillar %in% input$subpillar_filter
-        ) |>
-        dplyr::pull(objective_code) |>
-        unique()
-
-      all_indicators() |>
-        dplyr::filter(
-          objective_code %in% selected_objectives
-        )
-
-    })
+    filters <- iphra_tool_filters_server(
+      input, output, session,
+      protocol_r = protocol_r,
+      role = "tool_household_iphra_v2",
+      all_indicators_fn = function() all_indicators()
+    )
+    filtered_available_indicators <- filters$available
 
     # tool_r     <- shiny::reactive({ protocol_r()$tools$tool_household_iphra_v2 })
 
@@ -233,41 +175,6 @@ mod_tools_household_server <- function(id){
 
     # OUTPUTS ####
 
-    output$sector_filter_ui <- renderUI({
-
-      selectInput(
-        ns("sector_filter"),
-        "Sector",
-        choices = sort(unique(objective_filters_r()$sector)),
-        selected = sector_selected(),
-        multiple = TRUE
-      )
-
-    })
-
-    output$pillar_filter_ui <- renderUI({
-
-      selectInput(
-        ns("pillar_filter"),
-        "Pillar",
-        choices = sort(unique(filtered_pillars_r()$pillar)),
-        selected = pillar_selected(),
-        multiple = TRUE
-      )
-
-    })
-
-    output$subpillar_filter_ui <- renderUI({
-
-      selectInput(
-        ns("subpillar_filter"),
-        "Sub-Pillar",
-        choices = sort(unique(filtered_subpillars_r()$sub_pillar)),
-        selected = subpillar_selected(),
-        multiple = TRUE
-      )
-
-    })
 
 
     # ---- UI for available list ----
@@ -367,31 +274,7 @@ mod_tools_household_server <- function(id){
 
       # iphra_restore_tool_filters(session, tool, isolate(objective_filters_r()))
 
-      sectors <- tool$get(field = "selected_sectors") %||% character(0)
-      pillars <- tool$get(field = "selected_pillars") %||% character(0)
-      subs <- tool$get(field = "selected_subpillars") %||% character(0)
-
-      updateSelectInput(
-        session,
-        "sector_filter",
-        selected = sectors
-      )
-
-      updateSelectInput(
-        session,
-        "pillar_filter",
-        selected = pillars
-      )
-
-      updateSelectInput(
-        session,
-        "subpillar_filter",
-        selected = subs
-      )
-
-      sector_selected(as.character(tool$get(field = "selected_sectors") %||% character(0)))
-      pillar_selected(as.character(tool$get(field = "selected_pillars") %||% character(0)))
-      subpillar_selected(as.character(tool$get(field = "selected_subpillars") %||% character(0)))
+      filters$restore()
 
       selected(as.character(tool$get(field = "selected_indicator_codes") %||% character(0)))
 
@@ -511,76 +394,6 @@ mod_tools_household_server <- function(id){
       hint = phrutils::phr_txt("Verify that all indicator groups exist in the indicators object.")
       )
     })
-
-    # ---- Export Tool ----
-    #
-    # The Export button opens a modal that lets the user save an Excel
-    # workbook containing the household tool's `revised_survey`,
-    # `revised_choices` and `revised_settings` data frames as three sheets.
-    # The actual file writing happens through a `downloadHandler` (which
-    # is what shows the browser's native "save as" dialog); the modal is
-    # only used to surface that download link because the UI-side control
-    # is an `actionButton`, not a `downloadButton`.
-    observeEvent(input$export_tool, {
-      phrutils::phr_try({
-        if (!isTRUE(protocol_r()$.tool_household_iphra)) {
-          shiny::showModal(shiny::modalDialog(
-            title = phrutils::phr_txt("Export Household Tool"),
-            phrutils::phr_txt("The Household tool has not been added to the protocol yet. Please add it from the Tool Design page before exporting."),
-            footer = shiny::modalButton(phrutils::phr_txt("Close")),
-            easyClose = TRUE
-          ))
-          return(NULL)
-        }
-
-        shiny::showModal(shiny::modalDialog(
-          title = phrutils::phr_txt("Export Household Tool"),
-          shiny::tagList(
-            shiny::p(phrutils::phr_txt("Click below to save the Household tool as an Excel workbook with three sheets: revised_survey, revised_choices, and revised_settings.")),
-            shiny::downloadButton(ns("download_tool"),
-                                  label = phrutils::phr_txt("Download Excel"),
-                                  class = "btn-success")
-          ),
-          footer = shiny::modalButton(phrutils::phr_txt("Cancel")),
-          easyClose = TRUE
-        ))
-      },
-      on_error = "warn",
-      origin = phrutils::phr_txt("Household Tool: Export"),
-      hint = phrutils::phr_txt("Ensure the Household tool has been added to the protocol and exposes revised_survey / revised_choices / revised_settings.")
-      )
-    })
-
-    output$download_tool <- shiny::downloadHandler(
-      filename = function() {
-        paste0("tool_household_iphra_v2_",
-               format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
-      },
-      content = function(file) {
-        safe_df <- function(x) {
-          tryCatch({
-            if (is.null(x)) return(data.frame())
-            if (is.data.frame(x)) return(x)
-            as.data.frame(x)
-          }, error = function(e) data.frame())
-        }
-
-        tool <- protocol_r()$get(field = "tools", role = "tool_household_iphra_v2")
-
-        sheets <- list(
-          survey   = safe_df(tool$get(field = "revised_survey")),
-          choices  = safe_df(tool$get(field = "revised_choices")),
-          settings = safe_df(tool$get(field = "revised_settings"))
-        )
-
-        writexl::write_xlsx(sheets, path = file)
-
-        phrutils::phr_message(
-          phrutils::phr_txt("Household tool exported to Excel."),
-          origin = phrutils::phr_txt("Household Tool: Export")
-        )
-      }
-    )
 
   })
 }

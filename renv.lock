@@ -4186,6 +4186,45 @@
       "Author": "Saeed Rahman [aut, cre]",
       "Maintainer": "Saeed Rahman <saeed.rahman0@gmail.com>"
     },
+    "phrindicators": {
+      "Package": "phrindicators",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "Title": "Public Health Indicator Construction Tools",
+      "Authors@R": "person(given = \"Saeed\", family = \"Rahman\", role = c(\"aut\", \"cre\"), email = \"saeed.rahman0@gmail.com\")",
+      "Description": "Provides add_* indicator-construction helpers for public health survey data. Core functionality covers food security (FSL/FCS/HDDS/LCSI/RCSI), nutrition (MUAC, z-scores, IYCF), mortality, WASH, and demographics, while validation and error-handling utilities are supplied by phrutils.",
+      "License": "MIT + file LICENSE",
+      "Depends": [
+        "R (>= 4.1.0)"
+      ],
+      "Imports": [
+        "dplyr",
+        "glue",
+        "phrutils",
+        "purrr",
+        "rlang",
+        "stats",
+        "tibble",
+        "zscorer"
+      ],
+      "Suggests": [
+        "lubridate",
+        "testthat (>= 3.0.0)"
+      ],
+      "Encoding": "UTF-8",
+      "Config/testthat/edition": "3",
+      "Remotes": "impact-initiatives/phrutils",
+      "Config/roxygen2/version": "8.0.0",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "phrindicators",
+      "RemoteUsername": "impact-initiatives",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "5c93a2b53e5573901115aed73339c31c348f6644",
+      "NeedsCompilation": "no",
+      "Author": "Saeed Rahman [aut, cre]",
+      "Maintainer": "Saeed Rahman <saeed.rahman0@gmail.com>"
+    },
     "phrutils": {
       "Package": "phrutils",
       "Version": "0.1.0",
@@ -7719,6 +7758,23 @@
       "NeedsCompilation": "yes",
       "Author": "Gábor Csárdi [aut, cre], Kuba Podgórski [ctb], Rich Geldreich [ctb], Arm Limited [ctb, cph] (bundled Mbed TLS crypto subset in src/mbedtls/ (Apache-2.0)), Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
       "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+      "Repository": "CRAN"
+    },
+    "zscorer": {
+      "Package": "zscorer",
+      "Version": "0.3.1",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Child Anthropometry z-Score Calculator",
+      "Depends": [
+        "R (>= 2.10)"
+      ],
+      "Imports": [
+        "shiny"
+      ],
+      "License": "AGPL-3",
+      "Encoding": "UTF-8",
+      "NeedsCompilation": "no",
       "Repository": "CRAN"
     }
   }

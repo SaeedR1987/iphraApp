@@ -557,3 +557,15 @@ drc_mort$add_linked_dataset(
   by_self_role = "uuid",
   by_other_role = "uuid"
 )
+
+drc_mort$standardize()
+
+vm <- drc_mort$get(field = "..variable_map")
+vl <- drc_mort$get(field = "..value_map")
+
+vm$fsl_hhs_cat_ipc
+vl$fsl_hhs_cat_ipc
+
+head(drc_mort$get(field = "..standardized_data")$fsl_hhs_cat_ipc)
+
+

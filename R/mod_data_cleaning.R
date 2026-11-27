@@ -639,8 +639,11 @@ mod_data_cleaning_server <- function(id, lang_r = function() "en") {
         lg <- tryCatch(obj$get(field = log_fields[[kind]]), error = function(e) NULL)
         if (is.null(lg)) next
         res <- tryCatch(
-          if (kind == "cleaning") lg$validate(data_obj = obj, stage = stage)
-          else lg$validate(check_against = obj, stage = stage),
+          {
+            lg$validate()
+            if (kind == "cleaning") lg$validate_cl_against_dataset(obj, stage = stage)
+            else lg$validate_dl_against_dataset(obj, stage = stage)
+          },
           error = function(e) e
         )
         if (inherits(res, "error")) {

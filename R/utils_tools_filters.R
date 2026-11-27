@@ -105,3 +105,164 @@ iphra_save_tool_field <- function(tool, field, value) {
 
   invisible(NULL)
 }
+
+#' @title Sector / Pillar / Sub-Pillar picker filters for a tool module
+#' @description
+#' Registers the `sector_filter_ui`, `pillar_filter_ui` and
+#' `subpillar_filter_ui` outputs (`shinyWidgets::pickerInput()`s, all values
+#' selected by default) and the cascade between them: Pillar choices follow
+#' the selected Sector(s), Sub-Pillar choices follow the selected Pillar(s).
+#' Input ids stay `sector_filter`, `pillar_filter` and `subpillar_filter`.
+#'
+#' @param protocol_r Reactive returning the protocol.
+#' @param role Role of the tool in `protocol$tools`.
+#' @param all_indicators_fn Function returning the tool's indicator data
+#'   frame (with an `objective_code` column).
+#'
+#' @return A list with `available` (reactive: indicators matching the filters)
+#'   and `restore` (function restoring the saved filters from the Tool).
+#'
+#' @noRd
+iphra_tool_filters_server <- function(input, output, session, protocol_r,
+                                      role, all_indicators_fn) {
+
+  cols <- c("sector", "pillar", "sub_pillar")
+  ids <- c(sector = "sector_filter", pillar = "pillar_filter",
+           sub_pillar = "subpillar_filter")
+  labels <- c(sector = "Sector", pillar = "Pillar", sub_pillar = "Sub-Pillar")
+  parents <- list(sector = character(0), pillar = "sector",
+                  sub_pillar = c("sector", "pillar"))
+
+  seen <- new.env()
+  prev <- new.env()
+  restore_rv <- shiny::reactiveVal(NULL)
+  filters_rv <- shiny::reactiveVal(NULL)
+
+  shiny::observe({
+    proto <- protocol_r()
+    schema <- proto$framework$master_objectives_schema
+    shiny::req(!is.null(schema))
+    filters_rv(schema[, c("objective_code", cols)])
+  })
+
+  # Current selection of a filter. NULL = picker not rendered yet (no filter);
+  # character(0) = the user emptied it.
+  sel_of <- function(col) {
+    r <- restore_rv()
+    if (!is.null(r)) return(r[[col]])
+    v <- input[[ids[[col]]]]
+    if (is.null(v)) {
+      if (isTRUE(seen[[col]])) return(character(0))
+      return(NULL)
+    }
+    seen[[col]] <- TRUE
+    v
+  }
+
+  choices_of <- function(col) {
+    ref <- filters_rv()
+    keep <- rep(TRUE, nrow(ref))
+    for (p in parents[[col]]) {
+      s <- sel_of(p)
+      if (!is.null(s)) keep <- keep & (as.character(ref[[p]]) %in% s)
+    }
+    out <- sort(unique(as.character(ref[[col]][keep])))
+    out[!is.na(out)]
+  }
+
+  render_picker <- function(col) {
+    shiny::renderUI({
+      shiny::req(filters_rv())
+      choices <- shiny::isolate(choices_of(col))
+      shinyWidgets::pickerInput(
+        session$ns(ids[[col]]),
+        label = labels[[col]],
+        choices = choices,
+        selected = shiny::isolate(input[[ids[[col]]]]) %||% choices,
+        multiple = TRUE,
+        width = "100%",
+        options = shinyWidgets::pickerOptions(
+          actionsBox = TRUE,
+          selectedTextFormat = "count > 2",
+          countSelectedText = "{0} selected",
+          liveSearch = TRUE
+        )
+      )
+    })
+  }
+
+  output$sector_filter_ui <- render_picker("sector")
+  output$pillar_filter_ui <- render_picker("pillar")
+  output$subpillar_filter_ui <- render_picker("sub_pillar")
+
+  cascade <- function(col) {
+    shiny::observe({
+      shiny::req(filters_rv())
+      r <- restore_rv()
+      for (p in parents[[col]]) {
+        if (is.null(r)) shiny::req(!is.null(sel_of(p)))
+      }
+      choices <- choices_of(col)
+      cur <- if (is.null(r)) sel_of(col) else NULL
+      old <- prev[[col]] %||% choices
+      new_sel <- if (!is.null(r)) {
+        intersect(r[[col]], choices)
+      } else if (is.null(cur)) {
+        choices
+      } else {
+        union(intersect(cur, choices), setdiff(choices, old))
+      }
+      prev[[col]] <- choices
+      shinyWidgets::updatePickerInput(
+        session, ids[[col]], choices = choices, selected = new_sel
+      )
+    })
+  }
+  cascade("pillar")
+  cascade("sub_pillar")
+
+  # Drop the restore override once the inputs reflect it
+  shiny::observe({
+    r <- restore_rv()
+    shiny::req(r)
+    same <- vapply(cols, function(col) {
+      setequal(input[[ids[[col]]]] %||% character(0), r[[col]])
+    }, logical(1))
+    if (all(same)) restore_rv(NULL)
+  })
+
+  restore <- function() {
+    proto <- shiny::isolate(protocol_r())
+    tool <- tryCatch(proto$tools[[role]], error = function(e) NULL) %||%
+      tryCatch(proto$get(field = "tools", role = role), error = function(e) NULL)
+    if (is.null(tool) || is.null(shiny::isolate(filters_rv()))) return(invisible(NULL))
+    r <- list(
+      sector = as.character(tool$selected_sectors %||% character(0)),
+      pillar = as.character(tool$selected_pillars %||% character(0)),
+      sub_pillar = as.character(tool$selected_subpillars %||% character(0))
+    )
+    if (sum(lengths(r)) == 0) return(invisible(NULL))
+    restore_rv(r)
+    shinyWidgets::updatePickerInput(
+      session, ids[["sector"]],
+      choices = shiny::isolate(choices_of("sector")),
+      selected = r$sector
+    )
+    invisible(NULL)
+  }
+
+  available <- shiny::reactive({
+    ref <- filters_rv()
+    shiny::req(ref)
+    keep <- rep(TRUE, nrow(ref))
+    for (col in cols) {
+      s <- sel_of(col)
+      if (!is.null(s)) keep <- keep & (as.character(ref[[col]]) %in% s)
+    }
+    codes <- unique(ref$objective_code[keep])
+    inds <- all_indicators_fn()
+    inds[inds$objective_code %in% codes, , drop = FALSE]
+  })
+
+  list(available = available, restore = restore)
+}

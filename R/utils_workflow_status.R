@@ -53,7 +53,9 @@ iphra_placeholder_tab <- function(v) {
 #' @noRd
 iphra_sidebar_items <- function() {
   list(
-    list(value = "goals"), list(value = "tools"), list(value = "planning"),
+    list(value = "goals"),
+    list(value = "tools"),
+    list(value = "planning"),
     list(value = "import"), list(value = "standardization"), list(value = "quality"), list(value = "cleaning"),
     list(value = "analysis", title = "Data Analysis", icon = "glyphicon-signal",
          children = c("analysis_quant", "analysis_qual", "analysis_integrated")),
@@ -96,8 +98,14 @@ iphra_log_status <- function(obj, kind = c("cleaning", "deletion")) {
 #' Overall status per workflow step (named character vector). Steps without
 #' criteria yet are "grey".
 #' @noRd
-iphra_step_status <- function(datasets, steps) {
+iphra_step_status <- function(datasets, steps, goals = NULL, tools = NULL) {
   out <- stats::setNames(rep("grey", length(steps)), names(steps))
+  if (!is.null(tools)) {
+    out["tools"] <- if (tools$n == 0L) "red" else if (tools$done >= tools$n) "green" else "yellow"
+  }
+  if (!is.null(goals)) {
+    out["goals"] <- if (!isTRUE(goals$any)) "red" else if (isTRUE(goals$complete)) "green" else "yellow"
+  }
   ds <- datasets %||% list()
   if (length(ds)) out["import"] <- "green" else out["import"] <- "red"
 
@@ -111,6 +119,49 @@ iphra_step_status <- function(datasets, steps) {
   out
 }
 
+#' Session-wide "Goals and Objectives marked complete" flag (reactiveVal),
+#' created on first use so the goals module and the sidebar status share it.
+#' @noRd
+iphra_goals_complete_rv <- function(session) {
+  ud <- session$userData
+  if (!is.function(ud$goals_complete)) ud$goals_complete <- shiny::reactiveVal(FALSE)
+  ud$goals_complete
+}
+
+#' Session-wide set of tool roles marked complete on the Tool Design tab
+#' (reactiveVal holding a character vector).
+#' @noRd
+iphra_tools_complete_rv <- function(session) {
+  ud <- session$userData
+  if (!is.function(ud$tools_complete)) ud$tools_complete <- shiny::reactiveVal(character(0))
+  ud$tools_complete
+}
+
+#' Completion state of the Goals and Objectives step from a protocol object.
+#' @return list(info, primary, secondary, sources, any)
+#' @noRd
+iphra_goals_state <- function(proto) {
+  filled <- function(x) {
+    !is.null(x) && length(x) > 0 && any(!is.na(x) & nzchar(trimws(as.character(x))))
+  }
+  meta <- tryCatch(proto$get(field = "..metadata"), error = function(e) NULL)
+  info_fields <- c("assessment_title", "population", "geographic_coverage", "month_year")
+  info <- !is.null(meta) &&
+    all(vapply(info_fields, function(f) filled(meta[[f]]), logical(1))) &&
+    (filled(meta$country_name) || filled(meta$country))
+  info_any <- !is.null(meta) &&
+    any(vapply(c(info_fields, "country_name", "country", "research_cycle_id", "rationale"),
+               function(f) filled(meta[[f]]), logical(1)))
+  fw <- function(m) tryCatch(proto$get(field = "framework", member = m), error = function(e) NULL)
+  primary <- length(fw("primary_objectives")) > 0
+  secondary <- length(fw("secondary_objectives")) > 0
+  src <- fw("secondary_data_sources")
+  sources <- is.data.frame(src) && nrow(src) > 0 &&
+    any(!is.na(src$source) & nzchar(trimws(as.character(src$source))))
+  list(info = info, primary = primary, secondary = secondary, sources = sources,
+       any = info_any || primary || secondary || sources)
+}
+
 #' @noRd
 iphra_workflow_status_server <- function(input, output, session, iphra_session, lang_r) {
   tx <- function(x) phrutils::phr_txt(x, lang = lang_r(), default = gsub("\\{", "{{", x))
@@ -120,9 +171,53 @@ iphra_workflow_status_server <- function(input, output, session, iphra_session, 
   ds_r <- tryCatch(iphra_session$get_module_reactive("datasets"), error = function(e) function() NULL)
   datasets <- shiny::reactive(ds_r() %||% list())
 
+  proto_r <- tryCatch(iphra_session$get_module_reactive("protocol"), error = function(e) function() NULL)
+  goals_complete <- iphra_goals_complete_rv(session)
+  goals_state <- shiny::reactive({
+    p <- proto_r()
+    if (is.null(p)) NULL else iphra_goals_state(p)
+  })
+
+  tools_complete <- iphra_tools_complete_rv(session)
+  tools_state <- shiny::reactive({
+    p <- proto_r()
+    if (is.null(p)) return(NULL)
+    roles <- tryCatch(as.character(p$get_tool_names()), error = function(e) character(0))
+    list(n = length(roles), done = length(intersect(roles, tools_complete())))
+  })
+
   shiny::observe({
-    st <- tryCatch(iphra_step_status(datasets(), steps), error = function(e) NULL)
+    gs <- goals_state()
+    goals <- if (is.null(gs)) NULL else list(any = gs$any, complete = goals_complete())
+    st <- tryCatch(iphra_step_status(datasets(), steps, goals, tools_state()), error = function(e) NULL)
     if (!is.null(st)) session$sendCustomMessage("phr_step_status", as.list(st))
+  })
+
+  output$phr_goals_status <- shiny::renderUI({
+    if ((input$workflow_nav %||% "goals") != "goals") return(NULL)
+    gs <- goals_state()
+    if (is.null(gs)) return(NULL)
+    col <- c(red = "#c62828", green = "#2e7d32")
+    cell <- "text-align:center; padding:1px 6px; vertical-align:middle;"
+    items <- list(
+      list(tx("Assessment Info Complete"), gs$info),
+      list(tx("Primary Objectives Selected"), gs$primary),
+      list(tx("Secondary Objectives Selected"), gs$secondary),
+      list(tx("Secondary Sources Included"), gs$sources)
+    )
+    shiny::tags$table(
+      style = "margin-top:4px; font-size:8.5px; border-collapse:collapse;",
+      shiny::tags$thead(shiny::tags$tr(lapply(items, function(i) {
+        shiny::tags$th(style = paste0(cell, "font-weight:600; white-space:nowrap;"), i[[1]])
+      }))),
+      shiny::tags$tbody(shiny::tags$tr(lapply(items, function(i) {
+        shiny::tags$td(style = cell, shiny::span(
+          title = if (i[[2]]) tx("Yes") else tx("No"),
+          style = paste0("display:inline-block; width:8px; height:8px; border-radius:50%; background:",
+                         if (i[[2]]) col[["green"]] else col[["red"]], ";")
+        ))
+      })))
+    )
   })
 
   output$phr_log_status <- shiny::renderUI({
@@ -280,6 +375,7 @@ iphra_workflow_status_server <- function(input, output, session, iphra_session, 
           class = "phr-guidance__extra",
           shiny::div(class = "phr-guidance__hint", tx(s$hint)),
           if (key == "cleaning") shiny::uiOutput("phr_log_status"),
+          if (key == "goals") shiny::uiOutput("phr_goals_status"),
           if (key == "standardization") shiny::uiOutput("phr_std_status")
         )
       ),
